@@ -1,0 +1,490 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Accessible Color Palette Generator</title>
+
+  <link rel="stylesheet" href="css/main.css">
+
+  <script defer src="js/bundle.js"></script>
+
+  <meta property="og:image" content="https://thisisfranciswu.com/enterprise-ui-palette-generator/images/social_media_thumbnail.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="940" />
+<meta property="og:image:height" content="608" />
+<meta property="og:title" content="Accessible Color Palette Generator" />
+<meta property="og:description" content="This is a tool to automate the generation of accessible enterprise UI color palettes." />
+<meta property="og:url" content="https://thisisfranciswu.com/enterprise-ui-palette-generator" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://thisisfranciswu.com/enterprise-ui-palette-generator/images/social_media_thumbnail.jpg" />
+<meta name="twitter:title" content="Accessible Color Palette Generator" />
+<meta name="twitter:description" content="This is a tool to automate the generation of accessible enterprise UI color palettes." />
+<meta name="twitter:site" content="@thisisfranciswu" />
+<meta name="twitter:creator" content="@thisisfranciswu" />
+
+  <!-- Light mode -->
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-196x196.png" sizes="196x196" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-96x96.png" sizes="96x96" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-32x32.png" sizes="32x32" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-16x16.png" sizes="16x16" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-128.png" sizes="128x128" media="(prefers-color-scheme: light)" />
+
+<!-- Dark mode -->
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-196x196.png" sizes="196x196" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-96x96.png" sizes="96x96" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-32x32.png" sizes="32x32" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-16x16.png" sizes="16x16" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-128.png" sizes="128x128" media="(prefers-color-scheme: dark)" />
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <img src="images/social_media_thumbnail.jpg" alt="Social media thumbnail" class="hidden-social-media-thumbnail" />
+
+    <header>
+      <h1>Accessible Color Palette Generator</h1>
+    </header>
+
+    <section id="intro">
+      <p>
+        <strong>Background:</strong> This is a tool to automate the generation of accessible enterprise UI color palettes.
+        It draws inspiration from <a href="https://www.radix-ui.com/colors/custom" target="_blank">Radix UI's custom color palette tool</a>, but its color generation rules are mostly based on those I laid out in a <a href="https://uxdesign.cc/a-systematic-approach-to-generating-enterprise-ui-color-palettes-ecaf0c164c17" target="_blank">Medium article I wrote</a>, which I followed up with <a href="https://medium.com/@thisisfranciswu/creating-the-accessible-color-palette-generator-dd1f74b717ee" target="_blank">a retrospective on creating this tool</a>. Check it out on <a href="https://github.com/thisisfranciswu/enterprise-ui-palette-generator" target="_blank">GitHub</a>.
+      </p>
+      <p>
+        <strong>Usage:</strong> Refresh the page to generate a palette based on a random accent color.
+        Play with the inputs and click on the "Generate" button to generate a palette based on the accent color.
+        This is a proof of concept and there's no form validation.
+        Toggle light and dark mode to how the modes impact the color palettes.
+      </p>
+    </section>
+
+    <div id="aside-and-main">
+
+      <aside id="settings">
+
+  <form>
+
+    <h2>Settings</h2>
+
+    <div class="form-group">
+      <label for="accentColor">Accent</label>
+      <div class="decorated-input">
+        <span class="mini-swatch"></span>
+        <input type="text" id="accentColor">
+        <button id="randomColorBtn" class="btn btn-icon btn-trailing">
+          <span class="material-symbols-rounded">shuffle</span>
+        </button>
+      </div>
+      <span id="tryBrandColor" class="input-hint">
+        Try a brand color from
+        <a href="#" data-color-value="#1DB954">Spotify</a>,
+        <a href="#" data-color-value="#F96302">Home Depot</a>, or
+        <a href="#" data-color-value="#FF0000">YouTube</a>.
+      </span>
+    </div>
+
+    <div class="form-group">
+      <label for="canvasContrast">Canvas contrast</label>
+      <input type="text" id="canvasContrast" value="1.1">
+    </div>
+
+    <div class="form-group">
+      <label for="cardContrast">Card contrast</label>
+      <input type="text" id="cardContrast" value="1.033">
+    </div>
+
+    <div class="form-group">
+      <label for="softContrast">Soft contrast</label>
+      <input type="text" id="softContrast" value="1.1">
+    </div>
+
+    <div class="form-group">
+      <label for="strongContrast">Strong contrast</label>
+      <input type="text" id="strongContrast" value="1.7">
+    </div>
+
+    <div class="form-group">
+      <label for="neutralSaturation">Neutral saturation</label>
+      <input type="text" id="neutralSaturation" value="0.333">
+    </div>
+
+    <div class="form-group">
+      <label for="neutralContrast">Neutral contrast</label>
+      <input type="text" id="neutralContrast" value="1.3">
+    </div>
+
+    <div class="form-group">
+      <label for="darkModeSaturation">Dark mode saturation</label>
+      <input type="text" id="darkModeSaturation" value="0.666">
+    </div>
+
+    <button id="generateBtn" class="btn">Generate</button>
+    <button id="copyBtn" class="btn">Copy</button>
+
+  </form>
+
+</aside>
+
+
+      <main>
+        <section id="palette">
+
+  <div class="heading">
+    <h2>Palette</h2>
+    <div id="toggleMode">
+      <button id="lightModeBtn" class="btn" data-state="on">
+        <span class="material-symbols-rounded">light_mode</span>
+        Light
+      </button>
+      <button id="darkModeBtn" class="btn" data-state="off">
+        <span class="material-symbols-rounded">dark_mode</span>
+        Dark
+      </button>
+    </div>
+  </div>
+
+  <div id="accent">
+    <figure class="color-swatch">
+      <figcaption>Seed</figcaption>
+      <div class="swatch" id="seed">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+    </figure>
+  </div>
+
+  <div id="backgrounds" class="row ui-swatches">
+    <figure class="color-swatch">
+      <figcaption>Canvas</figcaption>
+      <div class="swatch" id="canvas">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+    </figure>
+    <figure class="color-swatch">
+      <figcaption>Card</figcaption>
+      <div class="swatch" id="card">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+    </figure>
+  </div>
+
+  <div class="row">
+
+    <div id="nonContentGroup" class="col">
+
+      <figure class="color-swatch">
+        <figcaption>Accent Non-Content Baseline</figcaption>
+        <div class="swatch" id="accentNonContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+      </figure>
+
+      <div class="row ui-swatches">
+        <figure class="color-swatch">
+          <figcaption>Accent Non-Content Soft</figcaption>
+          <div class="swatch" id="accentNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+        <figure class="color-swatch">
+          <figcaption>Accent Non-Content Subdued</figcaption>
+          <div class="swatch" id="accentNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+        <figure class="color-swatch">
+          <figcaption>Accent Non-Content Strong</figcaption>
+          <div class="swatch" id="accentNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+      </div>
+
+      <div class="row ui-swatches">
+        <figure class="color-swatch">
+          <figcaption>Neutral Non-Content Soft</figcaption>
+          <div class="swatch" id="neutralNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+        <figure class="color-swatch">
+          <figcaption>Neutral Non-Content Subdued</figcaption>
+          <div class="swatch" id="neutralNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+        <figure class="color-swatch">
+          <figcaption>Neutral Non-Content Strong</figcaption>
+          <div class="swatch" id="neutralNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+      </div>
+
+    </div>
+
+    <div id="contentGroup" class="col">
+
+      <figure class="color-swatch">
+        <figcaption>Accent Content Baseline</figcaption>
+        <div class="swatch" id="accentContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+      </figure>
+
+      <div class="row ui-swatches">
+        <figure class="color-swatch">
+          <figcaption>Accent Content Subdued</figcaption>
+          <div class="swatch" id="accentContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+        <figure class="color-swatch">
+          <figcaption>Accent Content Strong</figcaption>
+          <div class="swatch" id="accentContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+      </div>
+
+      <div class="row ui-swatches">
+        <figure class="color-swatch">
+          <figcaption>Neutral Content Subdued</figcaption>
+          <div class="swatch" id="neutralContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+        <figure class="color-swatch">
+          <figcaption>Neutral Content Strong</figcaption>
+          <div class="swatch" id="neutralContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+        </figure>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+        <section id="demo">
+          <h2>Demo</h2>
+          <div id="canvas">
+            <div class="col">
+  
+  <div class="card">
+
+    <form>
+      <div class="form-group">
+        <label>Name</label>
+        <div class="form-row">
+          <input type="text">
+          <button class="btn">Submit</button>
+        </div>
+      </div>
+    </form>
+
+    <ul class="menu">
+      <li class="selected"><a href="#">John</a></li>
+      <li><a href="#">Paul</a></li>
+      <li><a href="#">George</a></li>
+      <li><a href="#">Ringo</a></li>
+      <li><a href="#">Billy</a></li>
+    </ul>
+
+    <div class="alert">
+      <span class="material-symbols-rounded">info</span>
+      Please upgrade to the new version.
+    </div>
+
+    <div>
+      <span class="tag">Fully-featured</span>
+      <span class="tag tag-outlined">Open source</span>
+    </div>
+
+    <div>
+      <button class="btn">Submit</button>
+      <button class="btn btn-outlined">Cancel</button>
+      <button class="btn btn-soft">Skip</button>
+    </div>
+
+    <div>
+      <input type="checkbox">
+      <input type="checkbox" checked>
+      <input type="radio">
+      <input type="radio" checked>
+      <input type="checkbox" role="switch">
+      <input type="checkbox" role="switch" checked>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="media">
+      <img src="images/clem_fandango.webp">
+      <div class="text-pair text-pair-md-sm">
+        <div class="text-md">Clem Fandango</div>
+        <div class="text-sm">clem.fandango@example.com</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+            <div class="col">
+	
+	<div class="card">
+		
+		<div class="toolbar">
+			<div class="btn-group">
+				<button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
+				<button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
+				<button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
+			</div>
+			<div class="btn-group">
+				<button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
+				<button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
+				<button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
+			</div>
+			<div class="btn-group">
+				<button class="btn"><span class="material-symbols-rounded">link</span></button>
+				<button class="btn"><span class="material-symbols-rounded">image</span></button>
+				<button class="btn"><span class="material-symbols-rounded">theaters</span></button>
+			</div>
+		</div>
+
+		<button class="btn btn-select">Old Fashioned</button>
+
+	</div>
+
+	<form class="card">
+		<div class="form-group">
+	    <label>Name</label>
+	    <input type="text">
+		</div>
+		<div class="form-group">
+	    <label>Email</label>
+	    <input type="email">
+		</div>
+		<div class="form-group">
+	    <label>Password</label>
+	    <input type="password">
+		</div>
+		<button class="btn btn-block">Create account</button>
+		<p class="or"><span>Or</span></p>
+		<button class="btn btn-outlined btn-block">Continue with GitHub</button>
+	</form>
+
+	<div class="toast">
+		Task failed successfully.
+	</div>
+
+</div>
+
+            <div class="col">
+		
+	<ul class="nav nav-tabs">
+		<li class="selected"><a href="#">Jello</a></li>
+		<li><a href="#">East Bay</a></li>
+		<li><a href="#">Klaus</a></li>
+		<li><a href="#">D.H.</a></li>
+	</ul>
+
+	<div class="card">
+
+		<div class="avatars">
+			<span class="avatar">
+				<img src="images/clem_fandango.webp">
+			</span>
+			<span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
+			<span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
+			<span class="avatar avatar-icon avatar-solid avatar-subdued">
+				<span class="material-symbols-rounded">group</span>
+			</span>
+			<span class="avatar avatar-icon avatar-solid avatar-strong">
+				<span class="material-symbols-rounded">group</span>
+			</span>
+		</div>
+
+		<div class="avatars">
+			<span class="avatar">
+				<img src="images/clem_fandango.webp">
+			</span>
+			<span class="avatar avatar-one-letter avatar-soft avatar-subdued">V</span>
+			<span class="avatar avatar-two-letter avatar-soft avatar-subdued">BG</span>
+			<span class="avatar avatar-icon avatar-soft avatar-subdued">
+				<span class="material-symbols-rounded">group</span>
+			</span>
+			<span class="avatar avatar-icon avatar-soft avatar-strong">
+				<span class="material-symbols-rounded">group</span>
+			</span>
+		</div>
+
+		<hr>
+
+		<blockquote>
+			Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
+		</blockquote>
+
+		<div class="checkboxes">
+			<div class="form-check">
+		    <input type="checkbox">
+		    <label>Respond to comment <a href="#">#129</a> from Jake</label>
+			</div>
+			<div class="form-check">
+		    <input type="checkbox">
+		    <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+			</div>
+			<div class="form-check">
+		    <input type="checkbox">
+		    <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+			</div>
+			<div class="form-check form-check-struckout">
+		    <input type="checkbox" checked>
+		    <label>Lay off 62 employees</label>
+			</div>
+			<div class="form-check form-check-struckout">
+		    <input type="checkbox" checked>
+		    <label>Review Robert Johnson's contract</label>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+          </div>
+        </section>
+      </main>
+
+    </div>
+
+  </div>
+
+</body>
+
+</html>
