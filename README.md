@@ -1,4 +1,6 @@
 # Enterprise UI Palette Generator
+```markdown
+# Enterprise UI Palette Generator
 
 This is a tool to automate the generation of accessible enterprise UI color palettes.
 
@@ -30,3 +32,35 @@ In no particular order, allow user to:
 - [ ] Learn how this works
 - [ ] Enjoy responsive layout
 - [ ] Export colors
+
+## Project Overview
+
+This project is pure HTML, CSS, and vanilla JavaScript—no frameworks, no build tools required for basic use. The build pipeline (npm scripts) is only for asset bundling and SCSS compilation; the output is a static site in `docs/`.
+
+### Quick Start
+
+- **No frameworks required.**
+- **Works on GitHub Pages and any static webserver.**
+- **Deploy by copying the `docs/` folder to your host, or use GitHub Pages.**
+
+### Local Development
+
+```bash
+npm install
+npm run build
+npm start
+# Open http://localhost:5000
+```
+
+### Deploy to GitHub Pages
+
+```bash
+npm run deploy
+```
+
+Or manually copy the contents of `docs/` to any static host.
+
+Notes:
+- The project uses `webpack` to bundle `js/bundle.js`. The HTML expects `css/main.css` and `js/bundle.js` to be present in the repository root when served.
+- If you prefer GitHub Pages to serve from `docs/`, I can update `webpack.config.js` to output into `docs/` and adjust `package.json` scripts.
+````

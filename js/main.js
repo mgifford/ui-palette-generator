@@ -1,6 +1,31 @@
 import chroma from 'chroma-js';
 
 import $ from 'jquery';
+// Suppress noisy extension-origin errors (e.g. background-redux-new.js)
+// These errors come from browser extensions running in the page context
+// and are not caused by this site. Prefer disabling the offending
+// extension in the browser, but as a convenience we filter known
+// messages so they don't clutter the console during local dev.
+window.addEventListener('error', function (ev) {
+  try {
+    const msg = ev && ev.message ? ev.message.toString() : '';
+    const file = ev && ev.filename ? ev.filename.toString() : '';
+    if (msg.includes('No tab with id') || file.includes('background-redux-new.js') || file.startsWith('chrome-extension://')) {
+      ev.preventDefault();
+      return true;
+    }
+  } catch (e) {}
+}, true);
+
+window.addEventListener('unhandledrejection', function (ev) {
+  try {
+    const reason = ev && ev.reason ? (ev.reason.message || ev.reason).toString() : '';
+    if (reason.includes('No tab with id')) {
+      ev.preventDefault();
+      return true;
+    }
+  } catch (e) {}
+});
 import { adjustLuminanceToContrast } from '../js/adjustLuminanceToContrast.js'
 import { decreaseOpacityToContrast } from '../js/decreaseOpacityToContrast.js'
 import { setSaturation } from '../js/setSaturation.js'

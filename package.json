@@ -6,13 +6,22 @@
     "webpack": "^5.97.1"
   },
   "scripts": {
-    "build": "webpack --mode production",
-    "watch": "webpack --mode development --watch"
+    "build:html": "node scripts/build-html.js",
+    "build:css": "node scripts/build-css.js",
+    "build": "npm run build:html && npm run build:css && webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "start": "npx serve docs --listen 5000",
+    "serve:local": "node scripts/serve.js",
+    "kill-port-5000": "lsof -ti tcp:5000 | xargs -r kill -9 || true",
+    "deploy": "npm run build && npx gh-pages -d docs"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
     "babel-loader": "^9.2.1",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "serve": "^14.1.1",
+    "gh-pages": "^5.0.0",
+    "sass": "^1.70.0"
   }
 }
