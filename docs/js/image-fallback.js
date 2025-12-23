@@ -22,40 +22,19 @@
     setCache(cache);
   }
 
-  function roboUrl(seed, size){
-    // use robohash with set=identicon to avoid person likeness
-    return `https://robohash.org/${encodeURIComponent(seed)}?set=identicon&size=${size}x${size}`;
+  // Choose a local deterministic avatar from images/avatars based on seed string
+  function hashStringToIndex(s, modulo){
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h % modulo;
   }
 
-  function fetchRobohash(seed, size){
-    const cache = getCache();
-    const key = `${seed}|${size}`;
-    try {
-      const entry = cache[key];
-      if (entry) {
-        // support legacy string entries and new object entries
-        if (typeof entry === 'string') return Promise.resolve(entry);
-        if (entry.data) {
-          // update access time
-          entry.at = Date.now();
-          cache[key] = entry;
-          setCache(cache);
-          return Promise.resolve(entry.data);
-        }
-      }
-    } catch(e){}
-    return fetch(roboUrl(seed, size)).then(function(resp){ return resp.blob(); }).then(function(blob){
-      return new Promise(function(resolve){
-        const reader = new FileReader();
-        reader.onload = function(){
-          // store as object with data and access time
-          cache[key] = { data: reader.result, at: Date.now() };
-          setCache(cache);
-          resolve(reader.result);
-        };
-        reader.readAsDataURL(blob);
-      });
-    }).catch(function(){ return null; });
+  function localAvatarForSeed(seed){
+    var idx = hashStringToIndex(seed, 20) + 1; // 1..20
+    return `images/avatars/avatar-${String(idx).padStart(2,'0')}.svg`;
   }
 
   function initialsFromAlt(alt){
@@ -116,26 +95,19 @@
     // Test the URL quickly; if not loadable within timeout, replace
     const tester = new Image();
     let done = false;
-    const timer = setTimeout(function(){ if (!done) { done = true; handleRobohashFallback(img, seed, size); } }, 1500);
+    const timer = setTimeout(function(){ if (!done) { done = true; handleLocalAvatarFallback(img, seed, size); } }, 1500);
     tester.onload = function(){ if (done) return; done = true; clearTimeout(timer); /* original loaded — nothing to do */ };
-    tester.onerror = function(){ if (done) return; done = true; clearTimeout(timer); handleRobohashFallback(img, seed, size); };
-    try { tester.src = img.src || roboUrl(seed, size); } catch(e){ if (!done) { done = true; clearTimeout(timer); handleRobohashFallback(img, seed, size); } }
+    tester.onerror = function(){ if (done) return; done = true; clearTimeout(timer); handleLocalAvatarFallback(img, seed, size); };
+    try { tester.src = img.src || localAvatarForSeed(seed); } catch(e){ if (!done) { done = true; clearTimeout(timer); handleLocalAvatarFallback(img, seed, size); } }
   }
 
-  function handleRobohashFallback(img, seed, size){
-    fetchRobohash(seed, size).then(function(dataUrl){
-      if (dataUrl) { img.src = dataUrl; return; }
-      // fallback to a repository generic female avatar SVG if available
-      try {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'images/generic-female-avatar.svg', true);
-        xhr.onload = function(){ if (xhr.status >= 200 && xhr.status < 400) { img.src = 'images/generic-female-avatar.svg'; } else {
-            const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'});
-        }};
-        xhr.onerror = function(){ const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'}); };
-        xhr.send();
-      } catch(e){ const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'}); }
-    });
+  function handleLocalAvatarFallback(img, seed, size){
+    try {
+      var avatarPath = localAvatarForSeed(seed);
+      img.src = avatarPath;
+    } catch(e){
+      try { img.src = 'images/generic-female-avatar.svg'; } catch(e2){ const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'}); }
+    }
   }
 
   function replaceBrokenImages(){
@@ -164,24 +136,13 @@
       if (socialThumb.classList && socialThumb.classList.contains('replaced-by-robo')) return;
       // create a robo image labelled 'Friendly robot'
       const size = Math.max(parseInt(socialThumb.getAttribute('width')||320,10), parseInt(socialThumb.getAttribute('height')||180,10), 128);
-      fetchRobohash('Friendly robot', size).then(function(dataUrl){
-        if (dataUrl) {
-          try { socialThumb.dataset.origSrc = socialThumb.src || ''; } catch(e){}
-          socialThumb.src = dataUrl;
-          if (socialThumb.classList) socialThumb.classList.add('replaced-by-robo');
-          // bump cache access time if stored in the structured meta format
-          try {
-            const cache = getCache();
-            const key = 'Friendly robot|' + size;
-            const entry = cache[key];
-            if (entry && typeof entry === 'object') {
-              entry.at = Date.now();
-              cache[key] = entry;
-              setCache(cache);
-            }
-          } catch(e){}
-        }
-      }).catch(function(){});
+      try {
+        const seed = (socialThumb.getAttribute('data-name') || 'Friendly robot');
+        const avatarPath = localAvatarForSeed(seed + '::forced');
+        try { socialThumb.dataset.origSrc = socialThumb.src || ''; } catch(e){}
+        socialThumb.src = avatarPath;
+        if (socialThumb.classList) socialThumb.classList.add('replaced-by-robo');
+      } catch(e){}
     });
     // enforce cache limit
     ensureCacheLimit(50);
