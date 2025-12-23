@@ -33,18 +33,6 @@ header {
   cursor: pointer;
   color: var(--ui-foreground);
   padding: var(--space-xs);
-  margin-left: var(--space-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#themeToggle:hover {
-  color: var(--color-neutralContentStrong);
-}
-
-#themeToggle .material-symbols-rounded {
-  font-size: var(--space-lg);
 }
 
 #themeToggleIcon svg {
@@ -437,6 +425,8 @@ main {
       font-size: var(--fontSize-xs);
       font-family: monospace, monospace;
       background: var(--color-card);
+      /* Foreground for the value label is intentionally left to defaults; runtime
+        per-token foreground variables are available but not forced here. */
       white-space: nowrap;
       display: inline-block;
       z-index: 3;
@@ -958,17 +948,19 @@ main {
 [data-theme='light'] {
   body { background-color: #fff; }
   #palette .swatch .value { background: #fff; }
+  .demo-canvas .card {
+    box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSoft);
+  }
 }
+
 [data-theme='dark'] {
   body { background-color: #000; }
   #palette .swatch .value { background: #000; }
-/* Ensure swatch value labels inside dark-mode containers are legible
-   Override to black text on white background for clarity in dark previews. */
-[data-theme='dark'] .swatch .value,
-[data-theme-mode='dark'] .swatch .value {
-  background: #fff !important;
-  color: #000 !important;
-}
+  /* Ensure legible text in the value chip when rendered on dark themes. */
+  #palette .swatch .value {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+  }
   .demo-canvas .card {
     box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSoft);
   }

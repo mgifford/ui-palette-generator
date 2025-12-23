@@ -14,8 +14,25 @@ export function makeSplitResizable(splitEl, leftEl, splitterEl, rightEl, options
 
   // pointer handling
   let dragging = false, startX = 0, startLeft = 50;
-  splitterEl.addEventListener('pointerdown', function(ev){ if(ev.pointerType==='mouse' && ev.button!==0) return; dragging = true; splitterEl.setPointerCapture(ev.pointerId); startX = ev.clientX; startLeft = parseFloat(splitterEl.getAttribute('aria-valuenow')) || 50; ev.preventDefault(); });
-  window.addEventListener('pointermove', function(ev){ if(!dragging) return; const rect = splitEl.getBoundingClientRect(); const delta = ev.clientX - startX; const percentDelta = (delta / rect.width) * 100; setLeftPercent(startLeft + percentDelta); });
+  splitterEl.addEventListener('pointerdown', function(ev){
+    // debug: log pointerdown to help diagnose blocked pointer events
+    console.debug('splitter pointerdown', { pointerType: ev.pointerType, button: ev.button });
+    if(ev.pointerType==='mouse' && ev.button!==0) return;
+    dragging = true;
+    try { splitterEl.setPointerCapture(ev.pointerId); } catch(e) { /* ignore capture errors */ }
+    startX = ev.clientX;
+    startLeft = parseFloat(splitterEl.getAttribute('aria-valuenow')) || 50;
+    ev.preventDefault();
+  });
+  window.addEventListener('pointermove', function(ev){
+    if(!dragging) return;
+    // debug: log pointermove occasionally to indicate activity
+    if (Math.random() < 0.02) console.debug('splitter pointermove', { clientX: ev.clientX });
+    const rect = splitEl.getBoundingClientRect();
+    const delta = ev.clientX - startX;
+    const percentDelta = (delta / rect.width) * 100;
+    setLeftPercent(startLeft + percentDelta);
+  });
   window.addEventListener('pointerup', function(ev){ if(!dragging) return; dragging = false; try{ splitterEl.releasePointerCapture(ev.pointerId); }catch(e){} });
 
   // keyboard
@@ -35,13 +52,24 @@ document.addEventListener('DOMContentLoaded', function(){
     const left = document.getElementById('paletteLeft');
     const right = document.getElementById('paletteRight');
     const splitter = document.getElementById('paletteSplitter');
-    if (left && right && splitter) makeSplitResizable(paletteSplit, left, splitter, right);
+    if (left && right && splitter) {
+      console.debug('Initializing palette splitter', { paletteSplit, left, right, splitter });
+      // ensure the splitter is on top of nearby content for pointer interactions
+      try { splitter.style.zIndex = '100'; } catch(e){}
+      splitter.setAttribute('data-split-init', 'true');
+      makeSplitResizable(paletteSplit, left, splitter, right);
+    }
   }
   const demoSplit = document.getElementById('demoSplit');
   if (demoSplit) {
     const left = document.getElementById('demoLeft');
     const right = document.getElementById('demoRight');
     const splitter = document.getElementById('demoSplitter');
-    if (left && right && splitter) makeSplitResizable(demoSplit, left, splitter, right);
+    if (left && right && splitter) {
+      console.debug('Initializing demo splitter', { demoSplit, left, right, splitter });
+      try { splitter.style.zIndex = '100'; } catch(e){}
+      splitter.setAttribute('data-split-init', 'true');
+      makeSplitResizable(demoSplit, left, splitter, right);
+    }
   }
 });

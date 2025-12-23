@@ -31,6 +31,48 @@ import { decreaseOpacityToContrast } from '../js/decreaseOpacityToContrast.js'
 import { setSaturation } from '../js/setSaturation.js'
 import { copyCssVariables } from '../js/copyGeneratedColors.js';
 import { initColorPicker } from './colorpicker.js';
+import * as uswds from './uswds.js';
+// Add in-page a11y runner using axe-core from CDN
+function addA11yPanelHandlers() {
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.id === 'runA11y') {
+      runA11yCheck();
+    }
+  });
+}
+
+async function runA11yCheck() {
+  const resultsEl = document.getElementById('a11yResults');
+  if (!resultsEl) return;
+  resultsEl.textContent = 'Running...';
+  try {
+    if (!window.axe) {
+      await new Promise(function(resolve, reject){
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.8.2/axe.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const opts = { runOnly: { type: 'tag', values: ['wcag2aa', 'wcag21aa'] } };
+    const results = await window.axe.run(document, opts);
+    const issues = results.violations || [];
+    if (!issues.length) {
+      resultsEl.innerHTML = '<div style="color:green">No violations found (WCAG 2.1 AA subset).</div>';
+      return;
+    }
+    const rows = issues.map(v=> {
+      return `<div style="border-bottom:1px solid #eee;padding:.5rem"><strong>${v.id}</strong> — ${v.impact || ''}<div style="font-size:.9rem;color:#444;margin-top:.25rem">${v.description}</div><details style="margin-top:.25rem"><summary>Nodes (${v.nodes.length})</summary>${v.nodes.map(n=>`<div style="padding:.25rem;border-top:1px dashed #f0f0f0;margin-top:.25rem"><div style="font-size:.8rem;color:#666">Selector: ${n.target.join(', ')}</div><pre style="white-space:pre-wrap">${escapeHtml(n.failureSummary || n.html || '')}</pre></div>`).join('')}</details></div>`;
+    }).join('');
+    resultsEl.innerHTML = rows;
+  } catch (e) {
+    resultsEl.textContent = 'Error running axe: ' + (e && e.message ? e.message : String(e));
+  }
+}
+
+function escapeHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+addA11yPanelHandlers();
 
 const wcagNonContentContrast = 3;
 const wcagContentContrast = 4.5;
@@ -76,9 +118,96 @@ window.generatePalette = generatePalette;
 
 initializeScopedIds();
 generateRandomColor();
+// Parse any color overrides from the URL hash before generating
+function parseHashToOverrides() {
+  try {
+    const raw = (location.hash || '').replace(/^#/, '');
+    if (!raw) return null;
+    // Split top-level comma-separated pairs (e.g. "colors=light.seed=AA00AA,light.card=FFF,accent=red")
+    const pairs = raw.split(',').map(s=>s.trim()).filter(Boolean);
+    const obj = {};
+    pairs.forEach(function(pair){
+      const kv = pair.split('=');
+      if (kv.length < 2) return;
+      const key = decodeURIComponent(kv[0]);
+      const rest = kv.slice(1).join('=');
+      // If this is the accent shorthand, handle separately
+      if (key.toLowerCase() === 'accent') {
+        const rawAccent = decodeURIComponent(rest || '').trim();
+        if (rawAccent) {
+          // store raw accent for later serialization
+          window.LAST_RAW_ACCENT = rawAccent;
+          // If the accent input exists in the DOM, set it now (normalize will happen in change handler)
+          try {
+            const accInput = document.getElementById('accentColor');
+            if (accInput) {
+              accInput.value = rawAccent;
+              // trigger change so the normalizer runs
+              accInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          } catch(e){}
+        }
+        return;
+      }
+
+      // Otherwise treat as colors entries like theme.token=HEX or token=HEX
+      const left = key;
+      const hex = '#' + rest.replace(/^#/, '').toUpperCase();
+      const parts = left.split('.'); // theme.token or token
+      if (parts.length === 2) {
+        const theme = parts[0];
+        const token = parts[1];
+        obj[theme] = obj[theme] || {};
+        obj[theme][token] = hex;
+      } else if (parts.length === 1) {
+        obj.light = obj.light || {};
+        obj.light[parts[0]] = hex;
+      }
+    });
+    if (Object.keys(obj).length) {
+      try { localStorage.setItem('customColorOverrides', JSON.stringify(obj)); } catch (e) {}
+      window.CUSTOM_COLOR_OVERRIDES = obj;
+      return obj;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function setHashFromOverrides() {
+  try {
+    const obj = window.CUSTOM_COLOR_OVERRIDES || JSON.parse(localStorage.getItem('customColorOverrides') || '{}');
+    const parts = [];
+    Object.keys(obj).forEach(function(theme){
+      const tokens = obj[theme] || {};
+      Object.keys(tokens).forEach(function(token){
+        const hex = (tokens[token] || '').replace(/^#/, '').toUpperCase();
+        if (!hex) return;
+        parts.push(`${encodeURIComponent(theme)}.${encodeURIComponent(token)}=${hex}`);
+      });
+    });
+    // include accent shorthand if available
+    try {
+      const rawAccent = window.LAST_RAW_ACCENT || (document.getElementById('accentColor') && document.getElementById('accentColor').value) || '';
+      if (rawAccent) {
+        // prefer the raw value (named color) if provided, otherwise the hex without '#'
+        const accentValue = (window.LAST_RAW_ACCENT || rawAccent).toString().replace(/^#/, '');
+        parts.push(`accent=${encodeURIComponent(accentValue)}`);
+      }
+    } catch(e) {}
+    if (parts.length) {
+      location.hash = `colors=${parts.join(',')}`;
+    } else {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  } catch (e) {}
+}
+
+parseHashToOverrides();
 generatePalette();
 attachPaletteTransferHandlers();
 initColorPicker();
+// Load USWDS colors for snapping
+uswds.loadUswds().then(()=>{ window.uswds = uswds; }).catch(()=>{});
 
 // Initialize theme from saved preference or prefers-color-scheme
 (function initThemeFromPreference(){
@@ -93,14 +222,24 @@ initColorPicker();
 })();
 
 $('#generateBtn').on('click', function(e) {
+  // If the user checked 'Clear custom overrides', clear them before generating
+  const clear = document.getElementById('clearOverrides');
+  if (clear && clear.checked) {
+    try { window.CUSTOM_COLOR_OVERRIDES = {}; localStorage.removeItem('customColorOverrides'); } catch (e) {}
+    try { history.replaceState(null,'', location.pathname + location.search); } catch(e){}
+  }
   generatePalette();
   e.preventDefault();
 });
 
-$('#copyBtn').on('click', function(e) {
-  copyCssVariables();
-  e.preventDefault();
-});
+// Copy CSS variables button in transfer panel
+const copyCssBtn = document.getElementById('copyCssBtn');
+if (copyCssBtn) {
+  copyCssBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    try { copyCssVariables(); } catch (err) {}
+  });
+}
 
 // Page-level theme toggle (header button)
 function updateThemeToggleUI() {
@@ -475,6 +614,12 @@ window.applyCustomColor = function(theme, tokenId, color) {
     const meta = TOKEN_LOOKUP[tokenId];
     if (!meta) return false;
     setCssColor(theme, meta.id, meta.cssVar, normalized);
+    // persist override so it survives regenerations
+    window.CUSTOM_COLOR_OVERRIDES = window.CUSTOM_COLOR_OVERRIDES || {};
+    window.CUSTOM_COLOR_OVERRIDES[theme] = window.CUSTOM_COLOR_OVERRIDES[theme] || {};
+    window.CUSTOM_COLOR_OVERRIDES[theme][meta.id] = normalized;
+    try { localStorage.setItem('customColorOverrides', JSON.stringify(window.CUSTOM_COLOR_OVERRIDES)); } catch (e) {}
+    try { setHashFromOverrides(); } catch (e) {}
     // update visible labels for scoped swatches and active theme
     setSwatchValues('light', { scopedOnly: true });
     setSwatchValues('dark', { scopedOnly: true });
@@ -483,6 +628,28 @@ window.applyCustomColor = function(theme, tokenId, color) {
     return true;
   } catch (e) { return false; }
 };
+
+function reapplyCustomOverrides() {
+  try {
+    const raw = localStorage.getItem('customColorOverrides');
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    window.CUSTOM_COLOR_OVERRIDES = obj;
+    Object.keys(obj).forEach(function(theme) {
+      const tokens = obj[theme] || {};
+      Object.keys(tokens).forEach(function(tokenId) {
+        const meta = TOKEN_LOOKUP[tokenId];
+        if (meta) {
+          try { setCssColor(theme, meta.id, meta.cssVar, tokens[tokenId]); } catch (e) {}
+        }
+      });
+    });
+    // update visible swatches
+    setSwatchValues('light', { scopedOnly: true });
+    setSwatchValues('dark', { scopedOnly: true });
+    setSwatchValues($('html').attr('data-theme'));
+  } catch (e) {}
+}
 
 function setTransferStatus(message, isError = false) {
   const statusEl = document.getElementById('paletteTransferStatus');
@@ -530,6 +697,8 @@ function generatePalette() {
 
   // Establish light mode seed color
   var lightSeedColor = accentColor;
+  // Remember the raw accent that the user entered so we can include it in the URL hash
+  try { window.LAST_RAW_ACCENT = accentColor; } catch(e) {}
   setCssColor('light', 'seed', '--color-seed', lightSeedColor.toUpperCase());
 
   // Establish light mode background colors
@@ -656,6 +825,9 @@ function generatePalette() {
     // Ensure UI chrome (icons, notes) has sufficient contrast for each theme
     try { computeAndSetUiForegrounds(); } catch (e) {}
 
+    // Reapply any saved custom overrides after generation
+    try { reapplyCustomOverrides(); } catch (e) {}
+
   }
 
   // Compute and set a suitable --ui-foreground for each theme so UI chrome
@@ -709,23 +881,71 @@ function generatePalette() {
         best = chroma.contrast(blackColor, bg) >= chroma.contrast(whiteColor, bg) ? blackColor : whiteColor;
       }
 
-      // Write into the theme style element, replacing previous --ui-foreground rules
+      // Write into the theme style element, replacing previous --ui-foreground
+      // and --value-foreground rules. Also compute a conservative --value-foreground
+      // that has sufficient contrast against the card background.
       try {
         const styleEl = document.head.querySelector(`style[data-theme="${theme}"]`) || createThemeStyle(theme);
         const sheet = styleEl.sheet;
         for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
           const rule = sheet.cssRules[i];
           try {
-            if (rule && rule.cssText && rule.cssText.indexOf('--ui-foreground') !== -1) {
+            if (rule && rule.cssText && (rule.cssText.indexOf('--ui-foreground') !== -1 || rule.cssText.indexOf('--value-foreground') !== -1)) {
               sheet.deleteRule(i);
             }
           } catch (e) {}
         }
+
+        // Insert --ui-foreground
         sheet.insertRule(`[data-theme="${theme}"] { --ui-foreground: ${best}; }`, sheet.cssRules.length);
         sheet.insertRule(`[data-theme-mode="${theme}"] { --ui-foreground: ${best}; }`, sheet.cssRules.length);
+
+        // Compute a value foreground targeted at the card background
+        const cardBg = getSwatchColor(theme, 'card') || bg;
+        const valueCandidates = [
+          getSwatchColor(theme, 'neutralContentStrong'),
+          getSwatchColor(theme, 'accentContentStrong'),
+          getSwatchColor(theme, 'neutralNonContentStrong'),
+          blackColor,
+          whiteColor
+        ].filter(Boolean);
+        let bestVal = null;
+        let bestValContrast = -1;
+        valueCandidates.forEach(function(c) {
+          try {
+            const contrast = chroma.contrast(c, cardBg);
+            if (contrast > bestValContrast) {
+              bestValContrast = contrast;
+              bestVal = c;
+            }
+          } catch (e) {}
+        });
+        if (bestValContrast < wcagContentContrast && bestVal) {
+          const targets = [blackColor, whiteColor];
+          targets.forEach(function(target) {
+            if (bestValContrast >= wcagContentContrast) return;
+            for (let p = 0.1; p <= 1.0; p += 0.1) {
+              try {
+                const mixed = chroma.mix(bestVal, target, p, 'rgb').hex();
+                const contrast = chroma.contrast(mixed, cardBg);
+                if (contrast > bestValContrast) {
+                  bestValContrast = contrast;
+                  bestVal = mixed;
+                }
+                if (bestValContrast >= wcagContentContrast) break;
+              } catch (e) {}
+            }
+          });
+        }
+        if (!bestVal) {
+          bestVal = chroma.contrast(blackColor, cardBg) >= chroma.contrast(whiteColor, cardBg) ? blackColor : whiteColor;
+        }
+
+        sheet.insertRule(`[data-theme="${theme}"] { --value-foreground: ${bestVal}; }`, sheet.cssRules.length);
+        sheet.insertRule(`[data-theme-mode="${theme}"] { --value-foreground: ${bestVal}; }`, sheet.cssRules.length);
       } catch (e) {
-        // If stylesheet manipulation fails, set on root as a safe fallback
         try { root.style.setProperty('--ui-foreground', best); } catch (err) {}
+        try { root.style.setProperty('--value-foreground', best); } catch (err) {}
       }
     });
   }

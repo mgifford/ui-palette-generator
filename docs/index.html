@@ -48,6 +48,11 @@
 <body>
 
   <div class="container">
+    <!-- Accessibility panel injected for Sa11y/axe checks -->
+    <aside id="a11yPanel" aria-hidden="false" style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;"><strong>Accessibility</strong><button id="runA11y" class="btn" style="margin-left:auto">Run check</button></div>
+      <div id="a11yResults" style="max-height:260px;overflow:auto;font-size:0.85rem;color:#222"></div>
+    </aside>
 
     <img src="images/social_media_thumbnail.jpg" alt="Social media thumbnail" class="hidden-social-media-thumbnail" />
 
@@ -125,8 +130,10 @@
       <input type="text" id="darkModeSaturation" value="0.666">
     </div>
 
-    <button id="generateBtn" class="btn">Generate</button>
-    <button id="copyBtn" class="btn">Copy</button>
+    <div style="display:flex;gap:.5rem;align-items:center">
+      <button id="generateBtn" class="btn">Generate</button>
+      <label style="display:inline-flex;align-items:center;gap:.5rem;margin-left:.5rem"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
+    </div>
 
   </form>
 
@@ -819,7 +826,10 @@
             <article class="transfer-card">
               <h3>Export current palette</h3>
               <p>Downloads a CSV containing both themes plus category notes.</p>
-              <button id="exportPaletteCsv" class="btn">Download CSV</button>
+              <div style="display:flex;gap:.5rem;align-items:center">
+                <button id="exportPaletteCsv" class="btn">Download CSV</button>
+                <button id="copyCssBtn" class="btn">Copy CSS variables</button>
+              </div>
             </article>
             <article class="transfer-card">
               <h3>Import a palette</h3>
