@@ -49,8 +49,10 @@
   }
 
   function handleImage(img){
+    // avoid re-handling
+    if (img.dataset.fallbackHandled) return;
+    img.dataset.fallbackHandled = '1';
     if (img.classList.contains('avatar')) {
-      // generate initials avatar using alt text
       const initials = initialsFromAlt(img.getAttribute('alt') || '');
       const colors = themeColors();
       const w = img.getAttribute('width') || 64;
@@ -59,9 +61,19 @@
       return;
     }
 
-    // Try to use robohash based on filename or alt; fallback to generated svg
     const seed = img.getAttribute('alt') || img.getAttribute('data-name') || img.getAttribute('src') || 'placeholder';
     const size = Math.max(parseInt(img.getAttribute('width')||64,10), parseInt(img.getAttribute('height')||64,10), 64);
+
+    // Test the URL quickly; if not loadable within timeout, replace
+    const tester = new Image();
+    let done = false;
+    const timer = setTimeout(function(){ if (!done) { done = true; handleRobohashFallback(img, seed, size); } }, 1500);
+    tester.onload = function(){ if (done) return; done = true; clearTimeout(timer); /* original loaded — nothing to do */ };
+    tester.onerror = function(){ if (done) return; done = true; clearTimeout(timer); handleRobohashFallback(img, seed, size); };
+    try { tester.src = img.src || roboUrl(seed, size); } catch(e){ if (!done) { done = true; clearTimeout(timer); handleRobohashFallback(img, seed, size); } }
+  }
+
+  function handleRobohashFallback(img, seed, size){
     fetchRobohash(seed, size).then(function(dataUrl){
       if (dataUrl) img.src = dataUrl;
       else {

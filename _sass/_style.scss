@@ -140,6 +140,8 @@ form {
   }
   .form-row {
     @include flex-row(var(--space-xs));
+    container-type: inline-size;
+    -webkit-container-type: inline-size;
   }
   .or {
     @include flex-row(var(--space-md));
@@ -828,9 +830,27 @@ main {
         &:hover {
           background-color: var(--color-neutralNonContentSoft);
         }
+        transition: background 150ms ease, color 150ms ease, transform 120ms ease;
+        &:hover { transform: translateY(-1px); }
+        &:active { transform: translateY(0); }
+        .material-symbols-rounded { color: var(--color-accentContentStrong); }
       }
       &:last-child {
         border: none;
+      }
+    }
+    /* Make the select-style button appear dropdown-like */
+    .btn-select {
+      position: relative;
+      padding-right: calc(var(--space-md) + var(--space-sm));
+      &:after {
+        content: '\25BE';
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--color-neutralContentSubdued);
+        font-size: .75rem;
       }
     }
   }
@@ -882,6 +902,21 @@ main {
           }
         }
       }
+    }
+  }
+
+  @container (max-width: 100px) {
+    .form-row {
+      display: block !important;
+    }
+    .form-row input[type=text], .form-row input[type=email], .form-row input[type=password] {
+      display: block;
+      width: 100%;
+      margin-bottom: var(--space-xs);
+    }
+    .form-row .btn {
+      display: block;
+      width: 100%;
     }
   }
 
