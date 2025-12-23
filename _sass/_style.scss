@@ -1,6 +1,8 @@
 :root {
   /* default UI foreground; will be adjusted at runtime */
   --ui-foreground: #3a3a3a;
+  /* Max width for the main container; easy to override */
+  --container-max-width: 2100px;
 }
 
 body {
@@ -15,7 +17,7 @@ body {
 
 .container {
   @include flex-col(var(--space-xl));
-  max-width: 1400px;
+  max-width: var(--container-max-width, 2100px);
   margin: 0 auto;
 }
 
