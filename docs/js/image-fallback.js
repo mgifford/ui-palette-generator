@@ -173,6 +173,20 @@
   }
 
   document.addEventListener('DOMContentLoaded', function(){
+    // generate per-theme random robot seeds so light/dark use different avatars
+    var randomSeeds = { light: null, dark: null };
+    function makeSeed(prefix){ return prefix + '::' + Math.random().toString(36).slice(2,8); }
+    // pre-scan and assign randomized seeds for elements using the Random Robot marker
+    Array.from(document.querySelectorAll('[data-force-robo]')).forEach(function(el){
+      var dn = el.getAttribute('data-name') || '';
+      if (dn.indexOf('Random Robot::') === 0) {
+        // determine theme suffix in attribute (Random Robot::light or ::dark)
+        var parts = dn.split('::');
+        var theme = parts[1] || 'light';
+        if (!randomSeeds[theme]) randomSeeds[theme] = makeSeed('RandomRobot-' + theme);
+        el.setAttribute('data-name', randomSeeds[theme]);
+      }
+    });
     replaceBrokenImages();
     const mo = new MutationObserver(function(){ replaceBrokenImages(); });
     mo.observe(document.body, { childList: true, subtree: true });
