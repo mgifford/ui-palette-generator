@@ -1,6 +1,27 @@
 // Image fallback: use Robohash placeholders (cached) and generate avatar SVGs from alt text for .avatar images
 (function(){
-  const CACHE_KEY = 'ui_palette_robo_cache_v1';
+  const CACHE_VERSION = 2;
+  const CACHE_KEY = 'ui_palette_avatar_cache_v' + CACHE_VERSION;
+
+  // Clear legacy cache keys when version increments so a hard refresh will clear old data
+  function clearLegacyCachesIfNeeded(){
+    try {
+      var seenVersion = localStorage.getItem('ui_palette_cache_version');
+      if (String(seenVersion) === String(CACHE_VERSION)) return;
+      // remove any old keys that match previous naming patterns
+      var removes = [];
+      for (var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if (!k) continue;
+        if (k.indexOf('ui_palette_robo_cache') === 0 || k.indexOf('ui_palette_avatar_cache') === 0 || k.indexOf('ui_palette_robo') === 0) removes.push(k);
+      }
+      removes.forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
+      localStorage.setItem('ui_palette_cache_version', String(CACHE_VERSION));
+    } catch(e){}
+  }
+
+  clearLegacyCachesIfNeeded();
+
   function getCache(){
     try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch(e){ return {}; }
   }
