@@ -382,6 +382,57 @@ function primeSwatchMetadata() {
   });
 }
 
+// Highlight demo elements that match the swatch color on hover/focus
+function installSwatchHighlighting() {
+  function normalizeColor(str) {
+    try { return chroma(str).hex().toUpperCase(); } catch (e) { return ''; }
+  }
+
+  function findMatchingElements(panel, targetHex) {
+    const matches = [];
+    if (!panel) return matches;
+    // search for elements whose computed background-color or color matches targetHex
+    const candidates = panel.querySelectorAll('*');
+    candidates.forEach(function(el) {
+      try {
+        const cs = window.getComputedStyle(el);
+        const bg = cs.getPropertyValue('background-color');
+        const fg = cs.getPropertyValue('color');
+        if (bg && normalizeColor(bg) === targetHex) matches.push(el);
+        else if (fg && normalizeColor(fg) === targetHex) matches.push(el);
+      } catch (e) {}
+    });
+    return matches;
+  }
+
+  function applyHighlight(swatchEl, add) {
+    const parentTheme = getThemeModeFromParent(swatchEl) || $('html').attr('data-theme');
+    // find the demo panel corresponding to the theme
+    const panel = document.querySelector(`.demo-panel[data-theme-mode="${parentTheme}"]`);
+    const colorAttr = swatchEl.getAttribute(`data-${parentTheme}-color`) || swatchEl.getAttribute('data-light-color') || swatchEl.getAttribute('data-dark-color') || '';
+    const targetHex = normalizeColor(colorAttr);
+    if (!targetHex) return;
+    const elements = findMatchingElements(panel, targetHex);
+    elements.forEach(function(el){
+      if (add) el.classList.add('palette-highlight'); else el.classList.remove('palette-highlight');
+    });
+  }
+
+  document.querySelectorAll('.swatch').forEach(function(s){
+    s.setAttribute('tabindex', '0');
+    s.addEventListener('mouseenter', function(){ applyHighlight(s, true); });
+    s.addEventListener('mouseleave', function(){ applyHighlight(s, false); });
+    s.addEventListener('focus', function(){ applyHighlight(s, true); });
+    s.addEventListener('blur', function(){ applyHighlight(s, false); });
+  });
+}
+
+// Install highlighting when DOM is ready
+document.addEventListener('DOMContentLoaded', function(){
+  primeSwatchMetadata();
+  installSwatchHighlighting();
+});
+
 function dedupeIdsByTheme() {
   const elementsById = {};
   document.querySelectorAll('[id]').forEach(function (element) {

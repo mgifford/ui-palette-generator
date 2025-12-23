@@ -407,6 +407,18 @@ main {
     }
   }
 
+  /* Highlight state for demo elements when a swatch is hovered/focused */
+  .palette-highlight {
+    outline: 3px solid color-mix(in oklab, var(--color-accentNonContentStrong), transparent 40%);
+    outline-offset: 4px;
+    transition: outline 180ms ease-in-out, box-shadow 180ms ease-in-out;
+  }
+
+  /* Make swatches keyboard focusable and visible */
+  .swatch:focus {
+    box-shadow: 0 0 0 3px var(--color-accentNonContentSubdued);
+  }
+
   .row {
     @include flex-row(var(--space-xs));
     > * {
