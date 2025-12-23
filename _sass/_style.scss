@@ -431,13 +431,13 @@ main {
     position: relative;
     .value {
       @include border-radius("sm");
-      color: var(--color-neutralContentStrong);
+      color: var(--ui-foreground);
       font-size: var(--fontSize-sm);
       padding: 0 var(--space-xs);
       box-shadow: 0 0 0 1px var(--color-neutralNonContentSoft);
       font-size: var(--fontSize-xs);
       font-family: monospace, monospace;
-      background: #fff;
+      background: var(--color-card);
       white-space: nowrap;
       display: inline-block;
       z-index: 3;

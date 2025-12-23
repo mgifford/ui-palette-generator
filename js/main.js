@@ -293,10 +293,21 @@ function setSwatchValues(theme, options = {}) {
 
 function setCssColor(theme, swatchId, cssVariable, color) {
   const styleElement = document.head.querySelector(`style[data-theme="${theme}"]`) || createThemeStyle(theme);
-  styleElement.sheet.insertRule(
-    `[data-theme="${theme}"] { ${cssVariable}: ${color}; }`,
-    styleElement.sheet.cssRules.length
-  ); // Declare CSS variables in head's style element
+  // Declare CSS variables scoped to both page-level theme attribute and local data-theme-mode parents
+  try {
+    styleElement.sheet.insertRule(
+      `[data-theme="${theme}"] { ${cssVariable}: ${color}; }`,
+      styleElement.sheet.cssRules.length
+    );
+    styleElement.sheet.insertRule(
+      `[data-theme-mode="${theme}"] { ${cssVariable}: ${color}; }`,
+      styleElement.sheet.cssRules.length
+    );
+  } catch (e) {
+    // Fallback: set on root
+    try { root.style.setProperty(cssVariable.replace('--', '--ui-') || cssVariable, color); } catch (err) {}
+    try { root.style.setProperty(cssVariable, color); } catch (err) {}
+  }
   const swatches = document.querySelectorAll(`.swatch[data-swatch-id="${swatchId}"]`);
   swatches.forEach(function(swatch) {
     const parentTheme = getThemeModeFromParent(swatch);
@@ -694,6 +705,7 @@ function generatePalette() {
           } catch (e) {}
         }
         sheet.insertRule(`[data-theme="${theme}"] { --ui-foreground: ${best}; }`, sheet.cssRules.length);
+        sheet.insertRule(`[data-theme-mode="${theme}"] { --ui-foreground: ${best}; }`, sheet.cssRules.length);
       } catch (e) {
         // If stylesheet manipulation fails, set on root as a safe fallback
         try { root.style.setProperty('--ui-foreground', best); } catch (err) {}
