@@ -188,6 +188,27 @@
       }
     });
     replaceBrokenImages();
+    // Ensure alert icons render even if the Material Symbols font isn't available
+    function replaceAlertIcons(){
+      document.querySelectorAll('.alert .material-symbols-rounded').forEach(function(el){
+        try{
+          var txt = (el.textContent || '').trim().toLowerCase();
+          if (!txt) return;
+          var svg = '';
+          if (txt === 'info') {
+            svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='1.25rem' height='1.25rem' aria-hidden='true' focusable='false'><circle cx='12' cy='12' r='10' fill='none' stroke='currentColor' stroke-width='1.5'/><rect x='11' y='10' width='2' height='5' fill='currentColor'/><circle cx='12' cy='7' r='1' fill='currentColor'/></svg>";
+          } else if (txt === 'warning' || txt === 'error') {
+            svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='1.25rem' height='1.25rem' aria-hidden='true' focusable='false'><path fill='currentColor' d='M1 21h22L12 2 1 21z'/><rect x='11' y='10' width='2' height='5' fill='white'/><rect x='11' y='16' width='2' height='2' fill='white'/></svg>";
+          }
+          if (svg) {
+            el.innerHTML = svg;
+            el.setAttribute('role','img');
+            el.setAttribute('aria-label', txt);
+          }
+        }catch(e){}
+      });
+    }
+    replaceAlertIcons();
     const mo = new MutationObserver(function(){ replaceBrokenImages(); });
     mo.observe(document.body, { childList: true, subtree: true });
   });
