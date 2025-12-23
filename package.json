@@ -9,6 +9,7 @@
     "build:html": "node scripts/build-html.js",
     "build:css": "node scripts/build-css.js",
     "build": "npm run build:html && npm run build:css && webpack --mode production",
+    "a11y": "npx sa11y http://localhost:5000 --format json --output reports/sa11y.json",
     "watch": "webpack --mode development --watch",
     "start": "npx serve docs --listen 5000",
     "serve:local": "node scripts/serve.js",
