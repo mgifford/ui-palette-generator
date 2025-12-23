@@ -100,6 +100,15 @@ const TOKEN_CATALOG = [
   return { ...token, cssVar: `--color-${token.id}` };
 });
 
+// Add semantic/policy tokens that are used by the demo but not part
+// of the technical token generation above. These will map to sensible
+// generated colors so the demo reflects the palette fully.
+['primary','secondary','accent','background','surface','error','warning','info','success'].forEach(function(id){
+  TOKEN_CATALOG.push({ id: id, label: id.charAt(0).toUpperCase() + id.slice(1), category: id === 'background' || id === 'surface' ? 'background' : 'dominant', usage: id });
+});
+// ensure cssVar is present on the newly pushed tokens
+TOKEN_CATALOG.forEach(function(token){ token.cssVar = token.cssVar || `--color-${token.id}`; });
+
 const TOKEN_LOOKUP = TOKEN_CATALOG.reduce(function(acc, token) {
   acc[token.id] = token;
   return acc;
@@ -829,6 +838,32 @@ function generatePalette() {
     try { reapplyCustomOverrides(); } catch (e) {}
 
   }
+
+    // Map semantic tokens so demo UI can surface them (light + dark)
+    try {
+      // Light theme mappings
+      setCssColor('light', 'primary', '--color-primary', lightAccentContentStrongColor || lightAccentContentBaselineColor || lightAccentNonContentStrongColor);
+      setCssColor('light', 'secondary', '--color-secondary', lightNeutralContentStrongColor || lightNeutralNonContentStrongColor);
+      setCssColor('light', 'accent', '--color-accent', lightAccentContentBaselineColor || lightAccentNonContentBaselineColor);
+      setCssColor('light', 'background', '--color-background', lightCanvasColor || lightCardColor);
+      setCssColor('light', 'surface', '--color-surface', lightCardColor || lightCanvasColor);
+      // semantic states (use accent shades or contrast mixes)
+      setCssColor('light', 'error', '--color-error', '#D32F2F');
+      setCssColor('light', 'warning', '--color-warning', '#FBC02D');
+      setCssColor('light', 'info', '--color-info', '#1976D2');
+      setCssColor('light', 'success', '--color-success', '#388E3C');
+
+      // Dark theme mappings (derive sensible counterparts)
+      setCssColor('dark', 'primary', '--color-primary', darkAccentContentStrongColor || darkAccentContentBaselineColor || darkAccentNonContentStrongColor);
+      setCssColor('dark', 'secondary', '--color-secondary', darkNeutralContentStrongColor || darkNeutralNonContentStrongColor);
+      setCssColor('dark', 'accent', '--color-accent', darkAccentContentBaselineColor || darkAccentNonContentBaselineColor);
+      setCssColor('dark', 'background', '--color-background', darkCanvasColor || darkCardColor);
+      setCssColor('dark', 'surface', '--color-surface', darkCardColor || darkCanvasColor);
+      setCssColor('dark', 'error', '--color-error', '#EF5350');
+      setCssColor('dark', 'warning', '--color-warning', '#FDD835');
+      setCssColor('dark', 'info', '--color-info', '#64B5F6');
+      setCssColor('dark', 'success', '--color-success', '#66BB6A');
+    } catch (e) {}
 
   // Compute and set a suitable --ui-foreground for each theme so UI chrome
   // (icons, small text in notes, etc.) meets an acceptable contrast ratio.
