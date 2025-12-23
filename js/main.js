@@ -385,21 +385,49 @@ function primeSwatchMetadata() {
 // Highlight demo elements that match the swatch color on hover/focus
 function installSwatchHighlighting() {
   function normalizeColor(str) {
-    try { return chroma(str).hex().toUpperCase(); } catch (e) { return ''; }
+    try { return chroma(str); } catch (e) { return null; }
   }
 
-  function findMatchingElements(panel, targetHex) {
+  function colorDistance(a, b) {
+    try {
+      return chroma.distance(a, b, 'lab');
+    } catch (e) { return Infinity; }
+  }
+
+  function extractBoxShadowColors(boxShadow) {
+    if (!boxShadow) return [];
+    // crude extraction of color-like segments from box-shadow
+    const parts = boxShadow.split(',');
+    const colors = [];
+    parts.forEach(function(p){
+      const m = p.match(/(rgba?\([^\)]+\)|#[0-9A-Fa-f]{3,8}|hsla?\([^\)]+\))/);
+      if (m && m[1]) colors.push(m[1]);
+    });
+    return colors;
+  }
+
+  function findMatchingElements(panel, targetChroma) {
     const matches = [];
-    if (!panel) return matches;
-    // search for elements whose computed background-color or color matches targetHex
+    if (!panel || !targetChroma) return matches;
     const candidates = panel.querySelectorAll('*');
     candidates.forEach(function(el) {
       try {
         const cs = window.getComputedStyle(el);
-        const bg = cs.getPropertyValue('background-color');
-        const fg = cs.getPropertyValue('color');
-        if (bg && normalizeColor(bg) === targetHex) matches.push(el);
-        else if (fg && normalizeColor(fg) === targetHex) matches.push(el);
+        const props = [cs.getPropertyValue('background-color'), cs.getPropertyValue('color'), cs.getPropertyValue('border-color')];
+        // include box-shadow colors
+        const shadowColors = extractBoxShadowColors(cs.getPropertyValue('box-shadow'));
+        shadowColors.forEach(function(sc){ props.push(sc); });
+        for (let i = 0; i < props.length; i += 1) {
+          const val = props[i];
+          if (!val) continue;
+          const cand = normalizeColor(val);
+          if (!cand) continue;
+          const dist = colorDistance(cand, targetChroma);
+          if (dist <= 6) { // threshold for perceptual similarity
+            matches.push(el);
+            break;
+          }
+        }
       } catch (e) {}
     });
     return matches;
