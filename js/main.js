@@ -93,8 +93,16 @@ function updateThemeToggleUI() {
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
   const isDark = theme === 'dark';
   btn.setAttribute('aria-pressed', String(isDark));
-  // show the opposite symbol to indicate the action
-  icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+  // show the opposite symbol as an inline SVG to ensure visibility
+  icon.innerHTML = isDark ? getSunSvg() : getMoonSvg();
+}
+
+function getSunSvg(){
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4v2M12 18v2M4 12h2M18 12h2M5.6 5.6l1.4 1.4M16.999 16.999l1.414 1.414M5.6 18.4l1.4-1.4M16.999 7.001l1.414-1.414M12 8a4 4 0 100 8 4 4 0 000-8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function getMoonSvg(){
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
