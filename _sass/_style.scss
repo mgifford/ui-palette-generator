@@ -431,7 +431,6 @@ main {
     position: relative;
     .value {
       @include border-radius("sm");
-      color: var(--ui-foreground);
       font-size: var(--fontSize-sm);
       padding: 0 var(--space-xs);
       box-shadow: 0 0 0 1px var(--color-neutralNonContentSoft);
