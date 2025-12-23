@@ -1,4 +1,8 @@
-<div class="swatch" id="{{ include.id }}">
+{% assign swatch_id = include.id %}
+{% if include.scope %}
+  {% assign swatch_id = include.id | append: '-' | append: include.scope %}
+{% endif %}
+<div class="swatch" id="{{ swatch_id }}" data-swatch-id="{{ include.id }}">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>

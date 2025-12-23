@@ -44,6 +44,7 @@ function generateRandomColor() {
   $('#accentColor').parent().find('.mini-swatch').css('background-color', randomColor);
 }
 
+initializeScopedIds();
 generateRandomColor();
 generatePalette();
 
@@ -91,8 +92,67 @@ $('#accentColor').on('change', function(e) {
 
 // Determine whether a swatch is explicitly scoped to a light or dark container
 function getThemeModeFromParent(element) {
-  const container = element.closest('[data-theme-mode]');
-  return container ? container.getAttribute('data-theme-mode') : null;
+  const attrScoped = element.closest('[data-theme-mode]');
+  if (attrScoped) {
+    return attrScoped.getAttribute('data-theme-mode');
+  }
+
+  const idScoped = element.closest('[id$="-light"], [id$="-dark"]');
+  if (idScoped && typeof idScoped.id === 'string') {
+    if (idScoped.id.endsWith('-light')) return 'light';
+    if (idScoped.id.endsWith('-dark')) return 'dark';
+  }
+
+  return null;
+}
+
+function primeSwatchMetadata() {
+  document.querySelectorAll('.swatch').forEach(function (swatch) {
+    if (!swatch.dataset.swatchId) {
+      const fallbackId = swatch.getAttribute('id');
+      if (fallbackId) {
+        swatch.dataset.swatchId = fallbackId;
+      }
+    }
+  });
+}
+
+function dedupeIdsByTheme() {
+  const elementsById = {};
+  document.querySelectorAll('[id]').forEach(function (element) {
+    const existingId = element.getAttribute('id');
+    if (!existingId) return;
+    if (!elementsById[existingId]) {
+      elementsById[existingId] = [];
+    }
+    elementsById[existingId].push(element);
+  });
+
+  Object.keys(elementsById).forEach(function (id) {
+    const elements = elementsById[id];
+    if (elements.length < 2) {
+      return;
+    }
+    const counters = {};
+    elements.forEach(function (element) {
+      const theme = getThemeModeFromParent(element) || 'global';
+      const counterKey = `${id}::${theme}`;
+      counters[counterKey] = (counters[counterKey] || 0) + 1;
+      const suffixParts = [];
+      if (theme !== 'global') {
+        suffixParts.push(theme);
+      }
+      suffixParts.push(counters[counterKey]);
+      const dedupedId = `${id}-${suffixParts.join('-')}`;
+      element.setAttribute('data-shared-id', id);
+      element.id = dedupedId;
+    });
+  });
+}
+
+function initializeScopedIds() {
+  primeSwatchMetadata();
+  dedupeIdsByTheme();
 }
 
 // Re-displ
@@ -120,7 +180,7 @@ function setCssColor(theme, swatchId, cssVariable, color) {
     `[data-theme="${theme}"] { ${cssVariable}: ${color}; }`,
     styleElement.sheet.cssRules.length
   ); // Declare CSS variables in head's style element
-  const swatches = document.querySelectorAll(`.swatch[id="${swatchId}"]`);
+  const swatches = document.querySelectorAll(`.swatch[data-swatch-id="${swatchId}"]`);
   swatches.forEach(function(swatch) {
     const parentTheme = getThemeModeFromParent(swatch);
     if (parentTheme && parentTheme !== theme) {
