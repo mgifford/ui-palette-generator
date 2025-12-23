@@ -963,6 +963,13 @@ main {
 [data-theme='dark'] {
   body { background-color: #000; }
   #palette .swatch .value { background: #000; }
+/* Ensure swatch value labels inside dark-mode containers are legible
+   Override to black text on white background for clarity in dark previews. */
+[data-theme='dark'] .swatch .value,
+[data-theme-mode='dark'] .swatch .value {
+  background: #fff !important;
+  color: #000 !important;
+}
   .demo-canvas .card {
     box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSoft);
   }
