@@ -1,0 +1,226 @@
+:root {
+    /* Palette color variables for light mode */
+    --color-seed: #E5F6CA;
+    --color-canvas: #E5F6CA;
+    --color-card: #F0FADF;
+    --color-accentNonContentBaseline: #8A947A;
+    --color-accentNonContentSoft: rgba(103, 111, 91, 0.084);
+    --color-accentNonContentSubdued: rgba(103, 111, 91, 0.749);
+    --color-accentNonContentStrong: #676F5B;
+    --color-accentContentBaseline: #6D7560;
+    --color-accentContentSubdued: rgba(77, 83, 68, 0.804);
+    --color-accentContentStrong: #4D5344;
+    --color-neutralNonContentSoft: rgba(49, 50, 48, 0.059);
+    --color-neutralNonContentSubdued: rgba(49, 50, 48, 0.526);
+    --color-neutralNonContentStrong: #313230;
+    --color-neutralContentSubdued: rgba(35, 36, 34, 0.631);
+    --color-neutralContentStrong: #232422;
+
+    /* Palette color variables for dark mode */
+    --color-seed-dark: #232422;
+    --color-canvas-dark: #232422;
+    --color-card-dark: #313230;
+    --color-accentNonContentBaseline-dark: #6D7560;
+    --color-accentNonContentSoft-dark: rgba(77, 83, 68, 0.084);
+    --color-accentNonContentSubdued-dark: rgba(77, 83, 68, 0.749);
+    --color-accentNonContentStrong-dark: #4D5344;
+    --color-accentContentBaseline-dark: #8A947A;
+    --color-accentContentSubdued-dark: rgba(103, 111, 91, 0.804);
+    --color-accentContentStrong-dark: #676F5B;
+    --color-neutralNonContentSoft-dark: rgba(35, 36, 34, 0.059);
+    --color-neutralNonContentSubdued-dark: rgba(35, 36, 34, 0.526);
+    --color-neutralNonContentStrong-dark: #232422;
+    --color-neutralContentSubdued-dark: rgba(49, 50, 48, 0.631);
+    --color-neutralContentStrong-dark: #313230;
+}
+
+[data-theme="dark"] {
+  --color-seed: var(--color-seed-dark);
+  --color-canvas: var(--color-canvas-dark);
+  --color-card: var(--color-card-dark);
+  --color-accentNonContentBaseline: var(--color-accentNonContentBaseline-dark);
+  --color-accentNonContentSoft: var(--color-accentNonContentSoft-dark);
+  --color-accentNonContentSubdued: var(--color-accentNonContentSubdued-dark);
+  --color-accentNonContentStrong: var(--color-accentNonContentStrong-dark);
+  --color-accentContentBaseline: var(--color-accentContentBaseline-dark);
+  --color-accentContentSubdued: var(--color-accentContentSubdued-dark);
+  --color-accentContentStrong: var(--color-accentContentStrong-dark);
+  --color-neutralNonContentSoft: var(--color-neutralNonContentSoft-dark);
+  --color-neutralNonContentSubdued: var(--color-neutralNonContentSubdued-dark);
+  --color-neutralNonContentStrong: var(--color-neutralNonContentStrong-dark);
+  --color-neutralContentSubdued: var(--color-neutralContentSubdued-dark);
+  --color-neutralContentStrong: var(--color-neutralContentStrong-dark);
+}
+  --seed: #BA7542;
+
+  /* Palette color variables for demo swatches */
+  /* Light mode */
+  --color-primary: #BA7542;
+  --color-secondary: #4CAF50;
+  --color-accent: #FF9800;
+  --color-background: #FFFFFF;
+  --color-surface: #F5F5F5;
+  --color-error: #F44336;
+  --color-warning: #FFEB3B;
+  --color-info: #2196F3;
+  --color-success: #4CAF50;
+
+  /* Dark mode (override in .app-dark or [data-theme=dark]) */
+  --color-primary-dark: #BA7542;
+  --color-secondary-dark: #4CAF50;
+  --color-accent-dark: #FF9800;
+  --color-background-dark: #121212;
+  --color-surface-dark: #1E1E1E;
+  --color-error-dark: #F44336;
+  --color-warning-dark: #FFEB3B;
+  --color-info-dark: #2196F3;
+  --color-success-dark: #4CAF50;
+
+  /* Demo tokens */
+  --action-light: oklch(from var(--seed) 0.60 0.14 30);
+  --surface-light: oklch(from var(--seed) 0.98 0 0);
+  --text-light: oklch(from var(--seed) 0.20 0.05 30);
+
+  --action-dark: oklch(from var(--seed) 0.70 calc(0.14 * 0.67) 30);
+  --surface-dark: oklch(from var(--seed) 0.12 0 0);
+  --text-dark: oklch(from var(--seed) 0.92 0.02 30);
+}
+
+[data-theme="dark"] {
+  --color-primary: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary-dark);
+  --color-accent: var(--color-accent-dark);
+  --color-background: var(--color-background-dark);
+  --color-surface: var(--color-surface-dark);
+  --color-error: var(--color-error-dark);
+  --color-warning: var(--color-warning-dark);
+  --color-info: var(--color-info-dark);
+  --color-success: var(--color-success-dark);
+}
+
+.light-scope {
+  --btn-bg: var(--action-light);
+  --surface-bg: var(--surface-light);
+  --text-color: var(--text-light);
+}
+
+.dark-scope {
+  --btn-bg: var(--action-dark);
+  --surface-bg: var(--surface-dark);
+  --text-color: var(--text-dark);
+}
+
+
+.demo-card {
+  background: var(--surface-bg);
+  color: var(--text-color);
+  border-radius: 1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 2em 1.5em;
+  margin: 2em 1em;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.color-swatch {
+  width: 100%;
+  max-width: 220px;
+  height: 48px;
+  border-radius: 8px;
+  margin: 0.5em 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  border: 1px solid #eee;
+  background: var(--swatch-bg, #f0f0f0);
+}
+
+.color-swatch .color-value {
+  font-size: 1em;
+  font-family: monospace;
+  margin-left: 1em;
+  color: #222;
+}
+
+.demo-card .button {
+  background: var(--btn-bg);
+  color: #fff;
+  border: none;
+  padding: 0.75em 1.5em;
+  border-radius: 0.5em;
+  font-size: 1.1em;
+  margin-bottom: 1em;
+  cursor: pointer;
+}
+
+.demo-card a {
+  color: var(--btn-bg);
+  text-decoration: underline;
+  margin-bottom: 1em;
+}
+
+.demo-card input[type='text'] {
+  background: var(--surface-bg);
+  color: var(--text-color);
+  border: 1px solid var(--btn-bg);
+  border-radius: 0.4em;
+  padding: 0.5em 1em;
+  margin-bottom: 1em;
+}
+
+.app-light .sidebar {
+  background: #fff;
+  color: #222;
+}
+
+.app-dark .sidebar {
+  background: #222;
+  color: #eee;
+}
+
+.app-dark h2, .app-dark label, .app-dark p {
+  color: #eee;
+}
+
+.preview-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+@media (max-width: 900px) {
+  .preview-wrapper {
+    grid-template-columns: 1fr;
+    gap: 1.5em;
+    max-width: 100vw;
+  }
+  .demo-card {
+    margin: 1em 0;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.card, .form-group, .btn, input, .menu, .nav-tabs, .avatars, .tag, .alert, .toast {
+  font-size: 1rem;
+  touch-action: manipulation;
+}
+
+.button, .btn {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.1em;
+}
+
+input, button {
+  font-size: 1em;
+  padding: 0.5em 1em;
+  border-radius: 0.4em;
+}

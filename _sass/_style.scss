@@ -235,6 +235,29 @@ main {
   @include flex-col(var(--space-xl));
 }
 
+.section-hint {
+  font-size: var(--fontSize-sm);
+  color: var(--color-neutralContentSubdued);
+  line-height: 1.5;
+  margin: 0 0 var(--space-md);
+}
+
+.panel-heading {
+  margin: 0 0 var(--space-md);
+  h3 {
+    margin: 0;
+    font-size: var(--fontSize-h3);
+    color: var(--color-neutralContentStrong);
+  }
+}
+
+.panel-note {
+  font-size: var(--fontSize-sm);
+  color: var(--color-neutralContentSubdued);
+  line-height: 1.5;
+  margin: var(--space-xs) 0 0;
+}
+
 #palette {
 
   @include flex-col(var(--space-md));
@@ -292,6 +315,20 @@ main {
     @include border-radius("md");
     box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSubdued);
     padding: var(--space-md);
+  }
+
+  .palette-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .palette-panel {
+    @include flex-col(var(--space-md));
+    @include border-radius("md");
+    padding: var(--space-md);
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSubdued);
   }
 
   .palette-heading {
@@ -410,6 +447,21 @@ main {
 #neutralNonContentStrong > .color { background-color: var(--color-neutralNonContentStrong); }
 #neutralContentSubdued > .color { background-color: var(--color-neutralContentSubdued); }
 #neutralContentStrong > .color { background-color: var(--color-neutralContentStrong); }
+
+#demo {
+  .demo-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-md);
+  }
+  .demo-panel {
+    @include flex-col(var(--space-md));
+    @include border-radius("md");
+    padding: var(--space-md);
+    background: var(--color-card);
+    box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSubdued);
+  }
+}
 
 #canvas {
 

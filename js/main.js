@@ -89,11 +89,28 @@ $('#accentColor').on('change', function(e) {
   $('#accentColor').parent().find('.mini-swatch').css('background-color', color);
 })
 
+// Determine whether a swatch is explicitly scoped to a light or dark container
+function getThemeModeFromParent(element) {
+  const container = element.closest('[data-theme-mode]');
+  return container ? container.getAttribute('data-theme-mode') : null;
+}
+
 // Re-displ
-function setSwatchValues(theme) {
+function setSwatchValues(theme, options = {}) {
+  const { scopedOnly = false } = options;
   $('.swatch').each(function() {
-    var $value = $(this).find('.value');
-    $value.text($(this).attr(`data-${theme}-color`));
+    const parentTheme = getThemeModeFromParent(this);
+    if (parentTheme && parentTheme !== theme) {
+      return;
+    }
+    if (scopedOnly && !parentTheme) {
+      return;
+    }
+
+    var $swatch = $(this);
+    var $value = $swatch.find('.value');
+    var displayValue = $swatch.attr(`data-${theme}-color`) || 'N/A';
+    $value.text(displayValue);
   });
 }
 
@@ -103,9 +120,14 @@ function setCssColor(theme, swatchId, cssVariable, color) {
     `[data-theme="${theme}"] { ${cssVariable}: ${color}; }`,
     styleElement.sheet.cssRules.length
   ); // Declare CSS variables in head's style element
-  var $swatch = $(`#${swatchId}`); // Get the swatch
-  $swatch.attr(`data-${theme}-color`, color); // Ensure swatch remembers light/dark mode color
-  // $swatch.find('.value').text(color); // Display the color value in the swatch
+  const swatches = document.querySelectorAll(`.swatch[id="${swatchId}"]`);
+  swatches.forEach(function(swatch) {
+    const parentTheme = getThemeModeFromParent(swatch);
+    if (parentTheme && parentTheme !== theme) {
+      return;
+    }
+    swatch.setAttribute(`data-${theme}-color`, color);
+  });
 }
 
 // Create theme in head's style element
@@ -266,6 +288,8 @@ function generatePalette() {
     var darkNeutralNonContentSoftColor = decreaseOpacityToContrast(darkNeutralNonContentStrongColor, darkCardColor, softContrast);
     setCssColor('dark', 'neutralNonContentSoft', '--color-neutralNonContentSoft', darkNeutralNonContentSoftColor);
 
+    setSwatchValues('light', { scopedOnly: true });
+    setSwatchValues('dark', { scopedOnly: true });
     setSwatchValues($('html').attr('data-theme'));
 
   }

@@ -8,6 +8,8 @@ It draws inspiration from [Radix UI's custom color palette tool](https://www.rad
 
 [Try it out](https://thisisfranciswu.com/enterprise-ui-palette-generator/)!
 
+> The production site is published straight from `docs/`. The repository root intentionally does not include an `index.html`, so GitHub shows this README instead.
+
 ## To do
 
 In no particular order, allow user to:
