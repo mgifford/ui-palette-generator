@@ -14,6 +14,34 @@ body {
   margin: 0 auto;
 }
 
+/* Header layout and theme toggle */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Theme toggle in the header (top-right) */
+#themeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutralContentSubdued);
+  padding: var(--space-xs);
+  margin-left: var(--space-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#themeToggle:hover {
+  color: var(--color-neutralContentStrong);
+}
+
+#themeToggle .material-symbols-rounded {
+  font-size: var(--space-lg);
+}
+
 h1 {
   line-height: var(--headingLineHeight);
   font-size: var(--fontSize-h1);

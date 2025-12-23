@@ -93,21 +93,23 @@ function updateThemeToggleUI() {
   const theme = document.documentElement.getAttribute('data-theme') || 'light';
   const isDark = theme === 'dark';
   btn.setAttribute('aria-pressed', String(isDark));
-  icon.textContent = isDark ? 'dark_mode' : 'light_mode';
+  // show the opposite symbol to indicate the action
+  icon.textContent = isDark ? 'light_mode' : 'dark_mode';
 }
 
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) {
-  themeToggle.addEventListener('click', function(e) {
-    const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    updateThemeToggleUI();
-    setSwatchValues(next);
-  });
-  // initialize UI state
+document.addEventListener('DOMContentLoaded', function() {
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function(e) {
+      const cur = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      updateThemeToggleUI();
+      setSwatchValues(next);
+    });
+  }
   updateThemeToggleUI();
-}
+});
 
 $('#randomColorBtn').on('click', function(e) {
   generateRandomColor();
