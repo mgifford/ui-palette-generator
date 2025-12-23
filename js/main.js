@@ -61,7 +61,7 @@ const TOKEN_LOOKUP = TOKEN_CATALOG.reduce(function(acc, token) {
   acc[token.id] = token;
   return acc;
 }, {});
-const CSV_HEADER = ['theme', 'token', 'role', 'category', 'usage', 'color'];
+const CSV_HEADER = ['theme', 'color', 'token', 'role', 'category', 'usage'];
 
 // Insert the random color value into the text field
 function generateRandomColor() {
