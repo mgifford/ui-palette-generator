@@ -1,3 +1,8 @@
+:root {
+  /* default UI foreground; will be adjusted at runtime */
+  --ui-foreground: #3a3a3a;
+}
+
 body {
   line-height: var(--bodyLineHeight);
   padding: var(--space-xl);
@@ -26,7 +31,7 @@ header {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-neutralContentSubdued);
+  color: var(--ui-foreground);
   padding: var(--space-xs);
   margin-left: var(--space-md);
   display: inline-flex;
@@ -61,6 +66,8 @@ header {
   gap: var(--space-sm);
   align-items: center;
 }
+.color-popover label { display:flex; flex-direction:column; font-size:0.9rem; }
+.color-popover input { font-size: 0.95rem; }
 .color-popover input[type="text"] { padding: 6px; }
 .color-popover input[type="color"] { width: 36px; height: 36px; border: none; padding: 0; }
 .color-popover .color-popover-actions { display:flex; gap:6px; margin-left:6px }
@@ -304,7 +311,7 @@ main {
 
 .panel-note {
   font-size: var(--fontSize-sm);
-  color: var(--color-neutralContentSubdued);
+  color: var(--ui-foreground);
   line-height: 1.5;
   margin: var(--space-xs) 0 0;
 }

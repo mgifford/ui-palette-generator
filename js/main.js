@@ -150,9 +150,22 @@ $('#tryBrandColor a').on('click', function(e) {
 });
 
 $('#accentColor').on('change', function(e) {
-  var color = $(this).val();
-  $('#accentColor').parent().find('.mini-swatch').css('background-color', color);
-})
+  const input = this;
+  const raw = (input.value || '').trim();
+  const normalized = normalizeColorValue(raw);
+  const $mini = $(input).parent().find('.mini-swatch');
+  if (normalized) {
+    // Use normalized hex and regenerate palette
+    input.value = normalized;
+    $mini.css('background-color', normalized);
+    try { window.generatePalette && window.generatePalette(); } catch (err) {}
+    try { input.removeAttribute('aria-invalid'); } catch(e) {}
+    setTransferStatus('');
+  } else {
+    try { input.setAttribute('aria-invalid', 'true'); } catch(e) {}
+    setTransferStatus('Invalid color value — enter a color name, hex, or rgb()', true);
+  }
+});
 
 function attachPaletteTransferHandlers() {
   const exportButton = document.getElementById('exportPaletteCsv');
@@ -382,6 +395,8 @@ function applyImportedPaletteCsv(text) {
     setSwatchValues('light', { scopedOnly: true });
     setSwatchValues('dark', { scopedOnly: true });
     setSwatchValues($('html').attr('data-theme'));
+    // Recompute UI chrome foregrounds to keep contrast after an import
+    try { computeAndSetUiForegrounds(); } catch (e) {}
   }
 
   return applied;
@@ -419,7 +434,10 @@ function normalizeColorValue(value) {
   if (!candidate) {
     return null;
   }
-  if (!candidate.startsWith('#')) {
+  // If the user entered a plain hex string like "ff00aa" (no #),
+  // prefix it with '#'. Do not prefix named colors (e.g. 'red') or
+  // functional notations like 'rgb(...)'.
+  if (!candidate.startsWith('#') && /^[0-9A-Fa-f]{3,8}$/.test(candidate)) {
     candidate = `#${candidate}`;
   }
   try {
@@ -598,6 +616,80 @@ function generatePalette() {
     setSwatchValues('dark', { scopedOnly: true });
     setSwatchValues($('html').attr('data-theme'));
 
+    // Ensure UI chrome (icons, notes) has sufficient contrast for each theme
+    try { computeAndSetUiForegrounds(); } catch (e) {}
+
+  }
+
+  // Compute and set a suitable --ui-foreground for each theme so UI chrome
+  // (icons, small text in notes, etc.) meets an acceptable contrast ratio.
+  function computeAndSetUiForegrounds() {
+    ['light', 'dark'].forEach(function(theme) {
+      // Prefer card background for computing contrast, fallback to canvas
+      const bg = getSwatchColor(theme, 'card') || getSwatchColor(theme, 'canvas') || (theme === 'dark' ? blackColor : whiteColor);
+
+      const candidates = [
+        getSwatchColor(theme, 'neutralContentStrong'),
+        getSwatchColor(theme, 'neutralNonContentStrong'),
+        getSwatchColor(theme, 'accentContentStrong'),
+        blackColor,
+        whiteColor
+      ].filter(Boolean);
+
+      let best = null;
+      let bestContrast = -1;
+      candidates.forEach(function(c) {
+        try {
+          const contrast = chroma.contrast(c, bg);
+          if (contrast > bestContrast) {
+            bestContrast = contrast;
+            best = c;
+          }
+        } catch (e) {}
+      });
+
+      // If none meet the content contrast target, try mixing towards black/white
+      if (bestContrast < wcagContentContrast && best) {
+        const targets = [blackColor, whiteColor];
+        targets.forEach(function(target) {
+          if (bestContrast >= wcagContentContrast) return;
+          for (let p = 0.1; p <= 1.0; p += 0.1) {
+            try {
+              const mixed = chroma.mix(best, target, p, 'rgb').hex();
+              const contrast = chroma.contrast(mixed, bg);
+              if (contrast > bestContrast) {
+                bestContrast = contrast;
+                best = mixed;
+              }
+              if (bestContrast >= wcagContentContrast) break;
+            } catch (e) {}
+          }
+        });
+      }
+
+      if (!best) {
+        // fallback to the higher-contrast of black/white
+        best = chroma.contrast(blackColor, bg) >= chroma.contrast(whiteColor, bg) ? blackColor : whiteColor;
+      }
+
+      // Write into the theme style element, replacing previous --ui-foreground rules
+      try {
+        const styleEl = document.head.querySelector(`style[data-theme="${theme}"]`) || createThemeStyle(theme);
+        const sheet = styleEl.sheet;
+        for (let i = sheet.cssRules.length - 1; i >= 0; i--) {
+          const rule = sheet.cssRules[i];
+          try {
+            if (rule && rule.cssText && rule.cssText.indexOf('--ui-foreground') !== -1) {
+              sheet.deleteRule(i);
+            }
+          } catch (e) {}
+        }
+        sheet.insertRule(`[data-theme="${theme}"] { --ui-foreground: ${best}; }`, sheet.cssRules.length);
+      } catch (e) {
+        // If stylesheet manipulation fails, set on root as a safe fallback
+        try { root.style.setProperty('--ui-foreground', best); } catch (err) {}
+      }
+    });
   }
 
   // Splitter handling moved to js/splitter.js

@@ -25,11 +25,27 @@ function openColorPopover(container) {
   const pop = document.createElement('div');
   pop.className = 'color-popover';
   pop.innerHTML = `
-    <label>Enter color (CSS): <input type="text" class="color-input-text" placeholder="#336699 or rgb(10,20,30)"></label>
+    <label>Enter color: <input type="text" class="color-input-text" placeholder="#336699 or rgb(10,20,30)"></label>
     <label>Color wheel: <input type="color" class="color-input-wheel"></label>
     <div class="color-popover-actions"><button class="btn btn-apply">Apply</button><button class="btn btn-cancel">Cancel</button></div>
   `;
-  container.appendChild(pop);
+  // position popover in viewport to avoid clipping issues inside container
+  document.body.appendChild(pop);
+  pop.style.position = 'fixed';
+  pop.style.zIndex = 10000;
+  const rect = container.getBoundingClientRect();
+  // try to position below the container; if not enough space, place above
+  const belowTop = rect.bottom + 8;
+  const aboveTop = rect.top - 8 - 140; // estimate popover height
+  const left = rect.left;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  if (belowTop + 160 < viewportHeight) {
+    pop.style.left = `${Math.max(8, left)}px`;
+    pop.style.top = `${belowTop}px`;
+  } else {
+    pop.style.left = `${Math.max(8, left)}px`;
+    pop.style.top = `${Math.max(8, aboveTop)}px`;
+  }
 
   const text = pop.querySelector('.color-input-text');
   const wheel = pop.querySelector('.color-input-wheel');
@@ -46,6 +62,9 @@ function openColorPopover(container) {
     }
     text.value = input ? input.value : cur;
   }
+
+  // autofocus the text input for quick typing
+  setTimeout(function(){ try { text.focus(); text.select(); } catch(e){} }, 10);
   // Live preview: update mini-swatch as user types or uses wheel
   function applyPreview(val) {
     if (!val) return;
