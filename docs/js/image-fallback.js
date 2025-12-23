@@ -6,6 +6,18 @@
   }
   function setCache(c){ try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch(e){} }
 
+  function ensureCacheLimit(maxEntries){
+    const cache = getCache();
+    const keys = Object.keys(cache);
+    if (keys.length <= maxEntries) return;
+    // naive LRU: remove oldest keys by insertion order is not preserved, so remove random oldest-looking keys
+    // We'll remove the first entries until under limit
+    while (Object.keys(cache).length > maxEntries) {
+      delete cache[Object.keys(cache)[0]];
+    }
+    setCache(cache);
+  }
+
   function roboUrl(seed, size){
     // use robohash with set=identicon to avoid person likeness
     return `https://robohash.org/${encodeURIComponent(seed)}?set=identicon&size=${size}x${size}`;
@@ -92,6 +104,15 @@
       try { handleImage(img); } catch(e){}
       img.addEventListener('error', function(){ try { handleImage(img); } catch(e){} });
     });
+    // Force replace known social thumbnail(s) for consistent placeholder
+    const socialThumb = document.querySelector('.hidden-social-media-thumbnail') || document.querySelector('img[alt*="Social media thumbnail"], img[src*="social_media_thumbnail"]');
+    if (socialThumb) {
+      // create a robo image labelled 'Friendly robot'
+      const size = Math.max(parseInt(socialThumb.getAttribute('width')||320,10), parseInt(socialThumb.getAttribute('height')||180,10), 128);
+      fetchRobohash('Friendly robot', size).then(function(dataUrl){ if (dataUrl) socialThumb.src = dataUrl; });
+    }
+    // enforce cache limit
+    ensureCacheLimit(50);
   }
 
   document.addEventListener('DOMContentLoaded', function(){
