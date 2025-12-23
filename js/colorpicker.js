@@ -8,8 +8,8 @@ export function initColorPicker() {
     if (decorated) {
       // Only open when clicking the mini-swatch or the text input itself
       const isMini = !!target.closest('.mini-swatch');
-      const isTextInput = target.tagName === 'INPUT' && target.type === 'text';
-      if (isMini || isTextInput) {
+      // Only open on mini-swatch clicks to avoid interfering with manual typing
+      if (isMini) {
         openColorPopover(decorated);
       }
       return;
@@ -46,6 +46,13 @@ function openColorPopover(container) {
     }
     text.value = input ? input.value : cur;
   }
+  // Live preview: update mini-swatch as user types or uses wheel
+  function applyPreview(val) {
+    if (!val) return;
+    if (mini) mini.style.backgroundColor = val;
+  }
+  text.addEventListener('input', function(){ applyPreview(text.value.trim() || wheel.value); });
+  wheel.addEventListener('input', function(){ text.value = wheel.value; applyPreview(wheel.value); });
 
   pop.querySelector('.btn-apply').addEventListener('click', function() {
     const val = (text.value && text.value.trim()) || wheel.value;
@@ -59,6 +66,9 @@ function openColorPopover(container) {
     try { window.generatePalette && window.generatePalette(); } catch (e) {}
     closeAllPopovers();
   });
+
+  // Apply on Enter inside text input
+  text.addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault(); pop.querySelector('.btn-apply').click(); } });
   pop.querySelector('.btn-cancel').addEventListener('click', function() { closeAllPopovers(); });
 }
 
