@@ -10,10 +10,14 @@
     const cache = getCache();
     const keys = Object.keys(cache);
     if (keys.length <= maxEntries) return;
-    // naive LRU: remove oldest keys by insertion order is not preserved, so remove random oldest-looking keys
-    // We'll remove the first entries until under limit
-    while (Object.keys(cache).length > maxEntries) {
-      delete cache[Object.keys(cache)[0]];
+    // build array of {k, at} and sort by at (oldest first). Support legacy string entries.
+    const items = keys.map(function(k){
+      const v = cache[k];
+      return { k: k, at: (v && v.at) ? v.at : 0 };
+    }).sort(function(a,b){ return a.at - b.at; });
+    while (Object.keys(cache).length > maxEntries && items.length) {
+      const rem = items.shift();
+      delete cache[rem.k];
     }
     setCache(cache);
   }
@@ -26,12 +30,26 @@
   function fetchRobohash(seed, size){
     const cache = getCache();
     const key = `${seed}|${size}`;
-    if (cache[key]) return Promise.resolve(cache[key]);
+    try {
+      const entry = cache[key];
+      if (entry) {
+        // support legacy string entries and new object entries
+        if (typeof entry === 'string') return Promise.resolve(entry);
+        if (entry.data) {
+          // update access time
+          entry.at = Date.now();
+          cache[key] = entry;
+          setCache(cache);
+          return Promise.resolve(entry.data);
+        }
+      }
+    } catch(e){}
     return fetch(roboUrl(seed, size)).then(function(resp){ return resp.blob(); }).then(function(blob){
       return new Promise(function(resolve){
         const reader = new FileReader();
         reader.onload = function(){
-          cache[key] = reader.result;
+          // store as object with data and access time
+          cache[key] = { data: reader.result, at: Date.now() };
           setCache(cache);
           resolve(reader.result);
         };
@@ -73,7 +91,17 @@
       return;
     }
 
-    const seed = img.getAttribute('alt') || img.getAttribute('data-name') || img.getAttribute('src') || 'placeholder';
+    // prefer explicit data-name, then alt, then src; append theme suffix to keep light/dark different
+    var seedBase = img.getAttribute('data-name') || img.getAttribute('alt') || img.getAttribute('src') || 'placeholder';
+    // find nearest theme mode on element or its ancestors
+    var themeSuffix = '';
+    var el = img;
+    while (el && el !== document.documentElement) {
+      var dt = el.getAttribute && (el.getAttribute('data-theme-mode') || el.getAttribute('data-theme'));
+      if (dt) { themeSuffix = dt; break; }
+      el = el.parentNode;
+    }
+    const seed = themeSuffix ? (seedBase + '::' + themeSuffix) : seedBase;
     const size = Math.max(parseInt(img.getAttribute('width')||64,10), parseInt(img.getAttribute('height')||64,10), 64);
 
     // Test the URL quickly; if not loadable within timeout, replace
