@@ -71,6 +71,9 @@ function generateRandomColor() {
   $('#accentColor').parent().find('.mini-swatch').css('background-color', randomColor);
 }
 
+// expose generatePalette globally for small modules to call
+window.generatePalette = generatePalette;
+
 initializeScopedIds();
 generateRandomColor();
 generatePalette();

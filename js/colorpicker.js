@@ -1,14 +1,22 @@
 export function initColorPicker() {
   document.addEventListener('click', function (e) {
     const target = e.target;
-    // Open when clicking the mini-swatch or input within .decorated-input
-    if (target.closest && target.closest('.decorated-input')) {
-      const container = target.closest('.decorated-input');
-      openColorPopover(container);
-    } else {
-      // click outside: close any open popovers
-      closeAllPopovers();
+    // If clicking inside an open popover, do nothing
+    if (target.closest && target.closest('.color-popover')) return;
+
+    const decorated = target.closest && target.closest('.decorated-input');
+    if (decorated) {
+      // Only open when clicking the mini-swatch or the text input itself
+      const isMini = !!target.closest('.mini-swatch');
+      const isTextInput = target.tagName === 'INPUT' && target.type === 'text';
+      if (isMini || isTextInput) {
+        openColorPopover(decorated);
+      }
+      return;
     }
+
+    // click outside: close any open popovers
+    closeAllPopovers();
   });
 }
 
@@ -28,20 +36,27 @@ function openColorPopover(container) {
   const mini = container.querySelector('.mini-swatch');
   const input = container.querySelector('input[type="text"]');
   // initialize with current color
-  const cur = mini && mini.style && mini.style.backgroundColor ? mini.style.backgroundColor : (input ? input.value : '');
+  const cur = (mini && mini.style && mini.style.backgroundColor) || (input ? input.value : '');
   if (cur) {
-    try { wheel.value = rgbToHex(cur); } catch(e){}
+    // if current value is a hex code, use it directly; otherwise try to convert rgb(...) to hex
+    if (typeof cur === 'string' && cur.trim().startsWith('#')) {
+      try { wheel.value = cur.trim(); } catch(e){}
+    } else {
+      try { wheel.value = rgbToHex(cur); } catch(e){}
+    }
     text.value = input ? input.value : cur;
   }
 
   pop.querySelector('.btn-apply').addEventListener('click', function() {
-    const val = text.value.trim() || wheel.value;
+    const val = (text.value && text.value.trim()) || wheel.value;
     if (!val) return;
     if (input) input.value = val;
     if (mini) mini.style.backgroundColor = val;
     // trigger input change
     const ev = new Event('change', { bubbles: true });
     if (input) input.dispatchEvent(ev);
+    // regenerate palette immediately
+    try { window.generatePalette && window.generatePalette(); } catch (e) {}
     closeAllPopovers();
   });
   pop.querySelector('.btn-cancel').addEventListener('click', function() { closeAllPopovers(); });
