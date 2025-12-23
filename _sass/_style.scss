@@ -421,6 +421,32 @@ main {
     box-shadow: 0 0 0 3px var(--color-accentNonContentSubdued);
   }
 
+  /* Token highlight for demo elements */
+  .token-highlight {
+    position: relative;
+    outline: 3px solid rgba(59,130,246,0.9); /* blue-ish outline */
+    box-shadow: 0 6px 24px rgba(59,130,246,0.12);
+    z-index: 5;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .token-highlight {
+      transition: box-shadow 240ms ease, transform 240ms ease;
+    }
+    .token-highlight.pulse {
+      animation: tokenPulse 1200ms ease-in-out infinite;
+    }
+    @keyframes tokenPulse {
+      0% { transform: translateZ(0) scale(1); }
+      50% { transform: translateZ(0) scale(1.02); }
+      100% { transform: translateZ(0) scale(1); }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .token-highlight { transition: none; }
+  }
+
   .row {
     @include flex-row(var(--space-xs));
     > * {
@@ -1064,17 +1090,22 @@ main {
   width: 100%;
   gap: 0;
   align-items: stretch;
+  /* default split percentage (left pane) */
+  --split: 50%;
 }
 .split > .split-left,
 .split > .split-right {
   min-width: 0; /* allow flex children to shrink properly */
   overflow: auto;
+  /* allow container queries inside each pane */
+  container-type: inline-size;
+  -webkit-container-type: inline-size;
 }
 .split > .split-left {
-  flex: 0 0 var(--left-width, 50%);
+  flex: 0 0 var(--split);
 }
 .split > .split-right {
-  flex: 1 1 0;
+  flex: 1 1 calc(100% - var(--split));
 }
 .splitter {
   width: 12px;
@@ -1088,10 +1119,12 @@ main {
   -moz-user-select: none;
   user-select: none;
   touch-action: none;
+  transition: background 160ms ease;
 }
 .splitter:focus {
-  outline: auto 4px Highlight; /* keep native outline but make it obvious */
-  box-shadow: 0 0 0 6px rgba(0,120,215,0.12);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+  border-radius: 6px;
 }
 .splitter .grip {
   width: 2px;
@@ -1100,10 +1133,47 @@ main {
   border-radius: 2px;
 }
 
+/* Improve hit target and focus-visible styling */
+.splitter:focus-visible {
+  box-shadow: 0 0 0 6px rgba(59,130,246,0.14);
+}
+
 /* Responsive fallback: stack vertically on small screens and hide splitter */
 @media (max-width: 767px) {
   .split { flex-direction: column; }
   .split > .split-left,
   .split > .split-right { flex: 0 0 auto; }
   .splitter { display: none; }
+}
+
+/* Panel-level container query: collapse 3-column internal layouts to 1 column
+   when pane width becomes narrow (480px threshold) */
+.split > .split-left .ui-swatches,
+.split > .split-right .ui-swatches,
+.split > .split-left .demo-canvas,
+.split > .split-right .demo-canvas {
+  /* these inner layout containers will respond to the pane's width */
+  container-type: inline-size;
+  -webkit-container-type: inline-size;
+}
+
+@container (max-width: 480px) {
+  .split > .split-left .ui-swatches,
+  .split > .split-right .ui-swatches {
+    display: block;
+  }
+  .split > .split-left .ui-swatches > .color-swatch,
+  .split > .split-right .ui-swatches > .color-swatch {
+    width: 100%;
+    display: block;
+  }
+  .split > .split-left .demo-canvas,
+  .split > .split-right .demo-canvas {
+    display: block;
+  }
+  .split > .split-left .demo-canvas > .col,
+  .split > .split-right .demo-canvas > .col {
+    width: 100%;
+    display: block;
+  }
 }

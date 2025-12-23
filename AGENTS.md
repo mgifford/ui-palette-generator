@@ -176,8 +176,7 @@ Caching/versioning:
 Test pages via a local HTTP server (not `file://`) to match GitHub Pages behavior.
 
 Examples:
-- `python3 -m http.server 8000`
-- `npx serve`
+- `npx serve docs -p 8000`
 
 Verify:
 - links resolve under a subpath

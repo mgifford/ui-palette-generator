@@ -413,10 +413,26 @@ function installSwatchHighlighting() {
     candidates.forEach(function(el) {
       try {
         const cs = window.getComputedStyle(el);
-        const props = [cs.getPropertyValue('background-color'), cs.getPropertyValue('color'), cs.getPropertyValue('border-color')];
+        const props = [cs.getPropertyValue('background-color'), cs.getPropertyValue('color'), cs.getPropertyValue('border-color'), cs.getPropertyValue('outline-color')];
         // include box-shadow colors
         const shadowColors = extractBoxShadowColors(cs.getPropertyValue('box-shadow'));
         shadowColors.forEach(function(sc){ props.push(sc); });
+        // if element is SVG or has stroke/fill, include those
+        if (el instanceof SVGElement) {
+          try {
+            const stroke = el.getAttribute('stroke');
+            const fill = el.getAttribute('fill');
+            if (stroke) props.push(stroke);
+            if (fill) props.push(fill);
+          } catch (e) {}
+        } else {
+          try {
+            const stroke = cs.getPropertyValue('stroke');
+            const fill = cs.getPropertyValue('fill');
+            if (stroke) props.push(stroke);
+            if (fill) props.push(fill);
+          } catch (e) {}
+        }
         for (let i = 0; i < props.length; i += 1) {
           const val = props[i];
           if (!val) continue;
