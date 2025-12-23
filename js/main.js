@@ -37,6 +37,32 @@ const root = document.documentElement;
 const whiteColor = "#FFF";
 const blackColor = "#000";
 
+const TOKEN_CATALOG = [
+  { id: 'seed', label: 'Accent seed', category: 'dominant', usage: 'seed-accent' },
+  { id: 'canvas', label: 'Canvas background', category: 'background', usage: 'canvas-surface' },
+  { id: 'card', label: 'Card background', category: 'background', usage: 'card-surface' },
+  { id: 'accentNonContentBaseline', label: 'Accent baseline (non-content)', category: 'accent', usage: 'non-content-baseline' },
+  { id: 'accentNonContentSoft', label: 'Accent soft (non-content)', category: 'accent', usage: 'non-content-soft' },
+  { id: 'accentNonContentSubdued', label: 'Accent subdued (non-content)', category: 'accent', usage: 'non-content-subdued' },
+  { id: 'accentNonContentStrong', label: 'Accent strong (non-content)', category: 'accent', usage: 'non-content-strong' },
+  { id: 'accentContentBaseline', label: 'Accent baseline (content)', category: 'accent', usage: 'content-baseline' },
+  { id: 'accentContentSubdued', label: 'Accent subdued (content)', category: 'accent', usage: 'content-subdued' },
+  { id: 'accentContentStrong', label: 'Accent strong (content)', category: 'accent', usage: 'content-strong' },
+  { id: 'neutralNonContentSoft', label: 'Neutral soft (non-content)', category: 'neutral', usage: 'non-content-soft' },
+  { id: 'neutralNonContentSubdued', label: 'Neutral subdued (non-content)', category: 'neutral', usage: 'non-content-subdued' },
+  { id: 'neutralNonContentStrong', label: 'Neutral strong (non-content)', category: 'neutral', usage: 'non-content-strong' },
+  { id: 'neutralContentSubdued', label: 'Neutral subdued (content)', category: 'neutral', usage: 'content-subdued' },
+  { id: 'neutralContentStrong', label: 'Neutral strong (content)', category: 'neutral', usage: 'content-strong' }
+].map(function(token) {
+  return { ...token, cssVar: `--color-${token.id}` };
+});
+
+const TOKEN_LOOKUP = TOKEN_CATALOG.reduce(function(acc, token) {
+  acc[token.id] = token;
+  return acc;
+}, {});
+const CSV_HEADER = ['theme', 'token', 'role', 'category', 'usage', 'color'];
+
 // Insert the random color value into the text field
 function generateRandomColor() {
   var randomColor = chroma.random().hex().toUpperCase();
@@ -47,6 +73,7 @@ function generateRandomColor() {
 initializeScopedIds();
 generateRandomColor();
 generatePalette();
+attachPaletteTransferHandlers();
 
 $('#generateBtn').on('click', function(e) {
   generatePalette();
@@ -89,6 +116,37 @@ $('#accentColor').on('change', function(e) {
   var color = $(this).val();
   $('#accentColor').parent().find('.mini-swatch').css('background-color', color);
 })
+
+function attachPaletteTransferHandlers() {
+  const exportButton = document.getElementById('exportPaletteCsv');
+  if (exportButton) {
+    exportButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      downloadPaletteCsv();
+    });
+  }
+
+  const importInput = document.getElementById('importPaletteCsv');
+  if (importInput) {
+    importInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const applied = applyImportedPaletteCsv(evt.target.result || '');
+          setTransferStatus(`Applied ${applied} token${applied === 1 ? '' : 's'} from ${file.name}.`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Unable to import palette.', true);
+        }
+      };
+      reader.onerror = function() {
+        setTransferStatus('Unable to read the selected CSV file.', true);
+      };
+      reader.readAsText(file);
+    });
+  }
+}
 
 // Determine whether a swatch is explicitly scoped to a light or dark container
 function getThemeModeFromParent(element) {
@@ -188,6 +246,147 @@ function setCssColor(theme, swatchId, cssVariable, color) {
     }
     swatch.setAttribute(`data-${theme}-color`, color);
   });
+}
+
+function getSwatchColor(theme, swatchId) {
+  const swatch = document.querySelector(`.swatch[data-swatch-id="${swatchId}"]`);
+  if (!swatch) return '';
+  return swatch.getAttribute(`data-${theme}-color`) || '';
+}
+
+function downloadPaletteCsv() {
+  const csv = buildPaletteCsv();
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `ui-palette-${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  setTransferStatus('Palette exported as CSV.');
+}
+
+function buildPaletteCsv() {
+  const rows = [CSV_HEADER.map(csvEscape).join(',')];
+  ['light', 'dark'].forEach(function(theme) {
+    TOKEN_CATALOG.forEach(function(token) {
+      const color = getSwatchColor(theme, token.id) || '';
+      rows.push([
+        theme,
+        token.id,
+        token.label,
+        token.category,
+        token.usage,
+        color
+      ].map(csvEscape).join(','));
+    });
+  });
+  return rows.join('\n');
+}
+
+function csvEscape(value) {
+  const text = (value || '').toString();
+  const needsQuotes = /[",\n]/.test(text);
+  const escaped = text.replace(/"/g, '""');
+  return needsQuotes ? `"${escaped}"` : escaped;
+}
+
+function applyImportedPaletteCsv(text) {
+  const trimmed = (text || '').trim();
+  if (!trimmed) {
+    throw new Error('The CSV file was empty.');
+  }
+  const lines = trimmed.split(/\r?\n/).filter(Boolean);
+  if (!lines.length) {
+    throw new Error('No rows found in the CSV file.');
+  }
+  const headerCells = splitCsvLine(lines.shift());
+  const columnMap = {};
+  headerCells.forEach(function(cell, index) {
+    columnMap[cell.trim().toLowerCase()] = index;
+  });
+  if (columnMap.theme === undefined || columnMap.token === undefined || columnMap.color === undefined) {
+    throw new Error('CSV must include theme, token, and color columns.');
+  }
+
+  let applied = 0;
+  lines.forEach(function(line) {
+    const cells = splitCsvLine(line);
+    const theme = (cells[columnMap.theme] || '').trim().toLowerCase();
+    if (theme !== 'light' && theme !== 'dark') {
+      return;
+    }
+    const tokenId = (cells[columnMap.token] || '').trim();
+    const normalizedColor = normalizeColorValue(cells[columnMap.color]);
+    if (!tokenId || !normalizedColor) {
+      return;
+    }
+    const meta = TOKEN_LOOKUP[tokenId];
+    if (!meta) {
+      return;
+    }
+    setCssColor(theme, meta.id, meta.cssVar, normalizedColor);
+    applied += 1;
+  });
+
+  if (applied) {
+    setSwatchValues('light', { scopedOnly: true });
+    setSwatchValues('dark', { scopedOnly: true });
+    setSwatchValues($('html').attr('data-theme'));
+  }
+
+  return applied;
+}
+
+function splitCsvLine(line) {
+  const cells = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      cells.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  cells.push(current);
+  return cells;
+}
+
+function normalizeColorValue(value) {
+  if (!value) {
+    return null;
+  }
+  let candidate = value.trim();
+  if (!candidate) {
+    return null;
+  }
+  if (!candidate.startsWith('#')) {
+    candidate = `#${candidate}`;
+  }
+  try {
+    return chroma(candidate).hex().toUpperCase();
+  } catch (err) {
+    return null;
+  }
+}
+
+function setTransferStatus(message, isError = false) {
+  const statusEl = document.getElementById('paletteTransferStatus');
+  if (!statusEl) return;
+  statusEl.textContent = message;
+  statusEl.dataset.state = isError ? 'error' : 'idle';
 }
 
 // Create theme in head's style element

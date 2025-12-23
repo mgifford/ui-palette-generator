@@ -463,6 +463,60 @@ main {
   }
 }
 
+#palette-transfer {
+  @include flex-col(var(--space-md));
+  margin-top: var(--space-xl);
+
+  .transfer-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .transfer-card {
+    @include flex-col(var(--space-sm));
+    @include border-radius("md");
+    border: 1px solid var(--color-neutralNonContentSubdued);
+    padding: var(--space-md);
+    background: var(--color-card);
+  }
+
+  .file-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px dashed var(--color-accentContentStrong);
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-accentContentStrong);
+
+    input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+
+  .csv-guidance {
+    ul {
+      margin: 0;
+      padding-left: var(--space-lg);
+      color: var(--color-neutralContentSubdued);
+      li + li {
+        margin-top: var(--space-xs);
+      }
+    }
+  }
+
+  #paletteTransferStatus[data-state="error"] {
+    color: var(--color-accentContentStrong);
+  }
+}
+
 .demo-canvas {
 
   @include border-radius("md");
