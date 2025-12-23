@@ -15,7 +15,7 @@ body {
 
 .container {
   @include flex-col(var(--space-xl));
-  max-width: 1136px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -507,6 +507,31 @@ main {
     padding: var(--space-md);
     background: var(--color-card);
     box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSubdued);
+  }
+
+  /* Make each demo panel responsive to its own width */
+  .demo-panel {
+    container-type: inline-size;
+    -webkit-container-type: inline-size;
+  }
+
+  /* Default layout for the demo canvas inside panels */
+  .demo-panel .demo-canvas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    align-items: start;
+  }
+
+  /* Collapse inner layout when the panel is narrow */
+  @container (max-width: 480px) {
+    .demo-panel .demo-canvas {
+      display: block;
+    }
+    .demo-panel .demo-canvas > .col {
+      width: 100%;
+      display: block;
+    }
   }
 }
 
