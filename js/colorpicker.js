@@ -4,6 +4,15 @@ export function initColorPicker() {
     // If clicking inside an open popover, do nothing
     if (target.closest && target.closest('.color-popover')) return;
 
+    // If clicked a palette swatch (value or color), open popover to edit that swatch
+    const swatch = target.closest && target.closest('.swatch');
+    if (swatch) {
+      // Pass the swatch container to the popover which will determine
+      // the swatch id and theme when applying.
+      openColorPopoverForSwatch(swatch);
+      return;
+    }
+
     const decorated = target.closest && target.closest('.decorated-input');
     if (decorated) {
       // Only open when clicking the mini-swatch or the text input itself
@@ -17,6 +26,42 @@ export function initColorPicker() {
 
     // click outside: close any open popovers
     closeAllPopovers();
+  });
+}
+
+function openColorPopoverForSwatch(swatchEl) {
+  // determine token id and theme from the swatch element
+  const tokenId = swatchEl.dataset.swatchId || swatchEl.getAttribute('id') || '';
+  // find theme context from closest [data-theme-mode] or fallback to page theme
+  const parentThemeAttr = swatchEl.closest && swatchEl.closest('[data-theme-mode]');
+  const theme = parentThemeAttr ? parentThemeAttr.getAttribute('data-theme-mode') : (document.documentElement.getAttribute('data-theme') || 'light');
+
+  // create a decorated container so openColorPopover can reuse the logic
+  // We'll create a temporary wrapper that includes a mini-swatch and an input
+  const temp = document.createElement('div');
+  temp.className = 'decorated-input temp-swatch-editor';
+  const mini = document.createElement('span');
+  mini.className = 'mini-swatch';
+  mini.style.backgroundColor = (swatchEl.querySelector('.color') && swatchEl.querySelector('.color').style.backgroundColor) || swatchEl.querySelector('.value') && swatchEl.querySelector('.value').textContent || '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = (swatchEl.querySelector('.value') && swatchEl.querySelector('.value').textContent) || '';
+  temp.appendChild(mini);
+  temp.appendChild(input);
+
+  // Open the regular popover anchored to this temp container
+  openColorPopover(temp);
+
+  // When the user applies, call the global applyCustomColor
+  document.querySelectorAll('.color-popover .btn-apply').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const pop = btn.closest('.color-popover');
+      const val = (pop.querySelector('.color-input-text').value || pop.querySelector('.color-input-wheel').value || '').trim();
+      if (!val) return;
+      try {
+        window.applyCustomColor && window.applyCustomColor(theme, tokenId, val);
+      } catch (e) {}
+    }, { once: true });
   });
 }
 

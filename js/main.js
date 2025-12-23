@@ -467,6 +467,23 @@ function normalizeColorValue(value) {
   }
 }
 
+// Allow other modules (colorpicker) to apply a custom color to a specific token and theme.
+window.applyCustomColor = function(theme, tokenId, color) {
+  try {
+    const normalized = normalizeColorValue(color);
+    if (!normalized) return false;
+    const meta = TOKEN_LOOKUP[tokenId];
+    if (!meta) return false;
+    setCssColor(theme, meta.id, meta.cssVar, normalized);
+    // update visible labels for scoped swatches and active theme
+    setSwatchValues('light', { scopedOnly: true });
+    setSwatchValues('dark', { scopedOnly: true });
+    setSwatchValues($('html').attr('data-theme'));
+    try { computeAndSetUiForegrounds(); } catch (e) {}
+    return true;
+  } catch (e) { return false; }
+};
+
 function setTransferStatus(message, isError = false) {
   const statusEl = document.getElementById('paletteTransferStatus');
   if (!statusEl) return;
