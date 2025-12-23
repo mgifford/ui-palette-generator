@@ -397,6 +397,14 @@ main {
       line-height: 1;
       text-align: center;
     }
+    .token-meta {
+      display: block;
+      font-size: var(--fontSize-xs);
+      color: var(--color-neutralContentSubdued);
+      margin-top: calc(var(--space-xs) / 2);
+      text-align: center;
+      line-height: 1;
+    }
   }
 
   .row {
