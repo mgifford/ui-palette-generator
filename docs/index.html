@@ -53,6 +53,9 @@
 
     <header>
       <h1>Accessible Color Palette Generator</h1>
+      <button id="themeToggle" class="btn btn-icon" aria-pressed="false" aria-label="Toggle page theme">
+        <span id="themeToggleIcon" class="material-symbols-rounded">light_mode</span>
+      </button>
     </header>
 
     <section id="intro">
@@ -140,16 +143,6 @@
         <section id="palette">
           <div class="heading">
             <h2>Palette</h2>
-            <div id="toggleMode">
-              <button id="lightModeBtn" class="btn" data-state="on">
-                <span class="material-symbols-rounded">light_mode</span>
-                Light
-              </button>
-              <button id="darkModeBtn" class="btn" data-state="off">
-                <span class="material-symbols-rounded">dark_mode</span>
-                Dark
-              </button>
-            </div>
           </div>
           <p class="section-hint">Two mirrored palettes share the exact same token IDs. Their parent containers carry either <code data-inline="true">data-theme-mode="light"</code> or <code data-inline="true">data-theme-mode="dark"</code> so duplicate IDs resolve to the right CSS variable scope.</p>
           <div class="palette-panels" aria-live="polite">
