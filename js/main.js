@@ -30,6 +30,7 @@ import { adjustLuminanceToContrast } from '../js/adjustLuminanceToContrast.js'
 import { decreaseOpacityToContrast } from '../js/decreaseOpacityToContrast.js'
 import { setSaturation } from '../js/setSaturation.js'
 import { copyCssVariables } from '../js/copyGeneratedColors.js';
+import { initColorPicker } from './colorpicker.js';
 
 const wcagNonContentContrast = 3;
 const wcagContentContrast = 4.5;
@@ -74,6 +75,19 @@ initializeScopedIds();
 generateRandomColor();
 generatePalette();
 attachPaletteTransferHandlers();
+initColorPicker();
+
+// Initialize theme from saved preference or prefers-color-scheme
+(function initThemeFromPreference(){
+  const saved = localStorage.getItem('ui-theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
 
 $('#generateBtn').on('click', function(e) {
   generatePalette();
@@ -113,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const next = cur === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       updateThemeToggleUI();
+      try { localStorage.setItem('ui-theme', next); } catch (e) {}
       setSwatchValues(next);
     });
   }

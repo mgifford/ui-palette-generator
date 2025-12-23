@@ -49,6 +49,22 @@ header {
   color: inherit;
 }
 
+.color-popover {
+  position: absolute;
+  background: var(--color-card);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-radius: 6px;
+  padding: var(--space-sm);
+  margin-top: var(--space-xs);
+  z-index: 60;
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+.color-popover input[type="text"] { padding: 6px; }
+.color-popover input[type="color"] { width: 36px; height: 36px; border: none; padding: 0; }
+.color-popover .color-popover-actions { display:flex; gap:6px; margin-left:6px }
+
 h1 {
   line-height: var(--headingLineHeight);
   font-size: var(--fontSize-h1);
