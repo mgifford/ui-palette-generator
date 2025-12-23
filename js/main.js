@@ -167,6 +167,15 @@ $('#accentColor').on('change', function(e) {
   }
 });
 
+// Allow pressing Enter while editing the accent input to apply immediately
+$('#accentColor').on('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    // trigger the change handler logic
+    $(this).trigger('change');
+  }
+});
+
 function attachPaletteTransferHandlers() {
   const exportButton = document.getElementById('exportPaletteCsv');
   if (exportButton) {
