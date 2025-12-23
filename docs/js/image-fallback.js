@@ -104,13 +104,42 @@
       try { handleImage(img); } catch(e){}
       img.addEventListener('error', function(){ try { handleImage(img); } catch(e){} });
     });
-    // Force replace known social thumbnail(s) for consistent placeholder
-    const socialThumb = document.querySelector('.hidden-social-media-thumbnail') || document.querySelector('img[alt*="Social media thumbnail"], img[src*="social_media_thumbnail"]');
-    if (socialThumb) {
+    // Force replace known social thumbnail(s) and other demo images for consistent placeholders
+    const forcedSelectors = [
+      '.hidden-social-media-thumbnail',
+      'img[src*="social_media_thumbnail"]',
+      'img[alt*="social media" i]',
+      'img[alt*="social" i]',
+      'img[src*="thumbnail"]',
+      'img[src*="avatar"]',
+      'img[src*="profile"]',
+      'img[data-force-robo]'
+    ];
+    const forced = document.querySelectorAll(forcedSelectors.join(','));
+    forced.forEach(function(socialThumb){
+      if (!socialThumb) return;
+      if (socialThumb.classList && socialThumb.classList.contains('replaced-by-robo')) return;
       // create a robo image labelled 'Friendly robot'
       const size = Math.max(parseInt(socialThumb.getAttribute('width')||320,10), parseInt(socialThumb.getAttribute('height')||180,10), 128);
-      fetchRobohash('Friendly robot', size).then(function(dataUrl){ if (dataUrl) socialThumb.src = dataUrl; });
-    }
+      fetchRobohash('Friendly robot', size).then(function(dataUrl){
+        if (dataUrl) {
+          try { socialThumb.dataset.origSrc = socialThumb.src || ''; } catch(e){}
+          socialThumb.src = dataUrl;
+          if (socialThumb.classList) socialThumb.classList.add('replaced-by-robo');
+          // bump cache access time if stored in the structured meta format
+          try {
+            const cache = getCache();
+            const key = 'Friendly robot|' + size;
+            const entry = cache[key];
+            if (entry && typeof entry === 'object') {
+              entry.at = Date.now();
+              cache[key] = entry;
+              setCache(cache);
+            }
+          } catch(e){}
+        }
+      }).catch(function(){});
+    });
     // enforce cache limit
     ensureCacheLimit(50);
   }
