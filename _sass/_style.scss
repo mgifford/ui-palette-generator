@@ -403,7 +403,7 @@ main {
     figcaption {
       @include font-size("sm");
       margin-bottom: var(--space-sm);
-      color: var(--color-neutralContentSubdued);
+      color: var(--ui-foreground);
       line-height: 1;
       text-align: center;
     }
@@ -590,6 +590,7 @@ main {
   .material-symbols-rounded {
     font-size: var(--fontSize-lg);
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    color: var(--ui-foreground);
   }
 
   .card {
