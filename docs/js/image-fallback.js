@@ -91,8 +91,17 @@
       return;
     }
 
-    // prefer explicit data-name, then alt, then src; append theme suffix to keep light/dark different
-    var seedBase = img.getAttribute('data-name') || img.getAttribute('alt') || img.getAttribute('src') || 'placeholder';
+    // prefer explicit data-name on the image, then on parent, then alt, then src; append theme suffix to keep light/dark different
+    var seedBase = img.getAttribute('data-name') || '';
+    if (!seedBase) {
+      // look for a parent with data-name
+      var p = img.parentElement;
+      while (p && p !== document.documentElement) {
+        if (p.hasAttribute && p.hasAttribute('data-name')) { seedBase = p.getAttribute('data-name'); break; }
+        p = p.parentElement;
+      }
+    }
+    if (!seedBase) seedBase = img.getAttribute('alt') || img.getAttribute('src') || 'placeholder';
     // find nearest theme mode on element or its ancestors
     var themeSuffix = '';
     var el = img;
@@ -115,11 +124,17 @@
 
   function handleRobohashFallback(img, seed, size){
     fetchRobohash(seed, size).then(function(dataUrl){
-      if (dataUrl) img.src = dataUrl;
-      else {
-        const colors = themeColors();
-        img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'});
-      }
+      if (dataUrl) { img.src = dataUrl; return; }
+      // fallback to a repository generic female avatar SVG if available
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'images/generic-female-avatar.svg', true);
+        xhr.onload = function(){ if (xhr.status >= 200 && xhr.status < 400) { img.src = 'images/generic-female-avatar.svg'; } else {
+            const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'});
+        }};
+        xhr.onerror = function(){ const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'}); };
+        xhr.send();
+      } catch(e){ const colors = themeColors(); img.src = avatarSvg({width: size, height: size, bg: colors.bg, fg: colors.fg, initials: 'img'}); }
     });
   }
 
