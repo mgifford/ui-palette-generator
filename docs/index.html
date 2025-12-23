@@ -153,8 +153,10 @@
           </div>
           <p class="section-hint">Two mirrored palettes share the exact same token IDs. Their parent containers carry either <code data-inline="true">data-theme-mode="light"</code> or <code data-inline="true">data-theme-mode="dark"</code> so duplicate IDs resolve to the right CSS variable scope.</p>
           <div class="palette-panels" aria-live="polite">
-            <!-- Light palette uses the light parent container so shared IDs render light values -->
-            <article id="palette-light" class="palette-panel" data-theme-mode="light" data-theme="light" aria-labelledby="palette-light-title">
+            <div class="split" id="paletteSplit">
+              <div class="split-left" id="paletteLeft">
+                <!-- Light palette uses the light parent container so shared IDs render light values -->
+                <article id="palette-light" class="palette-panel" data-theme-mode="light" data-theme="light" aria-labelledby="palette-light-title">
               <header class="panel-heading">
                 <h3 id="palette-light-title">Light palette values</h3>
                 <p class="panel-note">Each swatch below reflects the light token for its ID.</p>
@@ -283,8 +285,13 @@
                 </div>
               </div>
             </article>
-            <!-- Dark palette reuses identical IDs but inherits from the dark theme container -->
-            <article id="palette-dark" class="palette-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="palette-dark-title">
+              </div>
+              <div class="splitter" id="paletteSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize palettes">
+                <span class="grip" aria-hidden="true"></span>
+              </div>
+              <div class="split-right" id="paletteRight">
+                <!-- Dark palette reuses identical IDs but inherits from the dark theme container -->
+                <article id="palette-dark" class="palette-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="palette-dark-title">
               <header class="panel-heading">
                 <h3 id="palette-dark-title">Dark palette values</h3>
                 <p class="panel-note">This mirrored column uses the dark theme parent.</p>
@@ -412,7 +419,9 @@
                   </div>
                 </div>
               </div>
-            </article>
+                </article>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -420,8 +429,10 @@
           <h2>Demo</h2>
           <p class="section-hint">Identical UI markup sits inside light and dark parent containers. If a component looks different, it is only because the parent declares the theme via <code data-inline="true">data-theme-mode</code>.</p>
           <div class="demo-panels">
-            <!-- Light demo shares markup with dark demo but inherits light CSS tokens -->
-            <article id="demo-light" class="demo-panel" data-theme-mode="light" data-theme="light" aria-labelledby="demo-light-title">
+            <div class="split" id="demoSplit">
+              <div class="split-left" id="demoLeft">
+                <!-- Light demo shares markup with dark demo but inherits light CSS tokens -->
+                <article id="demo-light" class="demo-panel" data-theme-mode="light" data-theme="light" aria-labelledby="demo-light-title">
               <header class="panel-heading">
                 <h3 id="demo-light-title">Light UI sample</h3>
                 <p class="panel-note">This column renders every element against the light palette.</p>
@@ -611,8 +622,13 @@
 </div>
               </div>
             </article>
-            <!-- Dark demo reuses identical markup under a dark theme parent -->
-            <article id="demo-dark" class="demo-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="demo-dark-title">
+              </div>
+              <div class="splitter" id="demoSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize demos">
+                <span class="grip" aria-hidden="true"></span>
+              </div>
+              <div class="split-right" id="demoRight">
+                <!-- Dark demo reuses identical markup under a dark theme parent -->
+                <article id="demo-dark" class="demo-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="demo-dark-title">
               <header class="panel-heading">
                 <h3 id="demo-dark-title">Dark UI sample</h3>
                 <p class="panel-note">Same DOM, dark tokens.</p>
@@ -801,7 +817,9 @@
 
 </div>
               </div>
-            </article>
+                </article>
+              </div>
+            </div>
           </div>
         </section>
 

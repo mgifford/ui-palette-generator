@@ -910,3 +910,53 @@ main {
 }
 
 .hidden-social-media-thumbnail { display: none; }
+
+/* Resizable split layout used for palette and demo sections */
+.split {
+  display: flex;
+  width: 100%;
+  gap: 0;
+  align-items: stretch;
+}
+.split > .split-left,
+.split > .split-right {
+  min-width: 0; /* allow flex children to shrink properly */
+  overflow: auto;
+}
+.split > .split-left {
+  flex: 0 0 var(--left-width, 50%);
+}
+.split > .split-right {
+  flex: 1 1 0;
+}
+.splitter {
+  width: 12px;
+  flex: 0 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: col-resize;
+  background: linear-gradient(90deg, rgba(0,0,0,0.02), rgba(0,0,0,0.04));
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.splitter:focus {
+  outline: auto 4px Highlight; /* keep native outline but make it obvious */
+  box-shadow: 0 0 0 6px rgba(0,120,215,0.12);
+}
+.splitter .grip {
+  width: 2px;
+  height: 40px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 2px;
+}
+
+/* Responsive fallback: stack vertically on small screens and hide splitter */
+@media (max-width: 767px) {
+  .split { flex-direction: column; }
+  .split > .split-left,
+  .split > .split-right { flex: 0 0 auto; }
+  .splitter { display: none; }
+}
