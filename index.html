@@ -12,10 +12,19 @@
 
   <link rel="stylesheet" href="css/main.css">
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ryersondmp/sa11y@latest/dist/css/sa11y.min.css" />
+  <script src="https://cdn.jsdelivr.net/combine/gh/ryersondmp/sa11y@latest/dist/js/lang/en.umd.js,gh/ryersondmp/sa11y@latest/dist/js/sa11y.umd.min.js"></script>
+  <script>
+    Sa11y.Lang.addI18n(Sa11yLangEn.strings);
+    const sa11y = new Sa11y.Sa11y({
+      checkRoot: "body",
+      panelPosition: "top-right",
+    });
+  </script>
   <script defer src="js/bundle.js"></script>
   <script defer src="js/image-fallback.js"></script>
   <script defer src="js/editor.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/ryersondmp/sa11y@latest/dist/js/sa11y.min.js"></script>
+  <script defer src="js/tabs.js"></script>
 
   <meta property="og:image" content="images/social_media_thumbnail.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -54,8 +63,6 @@
     <!-- Accessibility panel injected for Sa11y/axe checks -->
     <aside id="a11yPanel" aria-hidden="false" style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
       <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-        <strong>Accessibility</strong>
-        <sa11y-control-panel></sa11y-control-panel>
       </div>
       <div id="a11yResults" style="max-height:260px;overflow:auto;font-size:0.85rem;color:#222"></div>
     </aside>
@@ -177,7 +184,7 @@
               <div class="palette-accent">
                 <figure class="color-swatch">
                   <figcaption>Seed</figcaption>
-                  <div class="swatch" id="seed" data-swatch-id="seed">
+                  <div class="swatch" tabindex="0" id="seed" data-swatch-id="seed">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -186,14 +193,14 @@
               <div class="row ui-swatches palette-backgrounds">
                 <figure class="color-swatch">
                   <figcaption>Canvas</figcaption>
-                  <div class="swatch" id="canvas" data-swatch-id="canvas">
+                  <div class="swatch" tabindex="0" id="canvas" data-swatch-id="canvas">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                 </figure>
                 <figure class="color-swatch">
                   <figcaption>Card</figcaption>
-                  <div class="swatch" id="card" data-swatch-id="card">
+                  <div class="swatch" tabindex="0" id="card" data-swatch-id="card">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -203,7 +210,7 @@
                 <div class="col palette-non-content">
                   <figure class="color-swatch">
                     <figcaption>Accent Non-Content Baseline</figcaption>
-                    <div class="swatch" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+                    <div class="swatch" tabindex="0" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -211,21 +218,21 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Accent Non-Content Soft</figcaption>
-                      <div class="swatch" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+                      <div class="swatch" tabindex="0" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Accent Non-Content Subdued</figcaption>
-                      <div class="swatch" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+                      <div class="swatch" tabindex="0" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Accent Non-Content Strong</figcaption>
-                      <div class="swatch" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+                      <div class="swatch" tabindex="0" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -234,21 +241,21 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Neutral Non-Content Soft</figcaption>
-                      <div class="swatch" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+                      <div class="swatch" tabindex="0" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Neutral Non-Content Subdued</figcaption>
-                      <div class="swatch" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+                      <div class="swatch" tabindex="0" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Neutral Non-Content Strong</figcaption>
-                      <div class="swatch" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+                      <div class="swatch" tabindex="0" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -258,7 +265,7 @@
                 <div class="col palette-content">
                   <figure class="color-swatch">
                     <figcaption>Accent Content Baseline</figcaption>
-                    <div class="swatch" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+                    <div class="swatch" tabindex="0" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -266,14 +273,14 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Accent Content Subdued</figcaption>
-                      <div class="swatch" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+                      <div class="swatch" tabindex="0" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Accent Content Strong</figcaption>
-                      <div class="swatch" id="accentContentStrong" data-swatch-id="accentContentStrong">
+                      <div class="swatch" tabindex="0" id="accentContentStrong" data-swatch-id="accentContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -282,14 +289,14 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Neutral Content Subdued</figcaption>
-                      <div class="swatch" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+                      <div class="swatch" tabindex="0" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Neutral Content Strong</figcaption>
-                      <div class="swatch" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+                      <div class="swatch" tabindex="0" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -312,7 +319,7 @@
               <div class="palette-accent">
                 <figure class="color-swatch">
                   <figcaption>Seed</figcaption>
-                  <div class="swatch" id="seed" data-swatch-id="seed">
+                  <div class="swatch" tabindex="0" id="seed" data-swatch-id="seed">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -321,14 +328,14 @@
               <div class="row ui-swatches palette-backgrounds">
                 <figure class="color-swatch">
                   <figcaption>Canvas</figcaption>
-                  <div class="swatch" id="canvas" data-swatch-id="canvas">
+                  <div class="swatch" tabindex="0" id="canvas" data-swatch-id="canvas">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                 </figure>
                 <figure class="color-swatch">
                   <figcaption>Card</figcaption>
-                  <div class="swatch" id="card" data-swatch-id="card">
+                  <div class="swatch" tabindex="0" id="card" data-swatch-id="card">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -338,7 +345,7 @@
                 <div class="col palette-non-content">
                   <figure class="color-swatch">
                     <figcaption>Accent Non-Content Baseline</figcaption>
-                    <div class="swatch" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+                    <div class="swatch" tabindex="0" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -346,21 +353,21 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Accent Non-Content Soft</figcaption>
-                      <div class="swatch" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+                      <div class="swatch" tabindex="0" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Accent Non-Content Subdued</figcaption>
-                      <div class="swatch" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+                      <div class="swatch" tabindex="0" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Accent Non-Content Strong</figcaption>
-                      <div class="swatch" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+                      <div class="swatch" tabindex="0" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -369,21 +376,21 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Neutral Non-Content Soft</figcaption>
-                      <div class="swatch" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+                      <div class="swatch" tabindex="0" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Neutral Non-Content Subdued</figcaption>
-                      <div class="swatch" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+                      <div class="swatch" tabindex="0" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Neutral Non-Content Strong</figcaption>
-                      <div class="swatch" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+                      <div class="swatch" tabindex="0" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -393,7 +400,7 @@
                 <div class="col palette-content">
                   <figure class="color-swatch">
                     <figcaption>Accent Content Baseline</figcaption>
-                    <div class="swatch" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+                    <div class="swatch" tabindex="0" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -401,14 +408,14 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Accent Content Subdued</figcaption>
-                      <div class="swatch" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+                      <div class="swatch" tabindex="0" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Accent Content Strong</figcaption>
-                      <div class="swatch" id="accentContentStrong" data-swatch-id="accentContentStrong">
+                      <div class="swatch" tabindex="0" id="accentContentStrong" data-swatch-id="accentContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -417,14 +424,14 @@
                   <div class="row ui-swatches">
                     <figure class="color-swatch">
                       <figcaption>Neutral Content Subdued</figcaption>
-                      <div class="swatch" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+                      <div class="swatch" tabindex="0" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
                     </figure>
                     <figure class="color-swatch">
                       <figcaption>Neutral Content Strong</figcaption>
-                      <div class="swatch" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+                      <div class="swatch" tabindex="0" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
   <span class="value">N/A</span>
   <span class="color"></span>
 </div>
@@ -460,7 +467,7 @@
         <label>Name</label>
         <div class="form-row">
           <input type="text">
-          <button class="btn">Submit</button>
+          <button class="usa-button">Submit</button>
         </div>
       </div>
     </form>
@@ -484,9 +491,9 @@
     </div>
 
     <div>
-      <button class="btn">Submit</button>
-      <button class="btn btn-outlined">Cancel</button>
-      <button class="btn btn-soft">Skip</button>
+      <button class="usa-button">Submit</button>
+      <button class="usa-button usa-button--outline">Cancel</button>
+      <button class="usa-button usa-button--secondary">Skip</button>
     </div>
 
     <div>
@@ -555,9 +562,9 @@
       <label>Password</label>
       <input type="password">
     </div>
-    <button class="btn btn-block">Create account</button>
+    <button class="usa-button usa-button--big" style="width:100%">Create account</button>
     <p class="or"><span>Or</span></p>
-    <button class="btn btn-outlined btn-block">Continue with GitHub</button>
+    <button class="usa-button usa-button--outline usa-button--big" style="width:100%">Continue with GitHub</button>
   </form>
 
   <div class="toast">
@@ -568,72 +575,67 @@
 
                 <div class="col">
 	
-  <ul class="nav nav-tabs">
-    <li class="selected"><a href="#">Jello</a></li>
-    <li><a href="#">East Bay</a></li>
-    <li><a href="#">Klaus</a></li>
-    <li><a href="#">D.H.</a></li>
-  </ul>
+  <div class="tabs-container">
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="selected"><a href="#tab-team-light" role="tab" aria-selected="true" aria-controls="tab-team-light" id="tab-team-light-trigger">Team</a></li>
+      <li role="presentation"><a href="#tab-tasks-light" role="tab" aria-selected="false" aria-controls="tab-tasks-light" id="tab-tasks-light-trigger" tabindex="-1">Tasks</a></li>
+      <li role="presentation"><a href="#tab-notes-light" role="tab" aria-selected="false" aria-controls="tab-notes-light" id="tab-notes-light-trigger" tabindex="-1">Notes</a></li>
+    </ul>
 
-  <div class="card">
+    <div class="card tab-content">
 
-    <div class="avatars">
-      <span class="avatar">
-        <img src="images/clem_fandango.webp" alt="Avatar">
-      </span>
-      <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
-      <span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
-      <span class="avatar avatar-icon avatar-solid avatar-subdued">
-        <span class="material-symbols-rounded">group</span>
-      </span>
-      <span class="avatar avatar-icon avatar-solid avatar-strong">
-        <span class="material-symbols-rounded">group</span>
-      </span>
+      <div id="tab-team-light" role="tabpanel" aria-labelledby="tab-team-light-trigger" class="tab-pane">
+        <div class="avatars">
+          <span class="avatar"><img src="images/avatar-alice.svg" alt="Alice" data-name="Alice"></span>
+          <span class="avatar"><img src="images/avatar-bob.svg" alt="Bob" data-name="Bob"></span>
+          <span class="avatar"><img src="images/avatar-charlie.svg" alt="Charlie" data-name="Charlie"></span>
+          <span class="avatar"><img src="images/avatar-dave.svg" alt="Dave" data-name="Dave"></span>
+          <span class="avatar"><img src="images/avatar-eve.svg" alt="Eve" data-name="Eve"></span>
+        </div>
+        <div class="avatars" style="margin-top: 1rem;">
+          <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
+          <span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
+          <span class="avatar avatar-icon avatar-solid avatar-subdued">
+            <span class="material-symbols-rounded">group</span>
+          </span>
+          <span class="avatar avatar-icon avatar-solid avatar-strong">
+            <span class="material-symbols-rounded">group</span>
+          </span>
+        </div>
+      </div>
+
+      <div id="tab-tasks-light" role="tabpanel" aria-labelledby="tab-tasks-light-trigger" class="tab-pane" hidden>
+        <div class="checkboxes">
+          <div class="form-check">
+            <input type="checkbox">
+            <label>Respond to comment <a href="#">#129</a> from Jake</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox">
+            <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox">
+            <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+          </div>
+          <div class="form-check form-check-struckout">
+            <input type="checkbox" checked>
+            <label>Lay off 62 employees</label>
+          </div>
+          <div class="form-check form-check-struckout">
+            <input type="checkbox" checked>
+            <label>Review Robert Johnson's contract</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-notes-light" role="tabpanel" aria-labelledby="tab-notes-light-trigger" class="tab-pane" hidden>
+        <blockquote>
+          Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
+        </blockquote>
+      </div>
+
     </div>
-
-    <div class="avatars">
-      <span class="avatar">
-        <img src="images/clem_fandango.webp" alt="Avatar">
-      </span>
-      <span class="avatar avatar-one-letter avatar-soft avatar-subdued">V</span>
-      <span class="avatar avatar-two-letter avatar-soft avatar-subdued">BG</span>
-      <span class="avatar avatar-icon avatar-soft avatar-subdued">
-        <span class="material-symbols-rounded">group</span>
-      </span>
-      <span class="avatar avatar-icon avatar-soft avatar-strong">
-        <span class="material-symbols-rounded">group</span>
-      </span>
-    </div>
-
-    <hr>
-
-    <blockquote>
-      Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
-    </blockquote>
-
-    <div class="checkboxes">
-      <div class="form-check">
-      <input type="checkbox">
-      <label>Respond to comment <a href="#">#129</a> from Jake</label>
-      </div>
-      <div class="form-check">
-      <input type="checkbox">
-      <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
-      </div>
-      <div class="form-check">
-      <input type="checkbox">
-      <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
-      </div>
-      <div class="form-check form-check-struckout">
-      <input type="checkbox" checked>
-      <label>Lay off 62 employees</label>
-      </div>
-      <div class="form-check form-check-struckout">
-      <input type="checkbox" checked>
-      <label>Review Robert Johnson's contract</label>
-      </div>
-    </div>
-
   </div>
 
 </div>
@@ -660,7 +662,7 @@
         <label>Name</label>
         <div class="form-row">
           <input type="text">
-          <button class="btn">Submit</button>
+          <button class="usa-button">Submit</button>
         </div>
       </div>
     </form>
@@ -684,9 +686,9 @@
     </div>
 
     <div>
-      <button class="btn">Submit</button>
-      <button class="btn btn-outlined">Cancel</button>
-      <button class="btn btn-soft">Skip</button>
+      <button class="usa-button">Submit</button>
+      <button class="usa-button usa-button--outline">Cancel</button>
+      <button class="usa-button usa-button--secondary">Skip</button>
     </div>
 
     <div>
@@ -755,9 +757,9 @@
       <label>Password</label>
       <input type="password">
     </div>
-    <button class="btn btn-block">Create account</button>
+    <button class="usa-button usa-button--big" style="width:100%">Create account</button>
     <p class="or"><span>Or</span></p>
-    <button class="btn btn-outlined btn-block">Continue with GitHub</button>
+    <button class="usa-button usa-button--outline usa-button--big" style="width:100%">Continue with GitHub</button>
   </form>
 
   <div class="toast">
@@ -768,72 +770,67 @@
 
                 <div class="col">
 	
-  <ul class="nav nav-tabs">
-    <li class="selected"><a href="#">Jello</a></li>
-    <li><a href="#">East Bay</a></li>
-    <li><a href="#">Klaus</a></li>
-    <li><a href="#">D.H.</a></li>
-  </ul>
+  <div class="tabs-container">
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="selected"><a href="#tab-team-dark" role="tab" aria-selected="true" aria-controls="tab-team-dark" id="tab-team-dark-trigger">Team</a></li>
+      <li role="presentation"><a href="#tab-tasks-dark" role="tab" aria-selected="false" aria-controls="tab-tasks-dark" id="tab-tasks-dark-trigger" tabindex="-1">Tasks</a></li>
+      <li role="presentation"><a href="#tab-notes-dark" role="tab" aria-selected="false" aria-controls="tab-notes-dark" id="tab-notes-dark-trigger" tabindex="-1">Notes</a></li>
+    </ul>
 
-  <div class="card">
+    <div class="card tab-content">
 
-    <div class="avatars">
-      <span class="avatar">
-        <img src="images/clem_fandango.webp" alt="Avatar">
-      </span>
-      <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
-      <span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
-      <span class="avatar avatar-icon avatar-solid avatar-subdued">
-        <span class="material-symbols-rounded">group</span>
-      </span>
-      <span class="avatar avatar-icon avatar-solid avatar-strong">
-        <span class="material-symbols-rounded">group</span>
-      </span>
+      <div id="tab-team-dark" role="tabpanel" aria-labelledby="tab-team-dark-trigger" class="tab-pane">
+        <div class="avatars">
+          <span class="avatar"><img src="images/avatar-alice.svg" alt="Alice" data-name="Alice"></span>
+          <span class="avatar"><img src="images/avatar-bob.svg" alt="Bob" data-name="Bob"></span>
+          <span class="avatar"><img src="images/avatar-charlie.svg" alt="Charlie" data-name="Charlie"></span>
+          <span class="avatar"><img src="images/avatar-dave.svg" alt="Dave" data-name="Dave"></span>
+          <span class="avatar"><img src="images/avatar-eve.svg" alt="Eve" data-name="Eve"></span>
+        </div>
+        <div class="avatars" style="margin-top: 1rem;">
+          <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
+          <span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
+          <span class="avatar avatar-icon avatar-solid avatar-subdued">
+            <span class="material-symbols-rounded">group</span>
+          </span>
+          <span class="avatar avatar-icon avatar-solid avatar-strong">
+            <span class="material-symbols-rounded">group</span>
+          </span>
+        </div>
+      </div>
+
+      <div id="tab-tasks-dark" role="tabpanel" aria-labelledby="tab-tasks-dark-trigger" class="tab-pane" hidden>
+        <div class="checkboxes">
+          <div class="form-check">
+            <input type="checkbox">
+            <label>Respond to comment <a href="#">#129</a> from Jake</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox">
+            <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox">
+            <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+          </div>
+          <div class="form-check form-check-struckout">
+            <input type="checkbox" checked>
+            <label>Lay off 62 employees</label>
+          </div>
+          <div class="form-check form-check-struckout">
+            <input type="checkbox" checked>
+            <label>Review Robert Johnson's contract</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-notes-dark" role="tabpanel" aria-labelledby="tab-notes-dark-trigger" class="tab-pane" hidden>
+        <blockquote>
+          Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
+        </blockquote>
+      </div>
+
     </div>
-
-    <div class="avatars">
-      <span class="avatar">
-        <img src="images/clem_fandango.webp" alt="Avatar">
-      </span>
-      <span class="avatar avatar-one-letter avatar-soft avatar-subdued">V</span>
-      <span class="avatar avatar-two-letter avatar-soft avatar-subdued">BG</span>
-      <span class="avatar avatar-icon avatar-soft avatar-subdued">
-        <span class="material-symbols-rounded">group</span>
-      </span>
-      <span class="avatar avatar-icon avatar-soft avatar-strong">
-        <span class="material-symbols-rounded">group</span>
-      </span>
-    </div>
-
-    <hr>
-
-    <blockquote>
-      Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
-    </blockquote>
-
-    <div class="checkboxes">
-      <div class="form-check">
-      <input type="checkbox">
-      <label>Respond to comment <a href="#">#129</a> from Jake</label>
-      </div>
-      <div class="form-check">
-      <input type="checkbox">
-      <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
-      </div>
-      <div class="form-check">
-      <input type="checkbox">
-      <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
-      </div>
-      <div class="form-check form-check-struckout">
-      <input type="checkbox" checked>
-      <label>Lay off 62 employees</label>
-      </div>
-      <div class="form-check form-check-struckout">
-      <input type="checkbox" checked>
-      <label>Review Robert Johnson's contract</label>
-      </div>
-    </div>
-
   </div>
 
 </div>

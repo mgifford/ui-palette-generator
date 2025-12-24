@@ -6,9 +6,11 @@
     qsAllDemo('.token-highlight').forEach(function(el){ el.classList.remove('token-highlight','pop'); });
   }
 
-  function highlightToken(token){
+  function highlightToken(token, swatchColor){
     if (!token) return;
     clearHighlights();
+    
+    // 1. Highlight by attribute (existing logic)
     var esc = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(token) : token;
     var selectorParts = [
       '[data-uses-token~="' + esc + '"]',
@@ -18,15 +20,36 @@
       '#' + esc
     ];
     var sel = selectorParts.join(', ');
+    var matches = [];
     try {
-      var matches = document.querySelectorAll('#demo ' + sel);
-      matches.forEach(function(m){
-        m.classList.add('token-highlight','pop');
-        // remove 'pop' after a short time so repeated hovers retrigger
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        setTimeout(function(){ m.classList.remove('pop'); }, 500);
-      });
+      matches = Array.from(document.querySelectorAll('#demo ' + sel));
     } catch(e){ /* ignore selector errors */ }
+
+    // 2. Highlight by computed style (new logic)
+    // Only if we have a swatchColor to compare against
+    if (swatchColor) {
+      // Iterate all elements in demo. This is heavy but okay for a demo.
+      var allDemoEls = document.querySelectorAll('#demo *');
+      allDemoEls.forEach(function(el){
+        var style = getComputedStyle(el);
+        // Check common properties
+        if (style.backgroundColor === swatchColor || 
+            style.color === swatchColor || 
+            style.borderColor === swatchColor || 
+            style.outlineColor === swatchColor) {
+          if (!matches.includes(el)) {
+            matches.push(el);
+          }
+        }
+      });
+    }
+
+    matches.forEach(function(m){
+      m.classList.add('token-highlight','pop');
+      // remove 'pop' after a short time so repeated hovers retrigger
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      setTimeout(function(){ m.classList.remove('pop'); }, 500);
+    });
   }
 
   function onPointerOver(e){
@@ -35,7 +58,24 @@
     if (!t) return;
     var token = t.getAttribute('data-token') || t.getAttribute('data-swatch-id') || t.id;
     if (!token) return;
-    highlightToken(token);
+    
+    // Get computed color of the swatch if possible
+    var swatchColor = null;
+    // If t is the swatch or inside it
+    var swatchEl = t.classList.contains('swatch') ? t : t.closest('.swatch');
+    if (swatchEl) {
+        // The color is usually on the .color child, or the swatch itself?
+        // In index.html: <div class="swatch"><span class="color"></span></div>
+        // The .color span has the background color.
+        var colorSpan = swatchEl.querySelector('.color');
+        if (colorSpan) {
+            swatchColor = getComputedStyle(colorSpan).backgroundColor;
+        } else {
+            swatchColor = getComputedStyle(swatchEl).backgroundColor;
+        }
+    }
+
+    highlightToken(token, swatchColor);
   }
 
   function onPointerOut(e){
@@ -48,49 +88,29 @@
     if (!t) return;
     var token = t.getAttribute('data-token') || t.getAttribute('data-swatch-id') || t.id;
     if (!token) return;
-    highlightToken(token);
+    
+    var swatchColor = null;
+    var swatchEl = t.classList.contains('swatch') ? t : t.closest('.swatch');
+    if (swatchEl) {
+        var colorSpan = swatchEl.querySelector('.color');
+        if (colorSpan) {
+            swatchColor = getComputedStyle(colorSpan).backgroundColor;
+        } else {
+            swatchColor = getComputedStyle(swatchEl).backgroundColor;
+        }
+    }
+    
+    highlightToken(token, swatchColor);
   }
 
   function onFocusOut(e){
-    var related = e.relatedTarget;
-    if (!related || !document.querySelector('#paletteLeft').contains(related)) clearHighlights();
+    clearHighlights();
   }
 
-  function onKeyDown(e){
-    if (e.key === 'Escape') clearHighlights();
-    // Support Enter/Space to trigger highlight briefly
-    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.hasAttribute && (e.target.hasAttribute('data-token') || e.target.hasAttribute('data-swatch-id'))){
-      e.preventDefault();
-      var token = e.target.getAttribute('data-token') || e.target.getAttribute('data-swatch-id') || e.target.id;
-      highlightToken(token);
-      setTimeout(clearHighlights, 700);
-    }
-  }
+  // Use event delegation
+  document.addEventListener('mouseover', onPointerOver);
+  document.addEventListener('mouseout', onPointerOut);
+  document.addEventListener('focusin', onFocusIn);
+  document.addEventListener('focusout', onFocusOut);
 
-  document.addEventListener('DOMContentLoaded', function(){
-    var palette = document.getElementById('paletteLeft');
-    if (!palette) return;
-
-    // Ensure delegation works: make swatches keyboard reachable (support data-token and data-swatch-id)
-    Array.from(palette.querySelectorAll('[data-token],[data-swatch-id],.swatch')).forEach(function(sw){
-      if (!sw.hasAttribute('tabindex')) sw.setAttribute('tabindex','0');
-      if (!sw.hasAttribute('role')) sw.setAttribute('role','button');
-      // allow Enter/Space
-      sw.addEventListener('keydown', onKeyDown);
-    });
-
-    palette.addEventListener('pointerover', onPointerOver);
-    palette.addEventListener('pointerout', onPointerOut);
-    palette.addEventListener('focusin', onFocusIn);
-    palette.addEventListener('focusout', onFocusOut);
-    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') clearHighlights(); });
-
-    // mark initialized for diagnostics
-    try { palette.setAttribute('data-token-init', 'true'); } catch(e){}
-
-    // expose functions for manual testing and unit tests
-    try { window.TokenHighlighter = { highlightToken: highlightToken, clearHighlights: clearHighlights }; } catch(e){}
-
-    // Respect reduced motion: reduce animation effects via CSS
-  });
 })();
