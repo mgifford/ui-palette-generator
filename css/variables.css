@@ -16,6 +16,14 @@
     --color-neutralContentSubdued: rgba(35, 36, 34, 0.631);
     --color-neutralContentStrong: #232422;
 
+    /* Data Visualization */
+    --data-1: var(--color-accentContentStrong);
+    --data-2: var(--color-accentNonContentStrong);
+    --data-3: var(--color-neutralContentStrong);
+    --data-4: var(--color-neutralNonContentStrong);
+    --data-5: var(--color-accentContentSubdued);
+    --data-6: var(--color-neutralContentSubdued);
+
     /* Palette color variables for dark mode */
     --color-seed-dark: #232422;
     --color-canvas-dark: #232422;
@@ -32,6 +40,14 @@
     --color-neutralNonContentStrong-dark: #232422;
     --color-neutralContentSubdued-dark: rgba(49, 50, 48, 0.631);
     --color-neutralContentStrong-dark: #313230;
+
+    /* Data Visualization Dark */
+    --data-1-dark: var(--color-accentContentStrong-dark);
+    --data-2-dark: var(--color-accentNonContentStrong-dark);
+    --data-3-dark: var(--color-neutralContentStrong-dark);
+    --data-4-dark: var(--color-neutralNonContentStrong-dark);
+    --data-5-dark: var(--color-accentContentSubdued-dark);
+    --data-6-dark: var(--color-neutralContentSubdued-dark);
 }
 
 [data-theme="dark"] {
@@ -50,6 +66,13 @@
   --color-neutralNonContentStrong: var(--color-neutralNonContentStrong-dark);
   --color-neutralContentSubdued: var(--color-neutralContentSubdued-dark);
   --color-neutralContentStrong: var(--color-neutralContentStrong-dark);
+
+  --data-1: var(--data-1-dark);
+  --data-2: var(--data-2-dark);
+  --data-3: var(--data-3-dark);
+  --data-4: var(--data-4-dark);
+  --data-5: var(--data-5-dark);
+  --data-6: var(--data-6-dark);
 }
   --seed: #BA7542;
 

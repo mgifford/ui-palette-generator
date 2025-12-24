@@ -1446,6 +1446,142 @@ main {
   color: var(--color-neutralContentSubdued);
 }
 
+/* USWDS Alert (Error Summary) */
+.usa-alert {
+  position: relative;
+  padding: var(--space-md);
+  background-color: var(--color-card);
+  border-left: 0.5rem solid var(--color-neutralNonContentStrong);
+  margin-bottom: var(--space-md);
+}
+
+.usa-alert--error {
+  background-color: color-mix(in oklab, #d54309, white 90%); /* USWDS Red-cool-5v */
+  border-left-color: #d54309; /* USWDS Red-cool-50v */
+}
+/* Dark mode adjustment for error alert background */
+[data-theme="dark"] .usa-alert--error {
+   background-color: color-mix(in oklab, #d54309, black 80%);
+}
+
+.usa-alert__body {
+  padding-left: var(--space-sm);
+}
+
+.usa-alert__heading {
+  margin-top: 0;
+  margin-bottom: var(--space-xs);
+  font-weight: bold;
+  font-size: var(--fontSize-lg);
+  color: var(--color-neutralContentStrong);
+}
+
+.usa-alert__text {
+  margin: 0;
+  color: var(--color-neutralContentStrong);
+}
+
+/* USWDS Form Validation */
+.usa-form-group--error {
+  border-left: 0.25rem solid #d54309; /* USWDS Red-cool-50v */
+  padding-left: var(--space-sm);
+  margin-left: calc(var(--space-sm) * -1);
+}
+
+.usa-label--error {
+  font-weight: bold;
+  color: var(--color-neutralContentStrong);
+}
+
+.usa-error-message {
+  display: block;
+  color: #d54309; /* USWDS Red-cool-50v */
+  font-weight: bold;
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-xs);
+}
+
+.usa-input--error {
+  border: 2px solid #d54309 !important; /* USWDS Red-cool-50v */
+}
+
+/* USWDS Accordion */
+.usa-accordion {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border-top: 1px solid var(--color-neutralNonContentSubdued);
+}
+
+.usa-accordion__item {
+  border-bottom: 1px solid var(--color-neutralNonContentSubdued);
+}
+
+.usa-accordion__button {
+  background-color: var(--color-card);
+  border: none;
+  color: var(--color-neutralContentStrong);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin: 0;
+  padding: var(--space-md);
+  text-align: left;
+  text-decoration: none;
+  width: 100%;
+}
+
+.usa-accordion__button:hover {
+  background-color: var(--color-neutralNonContentSoft);
+  color: var(--color-accentContentStrong);
+}
+
+.usa-accordion__button[aria-expanded="true"] {
+  background-color: var(--color-neutralNonContentSoft);
+}
+
+.usa-accordion__content {
+  background-color: var(--color-card);
+  overflow: hidden;
+  padding: var(--space-md);
+}
+
+.usa-accordion__content[hidden] {
+  display: none;
+}
+
+/* USWDS Table */
+.usa-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin-top: var(--space-sm);
+}
+
+.usa-table th,
+.usa-table td {
+  border: 1px solid var(--color-neutralNonContentSubdued);
+  padding: var(--space-sm);
+  text-align: left;
+  color: var(--color-neutralContentStrong);
+}
+
+.usa-table th {
+  background-color: var(--color-neutralNonContentSoft);
+  font-weight: bold;
+}
+
+.usa-table--striped tbody tr:nth-child(odd) td {
+  background-color: var(--color-neutralNonContentSoft);
+}
+/* Ensure striped rows have contrast in dark mode */
+[data-theme="dark"] .usa-table--striped tbody tr:nth-child(odd) td {
+  background-color: color-mix(in oklab, var(--color-neutralNonContentSoft), transparent 80%);
+}
+
 /* Token highlight for demo elements (Global) */
 .token-highlight {
   position: relative;
@@ -1483,3 +1619,20 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .token-highlight { transition: none; }
 }
+
+/* Data Visualization Demo */
+.data-viz-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+}
+
+.data-viz-chart {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+  display: block;
+}
+

@@ -532,6 +532,50 @@
     </div>
   </div>
 
+  <div class="card" data-uses-token="card">
+    <ul class="usa-accordion">
+      <li class="usa-accordion__item">
+        <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1-light" data-uses-token="neutralContentStrong neutralNonContentSoft">
+          Recent Transactions
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+        <div id="a1-light" class="usa-accordion__content">
+          <table class="usa-table usa-table--striped">
+            <thead>
+              <tr>
+                <th scope="col" data-uses-token="neutralContentStrong neutralNonContentSoft">Date</th>
+                <th scope="col" data-uses-token="neutralContentStrong neutralNonContentSoft">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">Oct 21</td>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">$120.00</td>
+              </tr>
+              <tr>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">Oct 22</td>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">$45.50</td>
+              </tr>
+              <tr>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">Oct 23</td>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">$12.99</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li class="usa-accordion__item">
+        <button class="usa-accordion__button" aria-expanded="false" aria-controls="a2-light" data-uses-token="neutralContentStrong neutralNonContentSoft">
+          Archived Data
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+        <div id="a2-light" class="usa-accordion__content" hidden>
+          <p data-uses-token="neutralContentStrong">No archived data found.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
 </div>
 
                 <div class="col">
@@ -565,9 +609,16 @@
   </div>
 
   <form class="card">
-    <div class="form-group">
-      <label>Name</label>
-      <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
+    <div class="usa-alert usa-alert--error" role="alert" data-uses-token="card">
+      <div class="usa-alert__body">
+        <h4 class="usa-alert__heading">Error status</h4>
+        <p class="usa-alert__text">Informative message regarding the error.</p>
+      </div>
+    </div>
+    <div class="form-group usa-form-group--error">
+      <label class="usa-label--error">Name</label>
+      <input type="text" class="usa-input--error" data-uses-token="neutralContentStrong neutralNonContentSubdued" aria-describedby="input-error-message">
+      <span class="usa-error-message" id="input-error-message">Helpful error message</span>
     </div>
     <div class="form-group">
       <label>Email</label>
@@ -586,6 +637,46 @@
     Task failed successfully.
   </div>
 
+
+  
+  <div class="card data-viz-card" data-uses-token="card">
+    <ul class="usa-accordion">
+      <li class="usa-accordion__item">
+        <button class="usa-accordion__button" aria-expanded="true" aria-controls="data-viz-light" data-uses-token="neutralContentStrong neutralNonContentSoft">
+          Data Visualization
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+        <div id="data-viz-light" class="usa-accordion__content">
+          <svg class="data-viz-chart" viewBox="0 0 130 60" role="img" aria-label="Bar chart showing data distribution">
+            <defs>
+              <pattern id="hatch-light" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="4" stroke="var(--color-neutralContentSubdued)" stroke-width="2" opacity="0.5" />
+              </pattern>
+              <pattern id="dots-light" patternUnits="userSpaceOnUse" width="4" height="4">
+                <circle cx="2" cy="2" r="1" fill="var(--color-neutralContentSubdued)" opacity="0.5" />
+              </pattern>
+            </defs>
+            <!-- Bar 1: Solid -->
+            <rect x="10" y="10" width="15" height="40" fill="var(--data-1)" />
+            <!-- Bar 2: Hatch -->
+            <rect x="30" y="20" width="15" height="30" fill="var(--data-2)" />
+            <rect x="30" y="20" width="15" height="30" fill="url(#hatch-light)" />
+            <!-- Bar 3: Solid -->
+            <rect x="50" y="5" width="15" height="45" fill="var(--data-3)" />
+            <!-- Bar 4: Dots -->
+            <rect x="70" y="15" width="15" height="35" fill="var(--data-4)" />
+            <rect x="70" y="15" width="15" height="35" fill="url(#dots-light)" />
+            <!-- Bar 5: Solid -->
+            <rect x="90" y="25" width="15" height="25" fill="var(--data-5)" />
+            <!-- Bar 6: Hatch -->
+            <rect x="110" y="30" width="15" height="20" fill="var(--data-6)" />
+            <rect x="110" y="30" width="15" height="20" fill="url(#hatch-light)" />
+          </svg>
+          <p class="text-sm text-center" style="margin-top: var(--space-sm); color: var(--color-neutralContentSubdued);">Bar Chart (Texture + Color)</p>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
 
                 <div class="col">
@@ -740,6 +831,49 @@
       </div>
     </div>
   </div>
+  <div class="card" data-uses-token="card">
+    <ul class="usa-accordion">
+      <li class="usa-accordion__item">
+        <button class="usa-accordion__button" aria-expanded="true" aria-controls="a1-dark" data-uses-token="neutralContentStrong neutralNonContentSoft">
+          Recent Transactions
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+        <div id="a1-dark" class="usa-accordion__content">
+          <table class="usa-table usa-table--striped">
+            <thead>
+              <tr>
+                <th scope="col" data-uses-token="neutralContentStrong neutralNonContentSoft">Date</th>
+                <th scope="col" data-uses-token="neutralContentStrong neutralNonContentSoft">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">Oct 21</td>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">$120.00</td>
+              </tr>
+              <tr>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">Oct 22</td>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">$45.50</td>
+              </tr>
+              <tr>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">Oct 23</td>
+                <td data-uses-token="neutralContentStrong neutralNonContentSoft">$12.99</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </li>
+      <li class="usa-accordion__item">
+        <button class="usa-accordion__button" aria-expanded="false" aria-controls="a2-dark" data-uses-token="neutralContentStrong neutralNonContentSoft">
+          Archived Data
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+        <div id="a2-dark" class="usa-accordion__content" hidden>
+          <p data-uses-token="neutralContentStrong">No archived data found.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
 
 </div>
 
@@ -774,9 +908,16 @@
   </div>
 
   <form class="card">
-    <div class="form-group">
-      <label>Name</label>
-      <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
+    <div class="usa-alert usa-alert--error" role="alert" data-uses-token="card">
+      <div class="usa-alert__body">
+        <h4 class="usa-alert__heading">Error status</h4>
+        <p class="usa-alert__text">Informative message regarding the error.</p>
+      </div>
+    </div>
+    <div class="form-group usa-form-group--error">
+      <label class="usa-label--error">Name</label>
+      <input type="text" class="usa-input--error" data-uses-token="neutralContentStrong neutralNonContentSubdued" aria-describedby="input-error-message">
+      <span class="usa-error-message" id="input-error-message">Helpful error message</span>
     </div>
     <div class="form-group">
       <label>Email</label>
@@ -795,6 +936,46 @@
     Task failed successfully.
   </div>
 
+
+  
+  <div class="card data-viz-card" data-uses-token="card">
+    <ul class="usa-accordion">
+      <li class="usa-accordion__item">
+        <button class="usa-accordion__button" aria-expanded="true" aria-controls="data-viz-dark" data-uses-token="neutralContentStrong neutralNonContentSoft">
+          Data Visualization
+          <span class="material-symbols-rounded">expand_more</span>
+        </button>
+        <div id="data-viz-dark" class="usa-accordion__content">
+          <svg class="data-viz-chart" viewBox="0 0 130 60" role="img" aria-label="Bar chart showing data distribution">
+            <defs>
+              <pattern id="hatch-dark" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="4" stroke="var(--color-neutralContentSubdued)" stroke-width="2" opacity="0.5" />
+              </pattern>
+              <pattern id="dots-dark" patternUnits="userSpaceOnUse" width="4" height="4">
+                <circle cx="2" cy="2" r="1" fill="var(--color-neutralContentSubdued)" opacity="0.5" />
+              </pattern>
+            </defs>
+            <!-- Bar 1: Solid -->
+            <rect x="10" y="10" width="15" height="40" fill="var(--data-1)" />
+            <!-- Bar 2: Hatch -->
+            <rect x="30" y="20" width="15" height="30" fill="var(--data-2)" />
+            <rect x="30" y="20" width="15" height="30" fill="url(#hatch-dark)" />
+            <!-- Bar 3: Solid -->
+            <rect x="50" y="5" width="15" height="45" fill="var(--data-3)" />
+            <!-- Bar 4: Dots -->
+            <rect x="70" y="15" width="15" height="35" fill="var(--data-4)" />
+            <rect x="70" y="15" width="15" height="35" fill="url(#dots-dark)" />
+            <!-- Bar 5: Solid -->
+            <rect x="90" y="25" width="15" height="25" fill="var(--data-5)" />
+            <!-- Bar 6: Hatch -->
+            <rect x="110" y="30" width="15" height="20" fill="var(--data-6)" />
+            <rect x="110" y="30" width="15" height="20" fill="url(#hatch-dark)" />
+          </svg>
+          <p class="text-sm text-center" style="margin-top: var(--space-sm); color: var(--color-neutralContentSubdued);">Bar Chart (Texture + Color)</p>
+        </div>
+      </li>
+    </ul>
+  </div>
 </div>
 
                 <div class="col">
@@ -911,6 +1092,7 @@
 
   </div>
 
+<script src="js/accordion.js"></script>
 </body>
 
 </html>
