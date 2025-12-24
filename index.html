@@ -450,17 +450,17 @@
                 <!-- Light demo shares markup with dark demo but inherits light CSS tokens -->
                 <article id="demo-light" class="demo-panel" data-theme-mode="light" data-theme="light" aria-labelledby="demo-light-title">
               <header class="panel-heading">
-                <h3 id="demo-light-title">Light UI sample</h3>
-                <p class="panel-note">This column renders every element against the light palette.</p>
+                <h3 id="demo-light-title" data-uses-token="neutralContentStrong">Light UI sample</h3>
+                <p class="panel-note" data-uses-token="neutralContentSubdued">This column renders every element against the light palette.</p>
               </header>
-              <div class="demo-canvas">
+              <div class="demo-canvas" data-uses-token="canvas">
                 <div class="col">
   
   <div class="card" data-uses-token="card">
 
     <form>
       <div class="form-group">
-        <label>Name</label>
+        <label data-uses-token="neutralContentStrong">Name</label>
         <div class="form-row">
           <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
           <button class="usa-button" data-uses-token="accentNonContentStrong">Submit</button>
@@ -470,10 +470,10 @@
 
     <ul class="menu">
       <li class="selected" data-uses-token="accentNonContentSoft"><a href="#">John</a></li>
-      <li><a href="#">Paul</a></li>
-      <li><a href="#">George</a></li>
-      <li><a href="#">Ringo</a></li>
-      <li><a href="#">Billy</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">Paul</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">George</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">Ringo</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">Billy</a></li>
     </ul>
 
     <div class="alert" data-uses-token="accentContentStrong accentNonContentSoft">
@@ -586,7 +586,7 @@
       <button class="editor-btn" data-cmd="underline" title="Underline" aria-label="Underline">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 17c3.3 0 6-2.7 6-6V3h-2.5v8c0 1.9-1.6 3.5-3.5 3.5S8.5 12.9 8.5 11V3H6v8c0 3.3 2.7 6 6 6zm-7 2v2h14v-2H5z"/></svg>
       </button>
-      <div class="divider" aria-hidden="true"></div>
+      <div class="divider" aria-hidden="true" data-uses-token="accentNonContentBaseline"></div>
       <button class="editor-btn" data-cmd="insertUnorderedList" title="Bullet List" aria-label="Bullet List">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M4 10.5c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zm0-6c-.8 0-1.5.7-1.5 1.5S3.2 7.5 4 7.5 5.5 6.8 5.5 6 4.8 4.5 4 4.5zm0 12c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
       </button>
@@ -606,21 +606,21 @@
   <form class="card">
     <div class="usa-alert usa-alert--error" role="alert" data-uses-token="card">
       <div class="usa-alert__body">
-        <h4 class="usa-alert__heading">Error status</h4>
+        <h4 class="usa-alert__heading" data-uses-token="neutralContentStrong">Error status</h4>
         <p class="usa-alert__text">Informative message regarding the error.</p>
       </div>
     </div>
     <div class="form-group usa-form-group--error">
-      <label class="usa-label--error">Name</label>
+      <label class="usa-label--error" data-uses-token="neutralContentStrong">Name</label>
       <input type="text" class="usa-input--error" data-uses-token="neutralContentStrong neutralNonContentSubdued" aria-describedby="input-error-message">
       <span class="usa-error-message" id="input-error-message">Helpful error message</span>
     </div>
     <div class="form-group">
-      <label>Email</label>
+      <label data-uses-token="neutralContentStrong">Email</label>
       <input type="email" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <div class="form-group">
-      <label>Password</label>
+      <label data-uses-token="neutralContentStrong">Password</label>
       <input type="password" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <button class="usa-button usa-button--big" data-uses-token="accentNonContentStrong" style="width:100%">Create account</button>
@@ -628,7 +628,7 @@
     <button class="usa-button usa-button--outline usa-button--big" data-uses-token="accentNonContentStrong accentContentStrong" style="width:100%">Continue with GitHub</button>
   </form>
 
-  <div class="toast">
+  <div class="toast" data-uses-token="card neutralContentStrong">
     Task failed successfully.
   </div>
 
@@ -709,29 +709,29 @@
         <div class="checkboxes">
           <div class="form-check">
             <input type="checkbox">
-            <label>Respond to comment <a href="#">#129</a> from Jake</label>
+            <label data-uses-token="neutralContentStrong">Respond to comment <a href="#">#129</a> from Jake</label>
           </div>
           <div class="form-check">
             <input type="checkbox">
-            <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+            <label data-uses-token="neutralContentStrong">Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
           </div>
           <div class="form-check">
             <input type="checkbox">
-            <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+            <label data-uses-token="neutralContentStrong">Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
           </div>
           <div class="form-check form-check-struckout">
             <input type="checkbox" checked>
-            <label>Lay off 62 employees</label>
+            <label data-uses-token="neutralContentStrong">Lay off 62 employees</label>
           </div>
           <div class="form-check form-check-struckout">
             <input type="checkbox" checked>
-            <label>Review Robert Johnson's contract</label>
+            <label data-uses-token="neutralContentStrong">Review Robert Johnson's contract</label>
           </div>
         </div>
       </div>
 
       <div id="tab-notes-light" role="tabpanel" aria-labelledby="tab-notes-light-trigger" class="tab-pane" hidden>
-        <blockquote>
+        <blockquote data-uses-token="neutralContentStrong">
           Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
         </blockquote>
       </div>
@@ -750,17 +750,17 @@
                 <!-- Dark demo reuses identical markup under a dark theme parent -->
                 <article id="demo-dark" class="demo-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="demo-dark-title">
               <header class="panel-heading">
-                <h3 id="demo-dark-title">Dark UI sample</h3>
-                <p class="panel-note">Same DOM, dark tokens.</p>
+                <h3 id="demo-dark-title" data-uses-token="neutralContentStrong">Dark UI sample</h3>
+                <p class="panel-note" data-uses-token="neutralContentSubdued">Same DOM, dark tokens.</p>
               </header>
-              <div class="demo-canvas">
+              <div class="demo-canvas" data-uses-token="canvas">
                 <div class="col">
   
   <div class="card" data-uses-token="card">
 
     <form>
       <div class="form-group">
-        <label>Name</label>
+        <label data-uses-token="neutralContentStrong">Name</label>
         <div class="form-row">
           <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
           <button class="usa-button" data-uses-token="accentNonContentStrong">Submit</button>
@@ -770,10 +770,10 @@
 
     <ul class="menu">
       <li class="selected" data-uses-token="accentNonContentSoft"><a href="#">John</a></li>
-      <li><a href="#">Paul</a></li>
-      <li><a href="#">George</a></li>
-      <li><a href="#">Ringo</a></li>
-      <li><a href="#">Billy</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">Paul</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">George</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">Ringo</a></li>
+      <li><a data-uses-token="accentContentBaseline" href="#">Billy</a></li>
     </ul>
 
     <div class="alert" data-uses-token="accentContentStrong accentNonContentSoft">
@@ -885,7 +885,7 @@
       <button class="editor-btn" data-cmd="underline" title="Underline" aria-label="Underline">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 17c3.3 0 6-2.7 6-6V3h-2.5v8c0 1.9-1.6 3.5-3.5 3.5S8.5 12.9 8.5 11V3H6v8c0 3.3 2.7 6 6 6zm-7 2v2h14v-2H5z"/></svg>
       </button>
-      <div class="divider" aria-hidden="true"></div>
+      <div class="divider" aria-hidden="true" data-uses-token="accentNonContentBaseline"></div>
       <button class="editor-btn" data-cmd="insertUnorderedList" title="Bullet List" aria-label="Bullet List">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M4 10.5c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zm0-6c-.8 0-1.5.7-1.5 1.5S3.2 7.5 4 7.5 5.5 6.8 5.5 6 4.8 4.5 4 4.5zm0 12c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
       </button>
@@ -905,21 +905,21 @@
   <form class="card">
     <div class="usa-alert usa-alert--error" role="alert" data-uses-token="card">
       <div class="usa-alert__body">
-        <h4 class="usa-alert__heading">Error status</h4>
+        <h4 class="usa-alert__heading" data-uses-token="neutralContentStrong">Error status</h4>
         <p class="usa-alert__text">Informative message regarding the error.</p>
       </div>
     </div>
     <div class="form-group usa-form-group--error">
-      <label class="usa-label--error">Name</label>
+      <label class="usa-label--error" data-uses-token="neutralContentStrong">Name</label>
       <input type="text" class="usa-input--error" data-uses-token="neutralContentStrong neutralNonContentSubdued" aria-describedby="input-error-message">
       <span class="usa-error-message" id="input-error-message">Helpful error message</span>
     </div>
     <div class="form-group">
-      <label>Email</label>
+      <label data-uses-token="neutralContentStrong">Email</label>
       <input type="email" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <div class="form-group">
-      <label>Password</label>
+      <label data-uses-token="neutralContentStrong">Password</label>
       <input type="password" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <button class="usa-button usa-button--big" data-uses-token="accentNonContentStrong" style="width:100%">Create account</button>
@@ -927,7 +927,7 @@
     <button class="usa-button usa-button--outline usa-button--big" data-uses-token="accentNonContentStrong accentContentStrong" style="width:100%">Continue with GitHub</button>
   </form>
 
-  <div class="toast">
+  <div class="toast" data-uses-token="card neutralContentStrong">
     Task failed successfully.
   </div>
 
@@ -1008,29 +1008,29 @@
         <div class="checkboxes">
           <div class="form-check">
             <input type="checkbox">
-            <label>Respond to comment <a href="#">#129</a> from Jake</label>
+            <label data-uses-token="neutralContentStrong">Respond to comment <a href="#">#129</a> from Jake</label>
           </div>
           <div class="form-check">
             <input type="checkbox">
-            <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+            <label data-uses-token="neutralContentStrong">Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
           </div>
           <div class="form-check">
             <input type="checkbox">
-            <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+            <label data-uses-token="neutralContentStrong">Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
           </div>
           <div class="form-check form-check-struckout">
             <input type="checkbox" checked>
-            <label>Lay off 62 employees</label>
+            <label data-uses-token="neutralContentStrong">Lay off 62 employees</label>
           </div>
           <div class="form-check form-check-struckout">
             <input type="checkbox" checked>
-            <label>Review Robert Johnson's contract</label>
+            <label data-uses-token="neutralContentStrong">Review Robert Johnson's contract</label>
           </div>
         </div>
       </div>
 
       <div id="tab-notes-dark" role="tabpanel" aria-labelledby="tab-notes-dark-trigger" class="tab-pane" hidden>
-        <blockquote>
+        <blockquote data-uses-token="neutralContentStrong">
           Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
         </blockquote>
       </div>
