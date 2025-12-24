@@ -21,6 +21,7 @@
       panelPosition: "top-right",
     });
   </script>
+  <script defer src="js/palette-algos.js"></script>
   <script defer src="js/bundle.js"></script>
   <script defer src="js/image-fallback.js"></script>
   <script defer src="js/editor.js"></script>
@@ -144,9 +145,16 @@
       <input type="text" id="darkModeSaturation" value="0.666">
     </div>
 
-    <div style="display:flex;gap:.5rem;align-items:center">
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
       <button id="generateBtn" class="btn">Generate</button>
+      <button id="ronginBtn" class="btn btn-secondary" aria-describedby="rongin-desc">Rongin</button>
+      <button id="chromaVersBtn" class="btn btn-secondary" aria-describedby="chromaverse-desc">ChromaVerse</button>
       <label style="display:inline-flex;align-items:center;gap:.5rem;margin-left:.5rem"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
+    </div>
+    <div id="paletteStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.9rem;color:var(--color-accentContentStrong);margin-top:0.5rem;min-height:1.2em"></div>
+    <div style="display:none">
+      <span id="rongin-desc">Generate accent palette using golden ratio harmonic algorithm</span>
+      <span id="chromaverse-desc">Generate accent palette using analogous harmonic algorithm</span>
     </div>
 
   </form>
