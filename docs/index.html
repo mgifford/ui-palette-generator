@@ -14,6 +14,7 @@
 
   <script defer src="js/bundle.js"></script>
   <script defer src="js/image-fallback.js"></script>
+  <script defer src="js/editor.js"></script>
 
   <meta property="og:image" content="images/social_media_thumbnail.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -509,28 +510,22 @@
 
                 <div class="col">
 	
-  <div class="card">
-		
-    <div class="toolbar">
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">link</span></button>
-        <button class="btn"><span class="material-symbols-rounded">image</span></button>
-        <button class="btn"><span class="material-symbols-rounded">theaters</span></button>
-      </div>
+  <div class="editor-container app-card" id="demo-editor-light">
+    <div class="editor-toolbar" role="toolbar" aria-label="Editor toolbar">
+      <button class="editor-btn" data-cmd="bold" title="Bold" aria-label="Bold"><span class="material-symbols-rounded" aria-hidden="true">format_bold</span></button>
+      <button class="editor-btn" data-cmd="italic" title="Italic" aria-label="Italic"><span class="material-symbols-rounded" aria-hidden="true">format_italic</span></button>
+      <button class="editor-btn" data-cmd="underline" title="Underline" aria-label="Underline"><span class="material-symbols-rounded" aria-hidden="true">format_underlined</span></button>
+      <div class="divider" aria-hidden="true"></div>
+      <button class="editor-btn" data-cmd="insertUnorderedList" title="Bullet List" aria-label="Bullet List"><span class="material-symbols-rounded" aria-hidden="true">format_list_bulleted</span></button>
+      <button class="editor-btn" data-cmd="insertOrderedList" title="Number List" aria-label="Number List"><span class="material-symbols-rounded" aria-hidden="true">format_list_numbered</span></button>
     </div>
-
-    <button class="btn btn-select">Old Fashioned</button>
-
+    <div class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" tabindex="0">
+      <p>Edit this text to test your <b>contrast</b> and <i>readability</i>.</p>
+      <ul>
+        <li>Check list item colors</li>
+        <li>Check focus rings</li>
+      </ul>
+    </div>
   </div>
 
   <form class="card">
@@ -705,28 +700,22 @@
 
                 <div class="col">
 	
-  <div class="card">
-		
-    <div class="toolbar">
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">link</span></button>
-        <button class="btn"><span class="material-symbols-rounded">image</span></button>
-        <button class="btn"><span class="material-symbols-rounded">theaters</span></button>
-      </div>
+  <div class="editor-container app-card" id="demo-editor-dark">
+    <div class="editor-toolbar" role="toolbar" aria-label="Editor toolbar">
+      <button class="editor-btn" data-cmd="bold" title="Bold" aria-label="Bold"><span class="material-symbols-rounded" aria-hidden="true">format_bold</span></button>
+      <button class="editor-btn" data-cmd="italic" title="Italic" aria-label="Italic"><span class="material-symbols-rounded" aria-hidden="true">format_italic</span></button>
+      <button class="editor-btn" data-cmd="underline" title="Underline" aria-label="Underline"><span class="material-symbols-rounded" aria-hidden="true">format_underlined</span></button>
+      <div class="divider" aria-hidden="true"></div>
+      <button class="editor-btn" data-cmd="insertUnorderedList" title="Bullet List" aria-label="Bullet List"><span class="material-symbols-rounded" aria-hidden="true">format_list_bulleted</span></button>
+      <button class="editor-btn" data-cmd="insertOrderedList" title="Number List" aria-label="Number List"><span class="material-symbols-rounded" aria-hidden="true">format_list_numbered</span></button>
     </div>
-
-    <button class="btn btn-select">Old Fashioned</button>
-
+    <div class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" tabindex="0">
+      <p>Edit this text to test your <b>contrast</b> and <i>readability</i>.</p>
+      <ul>
+        <li>Check list item colors</li>
+        <li>Check focus rings</li>
+      </ul>
+    </div>
   </div>
 
   <form class="card">

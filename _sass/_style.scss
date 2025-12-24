@@ -767,6 +767,47 @@ main {
     }
   }
 
+  /* Lightweight editor styles for demo */
+  .editor-container.app-card {
+    background: var(--surface-light);
+    color: var(--text-light);
+    border-radius: var(--borderRadius-md);
+    box-shadow: var(--elevation-high);
+    overflow: hidden;
+    margin-bottom: var(--space-md);
+  }
+
+  .editor-toolbar {
+    display:flex;
+    gap: var(--space-sm);
+    padding: calc(var(--space-sm));
+    align-items:center;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: var(--surface-light);
+  }
+
+  .editor-btn {
+    background: transparent;
+    border: none;
+    padding: 0.35rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color: var(--text-light);
+  }
+  .editor-btn:focus { outline: 2px solid var(--action-light); outline-offset: 2px; }
+  .editor-btn.active { background: var(--action-light); color: #fff; }
+
+  .editor-toolbar .divider { width:1px; height:1.4rem; background: rgba(0,0,0,0.06); border-radius:2px; }
+
+  .editor-content { padding: var(--space-md); min-height: 6rem; background: inherit; color: inherit; line-height: var(--bodyLineHeight); }
+
+  [data-theme="dark"] .editor-container.app-card { background: var(--surface-dark); color: var(--text-dark); }
+  [data-theme="dark"] .editor-btn:focus { outline-color: var(--action-dark); }
+  [data-theme="dark"] .editor-btn.active { background: var(--action-dark); color: #fff; }
+
   .tag {
     @include border-radius("mx");
     color: var(--color-accentContentStrong);
