@@ -1543,6 +1543,16 @@ main {
   background-color: var(--color-neutralNonContentSoft);
 }
 
+.accordion-icon {
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+  transform: rotate(0deg);
+}
+
+.usa-accordion__button[aria-expanded="true"] .accordion-icon {
+  transform: rotate(180deg);
+}
+
 .usa-accordion__content {
   background-color: var(--color-card);
   overflow: hidden;
