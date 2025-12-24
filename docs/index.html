@@ -65,10 +65,13 @@
 
     <!-- Inline alert added so the info SVG renders correctly on the homepage -->
     <div class="alert" role="status" aria-live="polite">
-      <svg class="icon-svg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" width="5" height="5" style="width:5px;height:5px;">
-        <circle cx="293.685" cy="196.267" r="65.165" fill="currentColor" transform="matrix(6.08835 0 0 6.08758 -1388.059 -794.794)"/>
-        <path d="M383.686 244.808V311.2h9.725v7.64h-38.915v-7.64h8.91v-55.978l-8.91-3.567v-6.847z" fill="#fff" transform="matrix(5.39184 0 0 5.39116 -1613.016 -1022.251)"/>
-        <circle cx="362.95" cy="211.755" r="11.84" fill="#fff" transform="matrix(5.63966 0 0 5.63895 -1644.736 -1016.22)"/>
+      <!-- Simplified inline icon: 16x16 viewBox, renders crisply at 5x5 CSS pixels -->
+      <svg class="icon-svg" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" width="5" height="5" style="width:5px;height:5px;">
+        <!-- outer circle uses currentColor so it matches alert color -->
+        <circle cx="8" cy="8" r="7" fill="currentColor" />
+        <!-- simple 'i' glyph: small rectangle and dot in white -->
+        <rect x="7" y="5" width="2" height="4" fill="#fff" rx="0.2" />
+        <rect x="7" y="3" width="2" height="1" fill="#fff" rx="0.2" />
       </svg>
       <span>Please upgrade to the new version.</span>
     </div>
