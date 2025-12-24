@@ -938,6 +938,7 @@ main {
 
   .media {
     @include flex-row(var(--space-md));
+    align-items: center;
     img {
       @include border-radius("md");
       display: block;
@@ -947,15 +948,24 @@ main {
   }
 
   .text-pair {
+    /* Allow text to shrink within flex containers so long labels wrap or truncate cleanly */
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     &.text-pair-md-sm {
       padding-bottom: 0.2434rem;
     }
     .text-md {
       color: var(--color-neutralContentStrong);
+      word-break: break-word;
     }
     .text-sm {
       @include font-size("sm");
       color: var(--color-neutralContentSubdued);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
