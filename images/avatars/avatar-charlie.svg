@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Avatar Charlie</title>
+  <desc id="desc">Circular avatar with gradient background and the letter C</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop stop-color="#fff0d9" offset="0%"/>
+      <stop stop-color="#ffd6a6" offset="100%"/>
+    </linearGradient>
+  </defs>
+  <circle cx="48" cy="48" r="44" fill="url(#bg)" stroke="#d28c3b" stroke-width="4"/>
+  <text x="50%" y="55%" text-anchor="middle" font-family="'Inter', 'Segoe UI', system-ui, sans-serif" font-size="38" font-weight="700" fill="#8a4a0a">C</text>
+</svg>
