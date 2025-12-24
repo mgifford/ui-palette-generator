@@ -32,13 +32,13 @@
 <meta property="og:image:width" content="940" />
 <meta property="og:image:height" content="608" />
 <meta property="og:title" content="Accessible Color Palette Generator" />
-<meta property="og:description" content="This is a tool to automate the generation of accessible enterprise UI color palettes." />
+<meta property="og:description" content="This is a tool to automate the generation of accessible UI color palettes." />
 <meta property="og:url" content="https://thisisfranciswu.com/enterprise-ui-palette-generator" />
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content="images/social_media_thumbnail.jpg" />
 <meta name="twitter:title" content="Accessible Color Palette Generator" />
-<meta name="twitter:description" content="This is a tool to automate the generation of accessible enterprise UI color palettes." />
+<meta name="twitter:description" content="This is a tool to automate the generation of accessible UI color palettes." />
 <meta name="twitter:site" content="@thisisfranciswu" />
 <meta name="twitter:creator" content="@thisisfranciswu" />
 
@@ -79,14 +79,11 @@
 
     <section id="intro">
       <p>
-        <strong>Background:</strong> This is a tool to automate the generation of accessible enterprise UI color palettes.
-        It draws inspiration from <a href="https://www.radix-ui.com/colors/custom" target="_blank">Radix UI's custom color palette tool</a>, but its color generation rules are mostly based on those I laid out in a <a href="https://uxdesign.cc/a-systematic-approach-to-generating-enterprise-ui-color-palettes-ecaf0c164c17" target="_blank">Medium article I wrote</a>, which I followed up with <a href="https://medium.com/@thisisfranciswu/creating-the-accessible-color-palette-generator-dd1f74b717ee" target="_blank">a retrospective on creating this tool</a>. Check it out on <a href="https://github.com/thisisfranciswu/enterprise-ui-palette-generator" target="_blank">GitHub</a>.
+        <strong>Background:</strong> This tool helps design accessible UI color palettes that work consistently in both light and dark modes. </br>
+        It builds on the token-based, demo-first approach introduced by Frances Wu, and extends it with automation, contrast checking, and AI-assisted exploration. Human review is always required.
       </p>
       <p>
-        <strong>Usage:</strong> Refresh the page to generate a palette based on a random accent color.
-        Play with the inputs and click on the "Generate" button to generate a palette based on the accent color.
-        This is a proof of concept and there's no form validation.
-        Toggle light and dark mode to how the modes impact the color palettes.
+        <strong>Usage and Contribution:</strong> Generate palettes from a seed color, override tokens, and review WCAG 2.2 and APCA contrast results directly in the interface. This project is open source. Please report issues or contribute improvements on GitHub.
       </p>
     </section>
 
@@ -171,6 +168,22 @@
 
   </form>
 
+  <section id="contrastReport" class="contrast-report" aria-live="polite">
+    <div class="contrast-report__heading">
+      <div>
+        <p class="eyebrow">Accessibility</p>
+        <h3>Contrast report</h3>
+        <p class="input-hint">WCAG 2.2 AA and APCA checks run on the current palette.</p>
+      </div>
+      <div class="contrast-report__meta" aria-hidden="true">
+        <span class="pill">Auto-updates</span>
+      </div>
+    </div>
+    <div id="contrastReportBody" class="contrast-report__body">
+      <p class="input-hint">Report will update after the palette is generated.</p>
+    </div>
+  </section>
+
 </aside>
 
 
@@ -179,7 +192,8 @@
           <div class="heading">
             <h2>Palette</h2>
           </div>
-          <p class="section-hint">Two mirrored palettes share the exact same token IDs. Their parent containers carry either <code data-inline="true">data-theme-mode="light"</code> or <code data-inline="true">data-theme-mode="dark"</code> so duplicate IDs resolve to the right CSS variable scope.</p>
+          <p class="section-hint">The Palette shows a single set of semantic color tokens rendered in light and dark modes.</br>
+          Both palettes share the same token IDs. Theme differences are controlled by the parent container using data-theme-mode, allowing consistent overrides and comparisons, including alignment with systems like USWDS.</p>
           <div class="palette-panels" aria-live="polite">
             <div class="split" id="paletteSplit">
               <div class="split-left" id="paletteLeft">
@@ -455,7 +469,8 @@
 
         <section id="demo">
           <h2>Demo</h2>
-          <p class="section-hint">Identical UI markup sits inside light and dark parent containers. If a component looks different, it is only because the parent declares the theme via <code data-inline="true">data-theme-mode</code>.</p>
+          <p class="section-hint">The Demo uses identical UI markup for light and dark modes.</br>
+          Visual differences exist only because the palette values change. This makes it easier to see how tokens behave in real components, including focus and non-text elements.</p>
           <div class="demo-panels">
             <div class="split" id="demoSplit">
               <div class="split-left" id="demoLeft">

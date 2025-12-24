@@ -130,6 +130,29 @@ const TOKEN_LOOKUP = TOKEN_CATALOG.reduce(function(acc, token) {
 }, {});
 const CSV_HEADER = ['theme', 'color', 'token', 'role', 'category', 'usage'];
 
+// Contrast report configuration
+const CONTRAST_FOREGROUNDS = [
+  'accentContentStrong',
+  'accentContentSubdued',
+  'accentContentBaseline',
+  'neutralContentStrong',
+  'neutralContentSubdued',
+  'seed'
+];
+const CONTRAST_BACKGROUNDS = [
+  'canvas',
+  'card',
+  'accentNonContentSoft',
+  'neutralNonContentSoft'
+];
+const FOCUS_FOREGROUNDS = ['seed', 'accentContentStrong', 'accentContentBaseline'];
+const APCA_THRESHOLDS = {
+  text: 60,      // body text
+  largeText: 45, // large / bold text
+  nonText: 60,   // UI icons/lines
+  focus: 60      // focus indicators/outlines
+};
+
 function getHarmonyMode() {
   const mode = (window.HARMONY_STATE && window.HARMONY_STATE.mode) || HARMONY_DEFAULT;
   const valid = HARMONY_MODES.some(function(m) { return m.id === mode; });
@@ -457,6 +480,9 @@ function parseHashToOverrides() {
               accInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
           } catch(e){}
+
+          // Update inline accessibility report so users see current contrasts
+          try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
         }
         return;
       }
@@ -556,6 +582,22 @@ $('#generateBtn').on('click', function(e) {
   }
   generatePalette();
   e.preventDefault();
+});
+
+let pendingGenerateTimer = null;
+function schedulePaletteRefresh() {
+  clearTimeout(pendingGenerateTimer);
+  pendingGenerateTimer = setTimeout(function(){
+    try { generatePalette(); } catch (e) { console.info('Palette refresh failed', e); }
+  }, 180);
+}
+
+['canvasContrast','cardContrast','softContrast','strongContrast','neutralSaturation','neutralContrast','darkModeSaturation'].forEach(function(id){
+  const el = document.getElementById(id);
+  if (!el) return;
+  ['input','change'].forEach(function(evt){
+    el.addEventListener(evt, schedulePaletteRefresh);
+  });
 });
 
 // Copy CSS variables button in transfer panel
@@ -981,6 +1023,7 @@ function applyImportedPaletteCsv(text) {
     setSwatchValues($('html').attr('data-theme'));
     // Recompute UI chrome foregrounds to keep contrast after an import
     try { computeAndSetUiForegrounds(); } catch (e) {}
+    try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
   }
 
   return applied;
@@ -1031,6 +1074,150 @@ function normalizeColorValue(value) {
   }
 }
 
+function computeWCAGContrast(fgColor, bgColor) {
+  try { return chroma.contrast(fgColor, bgColor); } catch (e) { return null; }
+}
+
+function computeAPCAContrast(fgColor, bgColor) {
+  try {
+    if (typeof chroma.contrastAPCA === 'function') {
+      return chroma.contrastAPCA(fgColor, bgColor);
+    }
+  } catch (e) {}
+  return null;
+}
+
+function buildContrastResults() {
+  const themes = ['light', 'dark'];
+  const results = [];
+
+  themes.forEach(function(theme) {
+    const fgs = CONTRAST_FOREGROUNDS.map(function(id){ return { id, color: getSwatchColor(theme, id) }; }).filter(function(item){ return !!item.color; });
+    const bgs = CONTRAST_BACKGROUNDS.map(function(id){ return { id, color: getSwatchColor(theme, id) }; }).filter(function(item){ return !!item.color; });
+
+    fgs.forEach(function(fg){
+      bgs.forEach(function(bg){
+        const ratio = computeWCAGContrast(fg.color, bg.color);
+        const apca = computeAPCAContrast(fg.color, bg.color);
+        const apcaAbs = (apca === null || apca === undefined) ? null : Math.abs(apca);
+
+        function pushResult(usage, wcagThreshold, apcaThreshold) {
+          if (ratio === null || ratio === undefined) return;
+          results.push({
+            theme,
+            foreground: fg.id,
+            foregroundColor: fg.color,
+            background: bg.id,
+            backgroundColor: bg.color,
+            usage,
+            ratio,
+            wcagThreshold,
+            wcagPass: ratio >= wcagThreshold,
+            apca,
+            apcaThreshold,
+            apcaPass: apcaAbs === null ? null : apcaAbs >= apcaThreshold
+          });
+        }
+
+        pushResult('text', wcagContentContrast, APCA_THRESHOLDS.text);
+        pushResult('non-text', wcagNonContentContrast, APCA_THRESHOLDS.nonText);
+        if (FOCUS_FOREGROUNDS.indexOf(fg.id) !== -1) {
+          pushResult('focus', wcagNonContentContrast, APCA_THRESHOLDS.focus);
+        }
+      });
+    });
+  });
+
+  return results;
+}
+
+function formatRatio(ratio) {
+  if (ratio === null || ratio === undefined || isNaN(ratio)) return 'N/A';
+  return `${(Math.round(ratio * 10) / 10).toFixed(1)}:1`;
+}
+
+function formatApca(apca) {
+  if (apca === null || apca === undefined || isNaN(apca)) return 'APCA n/a';
+  return `APCA ${Math.round(apca)}`;
+}
+
+function renderContrastReport(results) {
+  const container = document.getElementById('contrastReportBody');
+  if (!container) return;
+
+  if (!results || !results.length) {
+    container.innerHTML = '<p class="contrast-report__empty">No palette data yet.</p>';
+    return;
+  }
+
+  const grouped = {};
+  results.forEach(function(row) {
+    const key = `${row.theme}|${row.foreground}`;
+    grouped[key] = grouped[key] || { theme: row.theme, foreground: row.foreground, foregroundColor: row.foregroundColor, rows: [] };
+    grouped[key].rows.push(row);
+  });
+
+  const themeOrder = ['light', 'dark'];
+  const html = themeOrder.map(function(theme) {
+    const groups = Object.values(grouped).filter(function(g){ return g.theme === theme; });
+    if (!groups.length) return '';
+
+    const groupHtml = groups.map(function(group){
+      const bgBuckets = {};
+      group.rows.forEach(function(r){
+        bgBuckets[r.background] = bgBuckets[r.background] || { background: r.background, backgroundColor: r.backgroundColor, rows: [] };
+        bgBuckets[r.background].rows.push(r);
+      });
+
+      const bgHtml = Object.values(bgBuckets).map(function(bg){
+        const rowHtml = bg.rows.map(function(r){
+          const usageLabel = r.usage === 'non-text' ? 'Non-text contrast' : (r.usage === 'focus' ? 'Focus visibility' : 'Text');
+          const wcagBadge = `<span class="contrast-badge ${r.wcagPass ? 'pass' : 'fail'}">${r.wcagPass ? 'PASS' : 'FAIL'} ${formatRatio(r.ratio)}</span>`;
+          const apcaLabel = r.apcaPass === null ? '<span class="contrast-badge neutral">APCA n/a</span>' : `<span class="contrast-badge ${r.apcaPass ? 'pass' : 'fail'}">${r.apcaPass ? 'PASS' : 'FAIL'} ${formatApca(r.apca)}</span>`;
+          return `<div class="contrast-row"><div class="contrast-row__bg">on ${TOKEN_LOOKUP[r.background] ? TOKEN_LOOKUP[r.background].label : r.background}</div><div class="contrast-row__usage">${usageLabel}</div><div class="contrast-row__wcag">${wcagBadge}</div><div class="contrast-row__apca">${apcaLabel}</div></div>`;
+        }).join('');
+        return `<div class="contrast-group">${rowHtml}</div>`;
+      }).join('');
+
+      const fgLabel = TOKEN_LOOKUP[group.foreground] ? TOKEN_LOOKUP[group.foreground].label : group.foreground;
+      return `<div class="contrast-group"><div class="contrast-group__header"><span class="contrast-chip" style="--chip-color:${group.foregroundColor};">${fgLabel}</span><span class="contrast-report__group-meta">Foreground vs backgrounds</span></div>${bgHtml}</div>`;
+    }).join('');
+
+    return `<div class="contrast-report__theme"><div class="contrast-report__theme-label">${theme} theme</div>${groupHtml}</div>`;
+  }).join('');
+
+  container.innerHTML = html || '<p class="contrast-report__empty">No palette data yet.</p>';
+}
+
+function ensureContrastReportPlacement() {
+  const report = document.getElementById('contrastReport');
+  if (!report) return;
+  const main = document.querySelector('main');
+  const transfer = document.getElementById('palette-transfer');
+  const settings = document.getElementById('settings');
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  if (isMobile) {
+    if (main && transfer && report.parentElement !== main) {
+      main.insertBefore(report, transfer);
+    }
+  } else if (settings && report.parentElement !== settings) {
+    settings.appendChild(report);
+  }
+}
+
+function updateContrastReport() {
+  const results = buildContrastResults();
+  renderContrastReport(results);
+  ensureContrastReportPlacement();
+}
+
+let resizeReportTimer = null;
+window.addEventListener('resize', function(){
+  clearTimeout(resizeReportTimer);
+  resizeReportTimer = setTimeout(ensureContrastReportPlacement, 150);
+});
+
 // Allow other modules (colorpicker) to apply a custom color to a specific token and theme.
 window.applyCustomColor = function(theme, tokenId, color) {
   try {
@@ -1050,6 +1237,7 @@ window.applyCustomColor = function(theme, tokenId, color) {
     setSwatchValues('dark', { scopedOnly: true });
     setSwatchValues($('html').attr('data-theme'));
     try { computeAndSetUiForegrounds(); } catch (e) {}
+    try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
     return true;
   } catch (e) { return false; }
 };
@@ -1073,6 +1261,7 @@ function reapplyCustomOverrides() {
     setSwatchValues('light', { scopedOnly: true });
     setSwatchValues('dark', { scopedOnly: true });
     setSwatchValues($('html').attr('data-theme'));
+    try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
   } catch (e) {}
 }
 
@@ -1263,6 +1452,9 @@ function generatePalette() {
 
     // Reapply any saved custom overrides after generation
     try { reapplyCustomOverrides(); } catch (e) {}
+
+    // Refresh inline contrast report with the current palette values
+    try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
 
   }
 

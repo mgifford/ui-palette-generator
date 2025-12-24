@@ -1,12 +1,12 @@
 # Enterprise UI Palette Generator
-```markdown
-# Enterprise UI Palette Generator
 
-This is a tool to automate the generation of accessible enterprise UI color palettes.
+This tool helps design accessible UI color palettes that work consistently in both light and dark modes. It builds on the token-based, demo-first approach introduced by Frances Wu, and extends it with automation, contrast checking, and AI-assisted exploration. Human review is always required.
 
-It draws inspiration from [Radix UI's custom color palette tool](https://www.radix-ui.com/colors/custom), but its color generation rules are mostly based on those I laid out in a [Medium article I wrote](https://uxdesign.cc/a-systematic-approach-to-generating-enterprise-ui-color-palettes-ecaf0c164c17).
+- **Palette:** A single set of semantic tokens renders in light and dark via the parent `data-theme-mode`, enabling consistent overrides and comparisons (including USWDS alignment).
+- **Demo:** Identical UI markup runs in light and dark. Visual differences come only from palette values, clarifying how tokens behave in real components, including focus and non-text elements.
+- **Usage and contribution:** Generate from a seed color, override tokens, and review WCAG 2.2 and APCA contrast results in the UI. This project is open source—report issues or contribute on GitHub.
 
-[Try it out](https://thisisfranciswu.com/enterprise-ui-palette-generator/)!
+[Try it out](https://thisisfranciswu.com/enterprise-ui-palette-generator/).
 
 > The production site is published straight from `docs/`. The repository root intentionally does not include an `index.html`, so GitHub shows this README instead.
 

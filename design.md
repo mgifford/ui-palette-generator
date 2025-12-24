@@ -6,6 +6,15 @@ The goal is not to showcase arbitrary color usage, but to demonstrate a **determ
 
 ---
 
+## Orientation (What the tool does)
+
+- **Background:** Helps design accessible UI color palettes that stay consistent across light and dark modes, extending Frances Wu's token-based, demo-first approach with automation, contrast checks, and AI-assisted exploration. Human review is always required.
+- **Palette:** A single set of semantic tokens renders in light and dark via parent `data-theme-mode`, enabling aligned overrides and comparisons (including USWDS-friendly usage).
+- **Demo:** Identical markup runs in both themes; differences come only from palette values, exposing token behavior for text, focus, and non-text elements.
+- **Usage and contribution:** Generate from a seed, override tokens, and review WCAG 2.2 and APCA contrast results in-product. Open source—issues and improvements welcomed on GitHub.
+
+---
+
 ## Core Principles
 
 1. **Semantic over aesthetic**
@@ -261,6 +270,30 @@ Every token defined in the palette is intentionally exercised in the Demo UI.
 
 ---
 
+## Inline Contrast Report
+
+**Purpose**
+- Surface a fast, explainable contrast check for common pairings without claiming formal WCAG conformance.
+
+**What it measures**
+- WCAG 2.2 AA: text at $4.5{:}1$, non-text/focus at $3{:}1$ (aligned to demo usage).
+- APCA heuristics: text/non-text/focus target $60$; large text reserved at $45$ for future sizing-aware passes.
+- Foregrounds checked: `seed`, accent content trio, neutral content duo.
+- Backgrounds checked: `canvas`, `card`, accent and neutral soft non-content fills.
+
+**When it runs**
+- After palette generation, CSV import, and custom overrides (including URL hash accent parsing).
+- Re-validates on resize so placement stays below Settings on desktop and before Palette Transfer on mobile.
+
+**Output shape**
+- Groups by theme, then by foreground token; lists each background with WCAG badge and APCA badge (`APCA n/a` if the browser build lacks APCA support).
+- Uses token labels so users can map rows back to palette roles.
+
+**Limitations**
+- Heuristic only; does not cover every UI state or size nuance. Users must still validate real UI contexts.
+
+---
+
 ## What This Strategy Avoids
 
 - Hard-coded colors in demo markup.
@@ -274,7 +307,7 @@ Every token defined in the palette is intentionally exercised in the Demo UI.
 
 - Automated token coverage validation.
 - Programmatic checks to ensure every token appears in the Demo.
-- Contrast evaluation per token-role pairing.
+- Size-aware APCA thresholds and component-level contrast evaluation.
 
 ---
 
