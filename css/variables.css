@@ -50,29 +50,32 @@
     --data-6-dark: var(--color-neutralContentSubdued-dark);
 }
 
-[data-theme="dark"] {
-  --color-seed: var(--color-seed-dark);
-  --color-canvas: var(--color-canvas-dark);
-  --color-card: var(--color-card-dark);
-  --color-accentNonContentBaseline: var(--color-accentNonContentBaseline-dark);
-  --color-accentNonContentSoft: var(--color-accentNonContentSoft-dark);
-  --color-accentNonContentSubdued: var(--color-accentNonContentSubdued-dark);
-  --color-accentNonContentStrong: var(--color-accentNonContentStrong-dark);
-  --color-accentContentBaseline: var(--color-accentContentBaseline-dark);
-  --color-accentContentSubdued: var(--color-accentContentSubdued-dark);
-  --color-accentContentStrong: var(--color-accentContentStrong-dark);
-  --color-neutralNonContentSoft: var(--color-neutralNonContentSoft-dark);
-  --color-neutralNonContentSubdued: var(--color-neutralNonContentSubdued-dark);
-  --color-neutralNonContentStrong: var(--color-neutralNonContentStrong-dark);
-  --color-neutralContentSubdued: var(--color-neutralContentSubdued-dark);
-  --color-neutralContentStrong: var(--color-neutralContentStrong-dark);
+/* Container query variant: dark theme */
+@container (--theme: dark) {
+  :root {
+    --color-seed: var(--color-seed-dark);
+    --color-canvas: var(--color-canvas-dark);
+    --color-card: var(--color-card-dark);
+    --color-accentNonContentBaseline: var(--color-accentNonContentBaseline-dark);
+    --color-accentNonContentSoft: var(--color-accentNonContentSoft-dark);
+    --color-accentNonContentSubdued: var(--color-accentNonContentSubdued-dark);
+    --color-accentNonContentStrong: var(--color-accentNonContentStrong-dark);
+    --color-accentContentBaseline: var(--color-accentContentBaseline-dark);
+    --color-accentContentSubdued: var(--color-accentContentSubdued-dark);
+    --color-accentContentStrong: var(--color-accentContentStrong-dark);
+    --color-neutralNonContentSoft: var(--color-neutralNonContentSoft-dark);
+    --color-neutralNonContentSubdued: var(--color-neutralNonContentSubdued-dark);
+    --color-neutralNonContentStrong: var(--color-neutralNonContentStrong-dark);
+    --color-neutralContentSubdued: var(--color-neutralContentSubdued-dark);
+    --color-neutralContentStrong: var(--color-neutralContentStrong-dark);
 
-  --data-1: var(--data-1-dark);
-  --data-2: var(--data-2-dark);
-  --data-3: var(--data-3-dark);
-  --data-4: var(--data-4-dark);
-  --data-5: var(--data-5-dark);
-  --data-6: var(--data-6-dark);
+    --data-1: var(--data-1-dark);
+    --data-2: var(--data-2-dark);
+    --data-3: var(--data-3-dark);
+    --data-4: var(--data-4-dark);
+    --data-5: var(--data-5-dark);
+    --data-6: var(--data-6-dark);
+  }
 }
   --seed: #BA7542;
 
