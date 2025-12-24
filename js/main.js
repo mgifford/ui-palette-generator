@@ -1080,6 +1080,159 @@ function generatePalette() {
     });
   }
 
+  // ============================================================
+  // Palette Generation Buttons (Rongin and ChromaVerse)
+  // ============================================================
+
+  function setStatusMessage(msg) {
+    const statusEl = document.getElementById('paletteStatus');
+    if (statusEl) {
+      statusEl.textContent = msg;
+      if (msg) {
+        setTimeout(function() {
+          if (statusEl.textContent === msg) {
+            statusEl.textContent = '';
+          }
+        }, 3000);
+      }
+    }
+  }
+
+  function isValidHexColor(hex) {
+    return /^#?[0-9a-f]{6}$/i.test(hex);
+  }
+
+  function applyAlgorithmPalette(algoName, algoFunc) {
+    const accentInput = document.getElementById('accentColor');
+    if (!accentInput) {
+      setStatusMessage('Accent color input not found.');
+      return;
+    }
+
+    const accentHex = accentInput.value.trim();
+    if (!isValidHexColor(accentHex)) {
+      setStatusMessage('Invalid accent color. Please enter a valid hex color (e.g., #FF0000).');
+      console.warn('Invalid hex color for', algoName, ':', accentHex);
+      return;
+    }
+
+    try {
+      // Normalize hex to #RRGGBB format
+      const normalizedHex = '#' + accentHex.replace(/^#/, '').toUpperCase();
+
+      // Call the algorithm
+      const result = algoFunc(normalizedHex);
+      const { lightAccent, darkAccent } = result;
+
+      if (!lightAccent || !darkAccent || lightAccent.length < 2 || darkAccent.length < 2) {
+        setStatusMessage(algoName + ' algorithm returned invalid output.');
+        console.error('Invalid algorithm output:', result);
+        return;
+      }
+
+      // Map algorithm output to token system
+      // Baseline = first color (lighter), Strong = second color (darker)
+      const lightBaseline = lightAccent[0];
+      const lightStrong = lightAccent[1];
+      const darkBaseline = darkAccent[0];
+      const darkStrong = darkAccent[1];
+
+      // Calculate soft/subdued versions using existing methods
+      // For light mode
+      const lightCardColor = getSwatchColor('light', 'card');
+      const lightNonContentSoftColor = decreaseOpacityToContrast(lightStrong, lightCardColor, softContrast);
+      const lightNonContentSubduedColor = decreaseOpacityToContrast(lightStrong, lightCardColor, wcagNonContentContrast);
+
+      // For dark mode
+      const darkCardColor = getSwatchColor('dark', 'card');
+      const darkNonContentSoftColor = decreaseOpacityToContrast(darkStrong, darkCardColor, softContrast);
+      const darkNonContentSubduedColor = decreaseOpacityToContrast(darkStrong, darkCardColor, wcagNonContentContrast);
+
+      // Update light mode accent tokens
+      setCssColor('light', 'accentNonContentBaseline', '--color-accentNonContentBaseline', lightBaseline);
+      setCssColor('light', 'accentNonContentStrong', '--color-accentNonContentStrong', lightStrong);
+      setCssColor('light', 'accentNonContentSoft', '--color-accentNonContentSoft', lightNonContentSoftColor);
+      setCssColor('light', 'accentNonContentSubdued', '--color-accentNonContentSubdued', lightNonContentSubduedColor);
+
+      // For content colors, use a slightly darker version of the strong color
+      const lightContentBaseline = chroma(lightBaseline).luminance(chroma(lightBaseline).luminance() * 0.9).hex();
+      const lightContentStrong = chroma(lightStrong).luminance(chroma(lightStrong).luminance() * 0.85).hex();
+      const lightContentSubduedColor = decreaseOpacityToContrast(lightContentStrong, lightCardColor, wcagContentContrast);
+
+      setCssColor('light', 'accentContentBaseline', '--color-accentContentBaseline', lightContentBaseline);
+      setCssColor('light', 'accentContentStrong', '--color-accentContentStrong', lightContentStrong);
+      setCssColor('light', 'accentContentSubdued', '--color-accentContentSubdued', lightContentSubduedColor);
+
+      // Update dark mode accent tokens
+      setCssColor('dark', 'accentNonContentBaseline', '--color-accentNonContentBaseline', darkBaseline);
+      setCssColor('dark', 'accentNonContentStrong', '--color-accentNonContentStrong', darkStrong);
+      setCssColor('dark', 'accentNonContentSoft', '--color-accentNonContentSoft', darkNonContentSoftColor);
+      setCssColor('dark', 'accentNonContentSubdued', '--color-accentNonContentSubdued', darkNonContentSubduedColor);
+
+      // For dark content colors
+      const darkContentBaseline = chroma(darkBaseline).luminance(chroma(darkBaseline).luminance() * 0.9).hex();
+      const darkContentStrong = chroma(darkStrong).luminance(chroma(darkStrong).luminance() * 0.85).hex();
+      const darkContentSubduedColor = decreaseOpacityToContrast(darkContentStrong, darkCardColor, wcagContentContrast);
+
+      setCssColor('dark', 'accentContentBaseline', '--color-accentContentBaseline', darkContentBaseline);
+      setCssColor('dark', 'accentContentStrong', '--color-accentContentStrong', darkContentStrong);
+      setCssColor('dark', 'accentContentSubdued', '--color-accentContentSubdued', darkContentSubduedColor);
+
+      // Update swatch display values
+      setSwatchValues('light', { scopedOnly: true });
+      setSwatchValues('dark', { scopedOnly: true });
+
+      // Log debug info
+      console.log('Palette generation debug:', {
+        algorithm: algoName,
+        seedColor: normalizedHex,
+        lightAccent,
+        darkAccent,
+        tokensApplied: {
+          'accentNonContentBaseline': lightBaseline,
+          'accentNonContentStrong': lightStrong,
+          'accentContentBaseline': lightContentBaseline,
+          'accentContentStrong': lightContentStrong,
+          'dark.accentNonContentBaseline': darkBaseline,
+          'dark.accentNonContentStrong': darkStrong
+        }
+      });
+
+      setStatusMessage(algoName + ' palette applied successfully.');
+    } catch (e) {
+      setStatusMessage('Error applying ' + algoName + ': ' + (e.message || String(e)));
+      console.error('Error in applyAlgorithmPalette:', e);
+    }
+  }
+
+  // Button event handlers
+  const ronginBtn = document.getElementById('ronginBtn');
+  const chromaVersBtn = document.getElementById('chromaVersBtn');
+
+  if (ronginBtn) {
+    ronginBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (window.PaletteAlgos && window.PaletteAlgos.rongin) {
+        applyAlgorithmPalette('Rongin', window.PaletteAlgos.rongin);
+      } else {
+        setStatusMessage('Rongin algorithm not loaded.');
+        console.error('PaletteAlgos.rongin not available');
+      }
+    });
+  }
+
+  if (chromaVersBtn) {
+    chromaVersBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (window.PaletteAlgos && window.PaletteAlgos.chromaVerse) {
+        applyAlgorithmPalette('ChromaVerse', window.PaletteAlgos.chromaVerse);
+      } else {
+        setStatusMessage('ChromaVerse algorithm not loaded.');
+        console.error('PaletteAlgos.chromaVerse not available');
+      }
+    });
+  }
+
   // Splitter handling moved to js/splitter.js
   import('./splitter.js').then(() => {/* splitter module loaded */}).catch(()=>{});
 

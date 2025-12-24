@@ -254,6 +254,23 @@ input[type=password] {
   border: none;
   line-height: 1.6;
   text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  
+  &:focus-visible {
+    outline: 2px solid var(--color-accentContentStrong);
+    outline-offset: 2px;
+  }
+  
+  &.btn-secondary {
+    background-color: var(--color-neutralNonContentSubdued);
+    color: var(--color-card);
+    
+    &:hover {
+      background: color-mix(in oklab, var(--color-neutralNonContentSubdued), white 15%);
+    }
+  }
+  
   &.btn-outlined {
     background: none;
     box-shadow: inset 0 0 0 1px var(--color-accentNonContentSubdued);
@@ -400,6 +417,39 @@ main {
 
   .palette-panel[data-theme-mode="dark"] {
     --theme: dark;
+  }
+
+  /* Responsive palette layout based on container width */
+  .palette-panel .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .palette-panel .row .col {
+    flex: 1 1 45%;
+  }
+
+  /* Stack columns to single column when palette panel is narrow */
+  @container (max-width: 480px) {
+    .palette-panel .row {
+      flex-direction: column;
+    }
+
+    .palette-panel .row .col {
+      flex: 1 1 100%;
+    }
+
+    .palette-panel .ui-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+
+    .palette-panel .color-swatch {
+      flex: 1 1 calc(50% - var(--space-sm));
+      min-width: 150px;
+    }
   }
 
   .palette-heading {
