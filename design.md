@@ -1,0 +1,281 @@
+# Color Token Design Strategy
+
+This document explains the design decisions behind the use of color tokens in the UI Palette Generator demo, and how those tokens are applied consistently across light and dark modes.
+
+The goal is not to showcase arbitrary color usage, but to demonstrate a **deterministic, auditable, and accessible mapping** between color tokens and UI roles.
+
+---
+
+## Core Principles
+
+1. **Semantic over aesthetic**
+   Colors are assigned based on *what an element is doing*, not how it looks.
+
+2. **Deterministic mapping**
+   Given a token name, it should be clear:
+   - what UI role it supports
+   - where it is expected to appear
+   - what *not* to use it for
+
+3. **Theme symmetry**
+   Light and dark modes use the same token IDs.
+   Only token values change.
+
+4. **Accessibility-first intent**
+   Token roles are chosen to support WCAG 2.2 AA contrast expectations.
+   Color is never the sole indicator of state or meaning.
+
+5. **Demonstrable coverage**
+   Every token defined in the palette is intentionally represented in the Demo UI.
+
+---
+
+## Token Categories and Their Roles
+
+### Seed
+
+**Purpose**
+- Source color for palette generation.
+
+**Usage**
+- Not intended for direct UI usage.
+- Used to derive accent content and non-content families.
+- May appear in small, non-critical decorative contexts only.
+
+**Rationale**
+Using the seed directly for text or controls often fails contrast and creates brittle designs.
+
+---
+
+### Canvas
+
+**Purpose**
+- The page-level background layer.
+
+**Usage**
+- Demo panel background.
+- Large, non-elevated surfaces.
+
+**Rationale**
+Canvas establishes the overall luminance context for the UI.
+
+---
+
+### Card
+
+**Purpose**
+- Elevated surface for grouped content.
+
+**Usage**
+- Cards
+- Tab panels
+- Editor containers
+- Data visualization containers
+
+**Rationale**
+Cards create visual hierarchy and separation without relying on borders alone.
+
+---
+
+### Input Surface
+
+**Purpose**
+- Dedicated surface for user-editable controls.
+
+**Usage**
+- Text inputs
+- Textareas
+- Contenteditable regions
+
+**Fallback**
+- If no dedicated input token exists, `card` is used.
+
+**Rationale**
+Inputs need stronger affordance than general surfaces, especially for accessibility and usability.
+
+---
+
+## Accent Non-Content Tokens
+
+Used for **UI structure, affordances, and state**, not for primary readable text.
+
+### Accent Non-Content Baseline
+
+**Usage**
+- Subtle accent borders
+- Low-emphasis separators
+
+**Rationale**
+Provides accent presence without visual dominance.
+
+---
+
+### Accent Non-Content Soft
+
+**Usage**
+- Hover backgrounds
+- Selected list items
+- Filled tags
+- Alert backgrounds
+
+**Rationale**
+Communicates state or grouping without overpowering content.
+
+---
+
+### Accent Non-Content Subdued
+
+**Usage**
+- Secondary hover states
+- Outline button hover fills
+- Subtle accent outlines
+
+**Rationale**
+Supports layered interaction states.
+
+---
+
+### Accent Non-Content Strong
+
+**Usage**
+- Focus rings
+- Primary button backgrounds
+- Checkbox fills
+- Active tab indicators
+- Data visualization fills where meaning is “control” or “state”
+
+**Rationale**
+This is the highest-emphasis non-content accent and must remain highly visible.
+
+---
+
+## Accent Content Tokens
+
+Used for **readable text and icons that carry brand or accent meaning**.
+
+### Accent Content Baseline
+
+**Usage**
+- Links in body text
+- Mildly accented copy
+
+**Rationale**
+Provides brand voice without overwhelming neutral typography.
+
+---
+
+### Accent Content Subdued
+
+**Usage**
+- Helper text
+- Notes
+- Secondary accent copy
+
+**Rationale**
+Keeps accent tone while reducing emphasis.
+
+---
+
+### Accent Content Strong
+
+**Usage**
+- Emphasized headings
+- Callout titles
+- Accent icons paired with neutral text
+
+**Rationale**
+Used sparingly for emphasis where contrast is verified.
+
+---
+
+## Neutral Non-Content Tokens
+
+Used for **structure and layout**, not meaning.
+
+### Neutral Non-Content Soft
+
+**Usage**
+- Hairline dividers
+- Table gridlines
+- Subtle textures and patterns
+
+---
+
+### Neutral Non-Content Subdued
+
+**Usage**
+- Default borders
+- Inactive outlines
+- Input borders
+
+---
+
+### Neutral Non-Content Strong
+
+**Usage**
+- Strong outlines
+- Secondary button backgrounds
+- Prominent structural UI
+
+---
+
+## Neutral Content Tokens
+
+Used for **most readable UI text**.
+
+### Neutral Content Strong
+
+**Usage**
+- Body text
+- Labels
+- Table text
+- Editor content
+
+**Rationale**
+This is the default text color for readability.
+
+---
+
+### Neutral Content Subdued
+
+**Usage**
+- Metadata
+- Captions
+- Placeholder text
+- Secondary information
+
+---
+
+## Applying Tokens in the Demo
+
+- Tokens are assigned via `data-uses-token` attributes.
+- CSS maps tokens to properties such as:
+  - `color`
+  - `background-color`
+  - `border-color`
+  - `outline-color`
+- SVG icons use `currentColor` to inherit token-driven text color.
+- Charts and data visualizations explicitly reference token variables.
+
+Every token defined in the palette is intentionally exercised in the Demo UI.
+
+---
+
+## What This Strategy Avoids
+
+- Hard-coded colors in demo markup.
+- Visual-only token naming.
+- Using color alone to convey meaning.
+- Divergent behavior between light and dark modes.
+
+---
+
+## Future Extensions
+
+- Automated token coverage validation.
+- Programmatic checks to ensure every token appears in the Demo.
+- Contrast evaluation per token-role pairing.
+
+---
+
+This strategy ensures the Demo is not just visually appealing, but **explainable, testable, and extensible**.
