@@ -14,6 +14,8 @@
 
   <script defer src="js/bundle.js"></script>
   <script defer src="js/image-fallback.js"></script>
+  <script defer src="js/editor.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/ryersondmp/sa11y@latest/dist/js/sa11y.min.js"></script>
 
   <meta property="og:image" content="images/social_media_thumbnail.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -51,7 +53,10 @@
   <div class="container">
     <!-- Accessibility panel injected for Sa11y/axe checks -->
     <aside id="a11yPanel" aria-hidden="false" style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;"><strong>Accessibility</strong><button id="runA11y" class="btn" style="margin-left:auto">Run check</button></div>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
+        <strong>Accessibility</strong>
+        <sa11y-control-panel></sa11y-control-panel>
+      </div>
       <div id="a11yResults" style="max-height:260px;overflow:auto;font-size:0.85rem;color:#222"></div>
     </aside>
 
@@ -509,28 +514,32 @@
 
                 <div class="col">
 	
-  <div class="card">
-		
-    <div class="toolbar">
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">link</span></button>
-        <button class="btn"><span class="material-symbols-rounded">image</span></button>
-        <button class="btn"><span class="material-symbols-rounded">theaters</span></button>
-      </div>
+  <div class="editor-container app-card" id="demo-editor-light">
+    <div class="editor-toolbar" role="toolbar" aria-label="Editor toolbar">
+      <button class="editor-btn" data-cmd="bold" title="Bold" aria-label="Bold">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.6 11.8c1-.7 1.6-1.8 1.6-2.8a4 4 0 0 0-4-4H7v14h7c2.1 0 3.8-1.7 3.8-3.8 0-1.5-.9-2.9-2.2-3.4zM10 7.5h3a1.5 1.5 0 1 1 0 3h-3v-3zm3.5 9H10v-3h3.5a1.5 1.5 0 1 1 0 3z"/></svg>
+      </button>
+      <button class="editor-btn" data-cmd="italic" title="Italic" aria-label="Italic">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M10 4v3h2.2l-3.4 10H6v3h8v-3h-2.2l3.4-10H18V4z"/></svg>
+      </button>
+      <button class="editor-btn" data-cmd="underline" title="Underline" aria-label="Underline">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 17c3.3 0 6-2.7 6-6V3h-2.5v8c0 1.9-1.6 3.5-3.5 3.5S8.5 12.9 8.5 11V3H6v8c0 3.3 2.7 6 6 6zm-7 2v2h14v-2H5z"/></svg>
+      </button>
+      <div class="divider" aria-hidden="true"></div>
+      <button class="editor-btn" data-cmd="insertUnorderedList" title="Bullet List" aria-label="Bullet List">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M4 10.5c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zm0-6c-.8 0-1.5.7-1.5 1.5S3.2 7.5 4 7.5 5.5 6.8 5.5 6 4.8 4.5 4 4.5zm0 12c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
+      </button>
+      <button class="editor-btn" data-cmd="insertOrderedList" title="Number List" aria-label="Number List">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/></svg>
+      </button>
     </div>
-
-    <button class="btn btn-select">Old Fashioned</button>
-
+    <div class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" tabindex="0">
+      <p>Edit this text to test your <b>contrast</b> and <i>readability</i>.</p>
+      <ul>
+        <li>Check list item colors</li>
+        <li>Check focus rings</li>
+      </ul>
+    </div>
   </div>
 
   <form class="card">
@@ -705,28 +714,32 @@
 
                 <div class="col">
 	
-  <div class="card">
-		
-    <div class="toolbar">
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
-        <button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
-      </div>
-      <div class="btn-group">
-        <button class="btn"><span class="material-symbols-rounded">link</span></button>
-        <button class="btn"><span class="material-symbols-rounded">image</span></button>
-        <button class="btn"><span class="material-symbols-rounded">theaters</span></button>
-      </div>
+  <div class="editor-container app-card" id="demo-editor-dark">
+    <div class="editor-toolbar" role="toolbar" aria-label="Editor toolbar">
+      <button class="editor-btn" data-cmd="bold" title="Bold" aria-label="Bold">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.6 11.8c1-.7 1.6-1.8 1.6-2.8a4 4 0 0 0-4-4H7v14h7c2.1 0 3.8-1.7 3.8-3.8 0-1.5-.9-2.9-2.2-3.4zM10 7.5h3a1.5 1.5 0 1 1 0 3h-3v-3zm3.5 9H10v-3h3.5a1.5 1.5 0 1 1 0 3z"/></svg>
+      </button>
+      <button class="editor-btn" data-cmd="italic" title="Italic" aria-label="Italic">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M10 4v3h2.2l-3.4 10H6v3h8v-3h-2.2l3.4-10H18V4z"/></svg>
+      </button>
+      <button class="editor-btn" data-cmd="underline" title="Underline" aria-label="Underline">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 17c3.3 0 6-2.7 6-6V3h-2.5v8c0 1.9-1.6 3.5-3.5 3.5S8.5 12.9 8.5 11V3H6v8c0 3.3 2.7 6 6 6zm-7 2v2h14v-2H5z"/></svg>
+      </button>
+      <div class="divider" aria-hidden="true"></div>
+      <button class="editor-btn" data-cmd="insertUnorderedList" title="Bullet List" aria-label="Bullet List">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M4 10.5c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zm0-6c-.8 0-1.5.7-1.5 1.5S3.2 7.5 4 7.5 5.5 6.8 5.5 6 4.8 4.5 4 4.5zm0 12c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
+      </button>
+      <button class="editor-btn" data-cmd="insertOrderedList" title="Number List" aria-label="Number List">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/></svg>
+      </button>
     </div>
-
-    <button class="btn btn-select">Old Fashioned</button>
-
+    <div class="editor-content" contenteditable="true" role="textbox" aria-multiline="true" tabindex="0">
+      <p>Edit this text to test your <b>contrast</b> and <i>readability</i>.</p>
+      <ul>
+        <li>Check list item colors</li>
+        <li>Check focus rings</li>
+      </ul>
+    </div>
   </div>
 
   <form class="card">
