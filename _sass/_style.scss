@@ -429,6 +429,18 @@ main {
     z-index: 5;
   }
 
+  /* gentle pop animation for highlighted demo elements */
+  .token-highlight.pop {
+    transform-origin: center center;
+    transform: scale(1.04);
+    transition: transform 220ms cubic-bezier(.2,.9,.3,1), box-shadow 220ms ease;
+    box-shadow: 0 10px 30px rgba(59,130,246,0.16);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .token-highlight.pop { transform: none; transition: none; }
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .token-highlight {
       transition: box-shadow 240ms ease, transform 240ms ease;
