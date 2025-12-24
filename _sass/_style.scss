@@ -1092,6 +1092,8 @@ main {
   align-items: stretch;
   /* default split percentage (left pane) */
   --split: 50%;
+  /* legacy compatibility: some scripts (bundled) set --left-width */
+  --left-width: var(--left-width, var(--split));
 }
 .split > .split-left,
 .split > .split-right {
@@ -1102,10 +1104,11 @@ main {
   -webkit-container-type: inline-size;
 }
 .split > .split-left {
-  flex: 0 0 var(--split);
+  /* prefer legacy --left-width when present, fall back to --split */
+  flex: 0 0 var(--left-width, var(--split));
 }
 .split > .split-right {
-  flex: 1 1 calc(100% - var(--split));
+  flex: 1 1 calc(100% - var(--left-width, var(--split)));
 }
 .splitter {
   width: 12px;
