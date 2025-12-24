@@ -656,7 +656,7 @@ main {
 
 /* Ensure transfer card body text is high-contrast in dark theme */
 [data-theme="dark"] #palette-transfer .transfer-card p {
-  color: #eaeaea;
+  color: var(--color-neutralContentStrongOnDark);
 }
 
 .demo-canvas {

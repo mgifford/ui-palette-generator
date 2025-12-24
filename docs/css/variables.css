@@ -50,6 +50,8 @@
   --color-neutralNonContentStrong: var(--color-neutralNonContentStrong-dark);
   --color-neutralContentSubdued: var(--color-neutralContentSubdued-dark);
   --color-neutralContentStrong: var(--color-neutralContentStrong-dark);
+  /* Text color specifically for neutral content on dark surfaces */
+  --color-neutralContentStrongOnDark: #eaeaea;
 }
   --seed: #BA7542;
 
