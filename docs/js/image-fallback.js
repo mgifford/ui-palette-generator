@@ -206,7 +206,12 @@
       });
     }
     replaceAlertIcons();
-    const mo = new MutationObserver(function(){ replaceBrokenImages(); });
+    const mo = new MutationObserver(function(mutations){
+      // keep replacing broken images
+      replaceBrokenImages();
+      // also re-run alert icon replacement in case alerts were injected later
+      try { replaceAlertIcons(); } catch(e){}
+    });
     mo.observe(document.body, { childList: true, subtree: true });
   });
 })();
