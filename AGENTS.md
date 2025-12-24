@@ -80,28 +80,32 @@ Because the tool is visually oriented:
 ## Accessibility Expectations (Minimum Bar)
 
 ### Structure and Semantics
-- Use semantic HTML and landmarks.
-- One `<h1>` per page with logical heading hierarchy.
-- Group controls and outputs clearly.
 
 ### Keyboard and Focus
-- All interactive elements must be keyboard operable.
-- Focus order must follow logical UI flow.
-- Focus indicators must remain visible.
 
 ### Labels, Instructions, and Feedback
-- All inputs have programmatic labels.
-- Color roles and meanings are explained in text.
-- Results are not conveyed by color alone.
 
 ### Dynamic Updates
-- Palette changes are perceivable.
-- Significant updates announced using `aria-live` or `role="status"` where appropriate.
 
 ### Motion and Effects
-- Avoid unnecessary animation.
-- Respect reduced motion preferences.
 
+
+## Icon Strategy For System UI
+
+- Always embed or reference SVGs for system UI icons (alerts, toolbars, navigation, and settings) rather than relying on icon fonts for critical UI elements. Inline or referenced SVGs ensure consistent rendering across environments, are styleable via `currentColor`, and avoid accessibility issues when fonts fail to load.
+
+- Example (inline SVG in alert):
+
+  <div class="alert" role="status" aria-live="polite">
+    <svg class="icon-svg" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+      <circle cx="8" cy="8" r="7" fill="currentColor" />
+      <rect x="7" y="5" width="2" height="4" fill="#fff" rx="0.2" />
+      <rect x="7" y="3" width="2" height="1" fill="#fff" rx="0.2" />
+    </svg>
+    <span>System message text</span>
+  </div>
+
+- Why: Embedded SVGs are independent of font availability, can inherit color via `currentColor`, and can be scaled or optimized without impacting the rest of the theme tokens that are editable by users.
 ## Error Handling and Reliability
 - Invalid color values must be handled gracefully.
 - Errors must be explained in plain language.
