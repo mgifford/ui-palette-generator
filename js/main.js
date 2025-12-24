@@ -1131,50 +1131,48 @@ function generatePalette() {
       }
 
       // Map algorithm output to token system
-      // Baseline = first color (lighter), Strong = second color (darker)
-      const lightBaseline = lightAccent[0];
-      const lightStrong = lightAccent[1];
-      const darkBaseline = darkAccent[0];
-      const darkStrong = darkAccent[1];
+      // lightAccent[0] → accentNonContentBaseline
+      // lightAccent[1] → accentContentBaseline
+      // lightAccent[2] → accentNonContentStrong
+      // lightAccent[3] → accentContentStrong
+      const lightNonContentBaseline = lightAccent[0];
+      const lightContentBaseline = lightAccent[1];
+      const lightNonContentStrong = lightAccent[2];
+      const lightContentStrong = lightAccent[3];
+
+      const darkNonContentBaseline = darkAccent[0];
+      const darkContentBaseline = darkAccent[1];
+      const darkNonContentStrong = darkAccent[2];
+      const darkContentStrong = darkAccent[3];
 
       // Calculate soft/subdued versions using existing methods
       // For light mode
       const lightCardColor = getSwatchColor('light', 'card');
-      const lightNonContentSoftColor = decreaseOpacityToContrast(lightStrong, lightCardColor, softContrast);
-      const lightNonContentSubduedColor = decreaseOpacityToContrast(lightStrong, lightCardColor, wcagNonContentContrast);
+      const lightNonContentSoftColor = decreaseOpacityToContrast(lightNonContentStrong, lightCardColor, softContrast);
+      const lightNonContentSubduedColor = decreaseOpacityToContrast(lightNonContentStrong, lightCardColor, wcagNonContentContrast);
+      const lightContentSubduedColor = decreaseOpacityToContrast(lightContentStrong, lightCardColor, wcagContentContrast);
 
       // For dark mode
       const darkCardColor = getSwatchColor('dark', 'card');
-      const darkNonContentSoftColor = decreaseOpacityToContrast(darkStrong, darkCardColor, softContrast);
-      const darkNonContentSubduedColor = decreaseOpacityToContrast(darkStrong, darkCardColor, wcagNonContentContrast);
+      const darkNonContentSoftColor = decreaseOpacityToContrast(darkNonContentStrong, darkCardColor, softContrast);
+      const darkNonContentSubduedColor = decreaseOpacityToContrast(darkNonContentStrong, darkCardColor, wcagNonContentContrast);
+      const darkContentSubduedColor = decreaseOpacityToContrast(darkContentStrong, darkCardColor, wcagContentContrast);
 
       // Update light mode accent tokens
-      setCssColor('light', 'accentNonContentBaseline', '--color-accentNonContentBaseline', lightBaseline);
-      setCssColor('light', 'accentNonContentStrong', '--color-accentNonContentStrong', lightStrong);
+      setCssColor('light', 'accentNonContentBaseline', '--color-accentNonContentBaseline', lightNonContentBaseline);
+      setCssColor('light', 'accentContentBaseline', '--color-accentContentBaseline', lightContentBaseline);
+      setCssColor('light', 'accentNonContentStrong', '--color-accentNonContentStrong', lightNonContentStrong);
       setCssColor('light', 'accentNonContentSoft', '--color-accentNonContentSoft', lightNonContentSoftColor);
       setCssColor('light', 'accentNonContentSubdued', '--color-accentNonContentSubdued', lightNonContentSubduedColor);
-
-      // For content colors, use a slightly darker version of the strong color
-      const lightContentBaseline = chroma(lightBaseline).luminance(chroma(lightBaseline).luminance() * 0.9).hex();
-      const lightContentStrong = chroma(lightStrong).luminance(chroma(lightStrong).luminance() * 0.85).hex();
-      const lightContentSubduedColor = decreaseOpacityToContrast(lightContentStrong, lightCardColor, wcagContentContrast);
-
-      setCssColor('light', 'accentContentBaseline', '--color-accentContentBaseline', lightContentBaseline);
       setCssColor('light', 'accentContentStrong', '--color-accentContentStrong', lightContentStrong);
       setCssColor('light', 'accentContentSubdued', '--color-accentContentSubdued', lightContentSubduedColor);
 
       // Update dark mode accent tokens
-      setCssColor('dark', 'accentNonContentBaseline', '--color-accentNonContentBaseline', darkBaseline);
-      setCssColor('dark', 'accentNonContentStrong', '--color-accentNonContentStrong', darkStrong);
+      setCssColor('dark', 'accentNonContentBaseline', '--color-accentNonContentBaseline', darkNonContentBaseline);
+      setCssColor('dark', 'accentContentBaseline', '--color-accentContentBaseline', darkContentBaseline);
+      setCssColor('dark', 'accentNonContentStrong', '--color-accentNonContentStrong', darkNonContentStrong);
       setCssColor('dark', 'accentNonContentSoft', '--color-accentNonContentSoft', darkNonContentSoftColor);
       setCssColor('dark', 'accentNonContentSubdued', '--color-accentNonContentSubdued', darkNonContentSubduedColor);
-
-      // For dark content colors
-      const darkContentBaseline = chroma(darkBaseline).luminance(chroma(darkBaseline).luminance() * 0.9).hex();
-      const darkContentStrong = chroma(darkStrong).luminance(chroma(darkStrong).luminance() * 0.85).hex();
-      const darkContentSubduedColor = decreaseOpacityToContrast(darkContentStrong, darkCardColor, wcagContentContrast);
-
-      setCssColor('dark', 'accentContentBaseline', '--color-accentContentBaseline', darkContentBaseline);
       setCssColor('dark', 'accentContentStrong', '--color-accentContentStrong', darkContentStrong);
       setCssColor('dark', 'accentContentSubdued', '--color-accentContentSubdued', darkContentSubduedColor);
 
@@ -1189,12 +1187,18 @@ function generatePalette() {
         lightAccent,
         darkAccent,
         tokensApplied: {
-          'accentNonContentBaseline': lightBaseline,
-          'accentNonContentStrong': lightStrong,
-          'accentContentBaseline': lightContentBaseline,
-          'accentContentStrong': lightContentStrong,
-          'dark.accentNonContentBaseline': darkBaseline,
-          'dark.accentNonContentStrong': darkStrong
+          light: {
+            accentNonContentBaseline: lightNonContentBaseline,
+            accentContentBaseline: lightContentBaseline,
+            accentNonContentStrong: lightNonContentStrong,
+            accentContentStrong: lightContentStrong
+          },
+          dark: {
+            accentNonContentBaseline: darkNonContentBaseline,
+            accentContentBaseline: darkContentBaseline,
+            accentNonContentStrong: darkNonContentStrong,
+            accentContentStrong: darkContentStrong
+          }
         }
       });
 

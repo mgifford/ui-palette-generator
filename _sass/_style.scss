@@ -419,25 +419,14 @@ main {
     --theme: dark;
   }
 
-  /* Responsive palette layout based on container width */
-  .palette-panel .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-  }
-
-  .palette-panel .row .col {
-    flex: 1 1 45%;
-  }
-
-  /* Stack columns to single column when palette panel is narrow */
+  /* Responsive layout when palette panel is narrow */
   @container (max-width: 480px) {
     .palette-panel .row {
       flex-direction: column;
     }
 
-    .palette-panel .row .col {
-      flex: 1 1 100%;
+    .palette-panel .row > .col {
+      width: 100%;
     }
 
     .palette-panel .ui-swatches {

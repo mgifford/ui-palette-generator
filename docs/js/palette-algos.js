@@ -138,22 +138,25 @@ function generateRonginPalette(baseHex) {
     colors.push(rotated);
   }
   
-  // Map to light and dark variants
-  // We'll use index 0, 2, 4 for a balanced selection
-  // Baseline = lighter variant, Strong = darker variant
+  // Generate 4 distinct accent colors for light mode
+  // These will map to:
+  // [0] = accentNonContentBaseline
+  // [1] = accentContentBaseline
+  // [2] = accentNonContentStrong
+  // [3] = accentContentStrong
   const lightAccent = [
-    setLightness(colors[0], 70),  // baseline (lighter)
-    setLightness(colors[0], 50),  // strong (darker)
-    setLightness(colors[2], 70),  // secondary baseline
-    setLightness(colors[2], 50),  // secondary strong
+    setLightness(colors[0], 75),  // Non-Content Baseline (lighter)
+    setLightness(colors[0], 65),  // Content Baseline (mid-light)
+    setLightness(colors[0], 45),  // Non-Content Strong (darker)
+    setLightness(colors[1], 35),  // Content Strong (darkest)
   ];
   
-  // For dark mode, flip lightness (light becomes dark, dark becomes light)
+  // For dark mode, use different hues and inverted lightness
   const darkAccent = [
-    setLightness(colors[1], 40),  // baseline (darker in dark mode)
-    setLightness(colors[1], 20),  // strong (lighter in dark mode)
-    setLightness(colors[3], 40),  // secondary baseline
-    setLightness(colors[3], 20),  // secondary strong
+    setLightness(colors[2], 50),  // Non-Content Baseline (mid in dark)
+    setLightness(colors[2], 40),  // Content Baseline (lighter in dark)
+    setLightness(colors[3], 30),  // Non-Content Strong (darker in dark)
+    setLightness(colors[3], 20),  // Content Strong (darkest in dark)
   ];
   
   return { lightAccent, darkAccent };
@@ -186,21 +189,25 @@ function generateChromaVersePalette(baseHex) {
     colors.push(rotated);
   }
   
-  // Map to light and dark variants
-  // Baseline = lighter, Strong = darker
+  // Generate 4 distinct accent colors for light mode
+  // These will map to:
+  // [0] = accentNonContentBaseline
+  // [1] = accentContentBaseline
+  // [2] = accentNonContentStrong
+  // [3] = accentContentStrong
   const lightAccent = [
-    setLightness(colors[0], 65),  // baseline (lighter)
-    setLightness(colors[0], 45),  // strong (darker)
-    setLightness(colors[2], 65),  // secondary baseline
-    setLightness(colors[2], 45),  // secondary strong
+    setLightness(colors[0], 72),  // Non-Content Baseline (lighter)
+    setLightness(colors[0], 62),  // Content Baseline (mid-light)
+    setLightness(colors[0], 42),  // Non-Content Strong (darker)
+    setLightness(colors[1], 32),  // Content Strong (darkest)
   ];
   
-  // For dark mode, invert
+  // For dark mode, use different hues and inverted lightness
   const darkAccent = [
-    setLightness(colors[1], 45),  // baseline (darker in dark mode)
-    setLightness(colors[1], 25),  // strong (lighter in dark mode)
-    setLightness(colors[3], 45),  // secondary baseline
-    setLightness(colors[3], 25),  // secondary strong
+    setLightness(colors[2], 48),  // Non-Content Baseline (mid in dark)
+    setLightness(colors[2], 38),  // Content Baseline (lighter in dark)
+    setLightness(colors[3], 28),  // Non-Content Strong (darker in dark)
+    setLightness(colors[3], 18),  // Content Strong (darkest in dark)
   ];
   
   return { lightAccent, darkAccent };
