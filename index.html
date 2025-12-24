@@ -1,0 +1,877 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Accessible Color Palette Generator</title>
+
+  <link rel="stylesheet" href="css/main.css">
+
+  <script defer src="js/bundle.js"></script>
+  <script defer src="js/image-fallback.js"></script>
+
+  <meta property="og:image" content="images/social_media_thumbnail.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="940" />
+<meta property="og:image:height" content="608" />
+<meta property="og:title" content="Accessible Color Palette Generator" />
+<meta property="og:description" content="This is a tool to automate the generation of accessible enterprise UI color palettes." />
+<meta property="og:url" content="https://thisisfranciswu.com/enterprise-ui-palette-generator" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="images/social_media_thumbnail.jpg" />
+<meta name="twitter:title" content="Accessible Color Palette Generator" />
+<meta name="twitter:description" content="This is a tool to automate the generation of accessible enterprise UI color palettes." />
+<meta name="twitter:site" content="@thisisfranciswu" />
+<meta name="twitter:creator" content="@thisisfranciswu" />
+
+  <!-- Light mode -->
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-196x196.png" sizes="196x196" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-96x96.png" sizes="96x96" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-32x32.png" sizes="32x32" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-16x16.png" sizes="16x16" media="(prefers-color-scheme: light)" />
+<link rel="icon" type="image/png" href="images/favicons/light/favicon-128.png" sizes="128x128" media="(prefers-color-scheme: light)" />
+
+<!-- Dark mode -->
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-196x196.png" sizes="196x196" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-96x96.png" sizes="96x96" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-32x32.png" sizes="32x32" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-16x16.png" sizes="16x16" media="(prefers-color-scheme: dark)" />
+<link rel="icon" type="image/png" href="images/favicons/dark/favicon-128.png" sizes="128x128" media="(prefers-color-scheme: dark)" />
+
+</head>
+
+<body>
+
+  <div class="container">
+    <!-- Accessibility panel injected for Sa11y/axe checks -->
+    <aside id="a11yPanel" aria-hidden="false" style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;"><strong>Accessibility</strong><button id="runA11y" class="btn" style="margin-left:auto">Run check</button></div>
+      <div id="a11yResults" style="max-height:260px;overflow:auto;font-size:0.85rem;color:#222"></div>
+    </aside>
+
+    <img src="images/social_media_thumbnail.jpg" alt="Social media thumbnail" class="hidden-social-media-thumbnail" />
+
+    <header>
+      <h1>Accessible Color Palette Generator</h1>
+      <button id="themeToggle" class="btn btn-icon" aria-pressed="false" aria-label="Toggle page theme">
+        <span id="themeToggleIcon" aria-hidden="true"></span>
+      </button>
+    </header>
+
+    <!-- Inline alert added so the info SVG renders correctly on the homepage -->
+    <div class="alert" role="status" aria-live="polite">
+      <!-- Simplified inline icon: 16x16 viewBox, renders crisply at 5x5 CSS pixels -->
+      <svg class="icon-svg" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" width="5" height="5" style="width:5px;height:5px;">
+        <!-- outer circle uses currentColor so it matches alert color -->
+        <circle cx="8" cy="8" r="7" fill="currentColor" />
+        <!-- simple 'i' glyph: small rectangle and dot in white -->
+        <rect x="7" y="5" width="2" height="4" fill="#fff" rx="0.2" />
+        <rect x="7" y="3" width="2" height="1" fill="#fff" rx="0.2" />
+      </svg>
+      <span>Please upgrade to the new version.</span>
+    </div>
+
+    <section id="intro">
+      <p>
+        <strong>Background:</strong> This is a tool to automate the generation of accessible enterprise UI color palettes.
+        It draws inspiration from <a href="https://www.radix-ui.com/colors/custom" target="_blank">Radix UI's custom color palette tool</a>, but its color generation rules are mostly based on those I laid out in a <a href="https://uxdesign.cc/a-systematic-approach-to-generating-enterprise-ui-color-palettes-ecaf0c164c17" target="_blank">Medium article I wrote</a>, which I followed up with <a href="https://medium.com/@thisisfranciswu/creating-the-accessible-color-palette-generator-dd1f74b717ee" target="_blank">a retrospective on creating this tool</a>. Check it out on <a href="https://github.com/thisisfranciswu/enterprise-ui-palette-generator" target="_blank">GitHub</a>.
+      </p>
+      <p>
+        <strong>Usage:</strong> Refresh the page to generate a palette based on a random accent color.
+        Play with the inputs and click on the "Generate" button to generate a palette based on the accent color.
+        This is a proof of concept and there's no form validation.
+        Toggle light and dark mode to how the modes impact the color palettes.
+      </p>
+    </section>
+
+    <div id="aside-and-main">
+
+      <aside id="settings">
+
+  <form>
+
+    <h2>Settings</h2>
+
+    <div class="form-group">
+      <label for="accentColor">Accent</label>
+      <div class="decorated-input">
+        <span class="mini-swatch"></span>
+        <input type="text" id="accentColor">
+        <button id="randomColorBtn" class="btn btn-icon btn-trailing">
+          <span class="material-symbols-rounded">shuffle</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="canvasContrast">Canvas contrast</label>
+      <input type="text" id="canvasContrast" value="1.1">
+    </div>
+
+    <div class="form-group">
+      <label for="cardContrast">Card contrast</label>
+      <input type="text" id="cardContrast" value="1.033">
+    </div>
+
+    <div class="form-group">
+      <label for="softContrast">Soft contrast</label>
+      <input type="text" id="softContrast" value="1.1">
+    </div>
+
+    <div class="form-group">
+      <label for="strongContrast">Strong contrast</label>
+      <input type="text" id="strongContrast" value="1.7">
+    </div>
+
+    <div class="form-group">
+      <label for="neutralSaturation">Neutral saturation</label>
+      <input type="text" id="neutralSaturation" value="0.333">
+    </div>
+
+    <div class="form-group">
+      <label for="neutralContrast">Neutral contrast</label>
+      <input type="text" id="neutralContrast" value="1.3">
+    </div>
+
+    <div class="form-group">
+      <label for="darkModeSaturation">Dark mode saturation</label>
+      <input type="text" id="darkModeSaturation" value="0.666">
+    </div>
+
+    <div style="display:flex;gap:.5rem;align-items:center">
+      <button id="generateBtn" class="btn">Generate</button>
+      <label style="display:inline-flex;align-items:center;gap:.5rem;margin-left:.5rem"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
+    </div>
+
+  </form>
+
+</aside>
+
+
+      <main>
+        <section id="palette">
+          <div class="heading">
+            <h2>Palette</h2>
+          </div>
+          <p class="section-hint">Two mirrored palettes share the exact same token IDs. Their parent containers carry either <code data-inline="true">data-theme-mode="light"</code> or <code data-inline="true">data-theme-mode="dark"</code> so duplicate IDs resolve to the right CSS variable scope.</p>
+          <div class="palette-panels" aria-live="polite">
+            <div class="split" id="paletteSplit">
+              <div class="split-left" id="paletteLeft">
+                <!-- Light palette uses the light parent container so shared IDs render light values -->
+                <article id="palette-light" class="palette-panel" data-theme-mode="light" data-theme="light" aria-labelledby="palette-light-title">
+              <header class="panel-heading">
+                <h3 id="palette-light-title">Light palette values</h3>
+                <p class="panel-note">Each swatch below reflects the light token for its ID.</p>
+              </header>
+              <div class="palette-accent">
+                <figure class="color-swatch">
+                  <figcaption>Seed</figcaption>
+                  <div class="swatch" id="seed" data-swatch-id="seed">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row ui-swatches palette-backgrounds">
+                <figure class="color-swatch">
+                  <figcaption>Canvas</figcaption>
+                  <div class="swatch" id="canvas" data-swatch-id="canvas">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+                <figure class="color-swatch">
+                  <figcaption>Card</figcaption>
+                  <div class="swatch" id="card" data-swatch-id="card">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row">
+                <div class="col palette-non-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Non-Content Baseline</figcaption>
+                    <div class="swatch" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Soft</figcaption>
+                      <div class="swatch" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Subdued</figcaption>
+                      <div class="swatch" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Strong</figcaption>
+                      <div class="swatch" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Soft</figcaption>
+                      <div class="swatch" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Subdued</figcaption>
+                      <div class="swatch" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Strong</figcaption>
+                      <div class="swatch" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+                <div class="col palette-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Content Baseline</figcaption>
+                    <div class="swatch" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Subdued</figcaption>
+                      <div class="swatch" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Strong</figcaption>
+                      <div class="swatch" id="accentContentStrong" data-swatch-id="accentContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Subdued</figcaption>
+                      <div class="swatch" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Strong</figcaption>
+                      <div class="swatch" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+              </div>
+            </article>
+              </div>
+              <div class="splitter" id="paletteSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize palettes">
+                <span class="grip" aria-hidden="true"></span>
+              </div>
+              <div class="split-right" id="paletteRight">
+                <!-- Dark palette reuses identical IDs but inherits from the dark theme container -->
+                <article id="palette-dark" class="palette-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="palette-dark-title">
+              <header class="panel-heading">
+                <h3 id="palette-dark-title">Dark palette values</h3>
+                <p class="panel-note">This mirrored column uses the dark theme parent.</p>
+              </header>
+              <div class="palette-accent">
+                <figure class="color-swatch">
+                  <figcaption>Seed</figcaption>
+                  <div class="swatch" id="seed" data-swatch-id="seed">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row ui-swatches palette-backgrounds">
+                <figure class="color-swatch">
+                  <figcaption>Canvas</figcaption>
+                  <div class="swatch" id="canvas" data-swatch-id="canvas">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+                <figure class="color-swatch">
+                  <figcaption>Card</figcaption>
+                  <div class="swatch" id="card" data-swatch-id="card">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row">
+                <div class="col palette-non-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Non-Content Baseline</figcaption>
+                    <div class="swatch" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Soft</figcaption>
+                      <div class="swatch" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Subdued</figcaption>
+                      <div class="swatch" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Strong</figcaption>
+                      <div class="swatch" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Soft</figcaption>
+                      <div class="swatch" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Subdued</figcaption>
+                      <div class="swatch" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Strong</figcaption>
+                      <div class="swatch" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+                <div class="col palette-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Content Baseline</figcaption>
+                    <div class="swatch" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Subdued</figcaption>
+                      <div class="swatch" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Strong</figcaption>
+                      <div class="swatch" id="accentContentStrong" data-swatch-id="accentContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Subdued</figcaption>
+                      <div class="swatch" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Strong</figcaption>
+                      <div class="swatch" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+              </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="demo">
+          <h2>Demo</h2>
+          <p class="section-hint">Identical UI markup sits inside light and dark parent containers. If a component looks different, it is only because the parent declares the theme via <code data-inline="true">data-theme-mode</code>.</p>
+          <div class="demo-panels">
+            <div class="split" id="demoSplit">
+              <div class="split-left" id="demoLeft">
+                <!-- Light demo shares markup with dark demo but inherits light CSS tokens -->
+                <article id="demo-light" class="demo-panel" data-theme-mode="light" data-theme="light" aria-labelledby="demo-light-title">
+              <header class="panel-heading">
+                <h3 id="demo-light-title">Light UI sample</h3>
+                <p class="panel-note">This column renders every element against the light palette.</p>
+              </header>
+              <div class="demo-canvas">
+                <div class="col">
+  
+  <div class="card">
+
+    <form>
+      <div class="form-group">
+        <label>Name</label>
+        <div class="form-row">
+          <input type="text">
+          <button class="btn">Submit</button>
+        </div>
+      </div>
+    </form>
+
+    <ul class="menu">
+      <li class="selected"><a href="#">John</a></li>
+      <li><a href="#">Paul</a></li>
+      <li><a href="#">George</a></li>
+      <li><a href="#">Ringo</a></li>
+      <li><a href="#">Billy</a></li>
+    </ul>
+
+    <div class="alert">
+      <span class="material-symbols-rounded">info</span>
+      Please upgrade to the new version.
+    </div>
+
+    <div>
+      <span class="tag">Fully-featured</span>
+      <span class="tag tag-outlined">Open source</span>
+    </div>
+
+    <div>
+      <button class="btn">Submit</button>
+      <button class="btn btn-outlined">Cancel</button>
+      <button class="btn btn-soft">Skip</button>
+    </div>
+
+    <div>
+      <input type="checkbox">
+      <input type="checkbox" checked>
+      <input type="radio">
+      <input type="radio" checked>
+      <input type="checkbox" role="switch">
+      <input type="checkbox" role="switch" checked>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="media">
+      <img src="images/generic-female-avatar.svg" alt="Generic female avatar">
+      <div class="text-pair text-pair-md-sm">
+        <div class="text-md">Jane I.S. Awesome</div>
+        <div class="text-sm">jane.is.awesome@example.com</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+                <div class="col">
+	
+  <div class="card">
+		
+    <div class="toolbar">
+      <div class="btn-group">
+        <button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
+      </div>
+      <div class="btn-group">
+        <button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
+      </div>
+      <div class="btn-group">
+        <button class="btn"><span class="material-symbols-rounded">link</span></button>
+        <button class="btn"><span class="material-symbols-rounded">image</span></button>
+        <button class="btn"><span class="material-symbols-rounded">theaters</span></button>
+      </div>
+    </div>
+
+    <button class="btn btn-select">Old Fashioned</button>
+
+  </div>
+
+  <form class="card">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password">
+    </div>
+    <button class="btn btn-block">Create account</button>
+    <p class="or"><span>Or</span></p>
+    <button class="btn btn-outlined btn-block">Continue with GitHub</button>
+  </form>
+
+  <div class="toast">
+    Task failed successfully.
+  </div>
+
+</div>
+
+                <div class="col">
+	
+  <ul class="nav nav-tabs">
+    <li class="selected"><a href="#">Jello</a></li>
+    <li><a href="#">East Bay</a></li>
+    <li><a href="#">Klaus</a></li>
+    <li><a href="#">D.H.</a></li>
+  </ul>
+
+  <div class="card">
+
+    <div class="avatars">
+      <span class="avatar">
+        <img src="images/clem_fandango.webp" alt="Avatar">
+      </span>
+      <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
+      <span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
+      <span class="avatar avatar-icon avatar-solid avatar-subdued">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+      <span class="avatar avatar-icon avatar-solid avatar-strong">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+    </div>
+
+    <div class="avatars">
+      <span class="avatar">
+        <img src="images/clem_fandango.webp" alt="Avatar">
+      </span>
+      <span class="avatar avatar-one-letter avatar-soft avatar-subdued">V</span>
+      <span class="avatar avatar-two-letter avatar-soft avatar-subdued">BG</span>
+      <span class="avatar avatar-icon avatar-soft avatar-subdued">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+      <span class="avatar avatar-icon avatar-soft avatar-strong">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+    </div>
+
+    <hr>
+
+    <blockquote>
+      Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
+    </blockquote>
+
+    <div class="checkboxes">
+      <div class="form-check">
+      <input type="checkbox">
+      <label>Respond to comment <a href="#">#129</a> from Jake</label>
+      </div>
+      <div class="form-check">
+      <input type="checkbox">
+      <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+      </div>
+      <div class="form-check">
+      <input type="checkbox">
+      <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+      </div>
+      <div class="form-check form-check-struckout">
+      <input type="checkbox" checked>
+      <label>Lay off 62 employees</label>
+      </div>
+      <div class="form-check form-check-struckout">
+      <input type="checkbox" checked>
+      <label>Review Robert Johnson's contract</label>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+              </div>
+            </article>
+              </div>
+              <div class="splitter" id="demoSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize demos">
+                <span class="grip" aria-hidden="true"></span>
+              </div>
+              <div class="split-right" id="demoRight">
+                <!-- Dark demo reuses identical markup under a dark theme parent -->
+                <article id="demo-dark" class="demo-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="demo-dark-title">
+              <header class="panel-heading">
+                <h3 id="demo-dark-title">Dark UI sample</h3>
+                <p class="panel-note">Same DOM, dark tokens.</p>
+              </header>
+              <div class="demo-canvas">
+                <div class="col">
+  
+  <div class="card">
+
+    <form>
+      <div class="form-group">
+        <label>Name</label>
+        <div class="form-row">
+          <input type="text">
+          <button class="btn">Submit</button>
+        </div>
+      </div>
+    </form>
+
+    <ul class="menu">
+      <li class="selected"><a href="#">John</a></li>
+      <li><a href="#">Paul</a></li>
+      <li><a href="#">George</a></li>
+      <li><a href="#">Ringo</a></li>
+      <li><a href="#">Billy</a></li>
+    </ul>
+
+    <div class="alert">
+      <span class="material-symbols-rounded">info</span>
+      Please upgrade to the new version.
+    </div>
+
+    <div>
+      <span class="tag">Fully-featured</span>
+      <span class="tag tag-outlined">Open source</span>
+    </div>
+
+    <div>
+      <button class="btn">Submit</button>
+      <button class="btn btn-outlined">Cancel</button>
+      <button class="btn btn-soft">Skip</button>
+    </div>
+
+    <div>
+      <input type="checkbox">
+      <input type="checkbox" checked>
+      <input type="radio">
+      <input type="radio" checked>
+      <input type="checkbox" role="switch">
+      <input type="checkbox" role="switch" checked>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="media">
+     <img src="images/generic-female-avatar.svg" alt="Generic female avatar">
+      <div class="text-pair text-pair-md-sm">
+        <div class="text-md">Jane I.S. Awesome</div>
+        <div class="text-sm">jane.is.awesome@example.com</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+                <div class="col">
+	
+  <div class="card">
+		
+    <div class="toolbar">
+      <div class="btn-group">
+        <button class="btn"><span class="material-symbols-rounded">format_bold</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_italic</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_underlined</span></button>
+      </div>
+      <div class="btn-group">
+        <button class="btn"><span class="material-symbols-rounded">format_list_numbered</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_list_bulleted</span></button>
+        <button class="btn"><span class="material-symbols-rounded">format_align_left</span></button>
+      </div>
+      <div class="btn-group">
+        <button class="btn"><span class="material-symbols-rounded">link</span></button>
+        <button class="btn"><span class="material-symbols-rounded">image</span></button>
+        <button class="btn"><span class="material-symbols-rounded">theaters</span></button>
+      </div>
+    </div>
+
+    <button class="btn btn-select">Old Fashioned</button>
+
+  </div>
+
+  <form class="card">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password">
+    </div>
+    <button class="btn btn-block">Create account</button>
+    <p class="or"><span>Or</span></p>
+    <button class="btn btn-outlined btn-block">Continue with GitHub</button>
+  </form>
+
+  <div class="toast">
+    Task failed successfully.
+  </div>
+
+</div>
+
+                <div class="col">
+	
+  <ul class="nav nav-tabs">
+    <li class="selected"><a href="#">Jello</a></li>
+    <li><a href="#">East Bay</a></li>
+    <li><a href="#">Klaus</a></li>
+    <li><a href="#">D.H.</a></li>
+  </ul>
+
+  <div class="card">
+
+    <div class="avatars">
+      <span class="avatar">
+        <img src="images/clem_fandango.webp" alt="Avatar">
+      </span>
+      <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
+      <span class="avatar avatar-two-letter avatar-solid avatar-subdued">BG</span>
+      <span class="avatar avatar-icon avatar-solid avatar-subdued">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+      <span class="avatar avatar-icon avatar-solid avatar-strong">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+    </div>
+
+    <div class="avatars">
+      <span class="avatar">
+        <img src="images/clem_fandango.webp" alt="Avatar">
+      </span>
+      <span class="avatar avatar-one-letter avatar-soft avatar-subdued">V</span>
+      <span class="avatar avatar-two-letter avatar-soft avatar-subdued">BG</span>
+      <span class="avatar avatar-icon avatar-soft avatar-subdued">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+      <span class="avatar avatar-icon avatar-soft avatar-strong">
+        <span class="material-symbols-rounded">group</span>
+      </span>
+    </div>
+
+    <hr>
+
+    <blockquote>
+      Reginald Poppycock is an eccentric <a href="#">inventor</a> and professional cheese sculptor, who designed the <a href="#">world’s first steam-powered teapot</a> capable of reciting <a href="#">Shakespearean sonnets</a> while brewing Earl Grey, from 1884 to 1885.
+    </blockquote>
+
+    <div class="checkboxes">
+      <div class="form-check">
+      <input type="checkbox">
+      <label>Respond to comment <a href="#">#129</a> from Jake</label>
+      </div>
+      <div class="form-check">
+      <input type="checkbox">
+      <label>Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+      </div>
+      <div class="form-check">
+      <input type="checkbox">
+      <label>Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+      </div>
+      <div class="form-check form-check-struckout">
+      <input type="checkbox" checked>
+      <label>Lay off 62 employees</label>
+      </div>
+      <div class="form-check form-check-struckout">
+      <input type="checkbox" checked>
+      <label>Review Robert Johnson's contract</label>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+              </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="palette-transfer">
+          <div class="heading">
+            <h2>Share or reuse this palette</h2>
+          </div>
+          <p class="section-hint">Export every generated token (light and dark) as a CSV, or import a CSV to replace the current palette. Each row documents the theme, token ID, functional category, and hex value.</p>
+          <div class="transfer-cards">
+            <article class="transfer-card">
+              <h3>Export current palette</h3>
+              <p>Downloads a CSV containing both themes plus category notes.</p>
+              <div style="display:flex;gap:.5rem;align-items:center">
+                <button id="exportPaletteCsv" class="btn">Download CSV</button>
+                <button id="copyCssBtn" class="btn">Copy CSS variables</button>
+              </div>
+            </article>
+            <article class="transfer-card">
+              <h3>Import a palette</h3>
+              <p>Select a CSV generated by this tool to override the swatches below.</p>
+              <label class="file-chip">
+                <span class="file-chip__label">Select CSV</span>
+                <input type="file" id="importPaletteCsv" accept=".csv,text/csv">
+              </label>
+            </article>
+          </div>
+          <div class="csv-guidance">
+            <p class="section-hint">CSV columns (quoted where needed): <code data-inline="true">theme, color, token, role, category, usage</code></p>
+            <ul>
+              <li><strong>theme</strong>: light or dark</li>
+              <li><strong>token</strong>: swatch ID such as <code data-inline="true">accentContentStrong</code></li>
+              <li><strong>category</strong>: dominant, accent, neutral, or background</li>
+              <li><strong>usage</strong>: short hint like canvas, card, subdued, etc.</li>
+              <li><strong>color</strong>: hex value (e.g. <code data-inline="true">#336699</code>)</li>
+            </ul>
+          </div>
+          <p id="paletteTransferStatus" class="input-hint" role="status" aria-live="polite"></p>
+        </section>
+      </main>
+
+    </div>
+
+  </div>
+
+</body>
+
+</html>

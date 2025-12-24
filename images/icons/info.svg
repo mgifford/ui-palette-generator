@@ -1,0 +1,7 @@
+<svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421">
+  <!-- Outer circle uses currentColor so icon inherits text color -->
+  <circle cx="293.685" cy="196.267" r="65.165" fill="currentColor" transform="matrix(6.08835 0 0 6.08758 -1388.059 -794.794)"/>
+  <!-- Inner shape stays white for the info glyph -->
+  <path d="M383.686 244.808V311.2h9.725v7.64h-38.915v-7.64h8.91v-55.978l-8.91-3.567v-6.847z" fill="#fff" transform="matrix(5.39184 0 0 5.39116 -1613.016 -1022.251)"/>
+  <circle cx="362.95" cy="211.755" r="11.84" fill="#fff" transform="matrix(5.63966 0 0 5.63895 -1644.736 -1016.22)"/>
+</svg>
