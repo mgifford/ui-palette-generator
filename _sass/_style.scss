@@ -56,11 +56,24 @@ header {
   gap: var(--space-sm);
   align-items: center;
 }
-.color-popover label { display:flex; flex-direction:column; font-size:0.9rem; }
-.color-popover input { font-size: 0.95rem; }
+.color-popover label { display:flex; flex-direction:column; font-size:0.9rem; color: var(--color-neutralContentStrong); }
+.color-popover input { font-size: 0.95rem; color: var(--color-neutralContentStrong); background: var(--color-card); border: 1px solid var(--color-neutralNonContentSubdued); }
 .color-popover input[type="text"] { padding: 6px; }
 .color-popover input[type="color"] { width: 36px; height: 36px; border: none; padding: 0; }
 .color-popover .color-popover-actions { display:flex; gap:6px; margin-left:6px }
+
+/* Dark theme overrides for popover labels and inputs */
+[data-theme="dark"] .color-popover {
+  background: var(--color-card);
+}
+[data-theme="dark"] .color-popover label {
+  color: var(--color-neutralContentStrongOnDark);
+}
+[data-theme="dark"] .color-popover input {
+  color: var(--color-neutralContentStrongOnDark);
+  border-color: var(--color-neutralNonContentSubdued);
+  background: var(--color-card);
+}
 
 h1 {
   line-height: var(--headingLineHeight);
