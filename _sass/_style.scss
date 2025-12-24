@@ -801,12 +801,13 @@ main {
 
   /* Lightweight editor styles for demo */
   .editor-container.app-card {
-    background: var(--surface-light);
-    color: var(--text-light);
+    background: var(--color-card);
+    color: var(--color-neutralContentStrong);
     border-radius: var(--borderRadius-md);
     box-shadow: var(--elevation-high);
     overflow: hidden;
     margin-bottom: var(--space-md);
+    border: 1px solid var(--color-neutralNonContentSubdued);
   }
 
   .editor-toolbar {
@@ -814,33 +815,30 @@ main {
     gap: var(--space-sm);
     padding: calc(var(--space-sm));
     align-items:center;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    background: var(--surface-light);
+    border-bottom: 1px solid var(--color-neutralNonContentSubdued);
+    background: color-mix(in oklab, var(--color-card), var(--color-accentNonContentBaseline) 8%);
+    color: var(--color-neutralContentStrong);
   }
 
   .editor-btn {
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     padding: 0.35rem;
     border-radius: 6px;
     cursor: pointer;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    color: var(--text-light);
+    color: var(--color-neutralContentStrong);
+    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
   }
-  .editor-btn:focus { outline: 2px solid var(--action-light); outline-offset: 2px; }
-  .editor-btn.active { background: var(--action-light); color: #fff; }
+  .editor-btn:hover { background: var(--color-accentNonContentSoft); color: var(--color-accentContentStrong); border-color: var(--color-accentNonContentSubdued); }
+  .editor-btn:focus-visible { outline: 2px solid var(--color-accentNonContentStrong); outline-offset: 2px; }
+  .editor-btn.active { background: var(--color-accentNonContentStrong); color: var(--color-card); border-color: var(--color-accentNonContentStrong); }
 
-  .editor-toolbar .divider { width:1px; height:1.4rem; background: rgba(0,0,0,0.06); border-radius:2px; }
+  .editor-toolbar .divider { width:1px; height:1.4rem; background: var(--color-neutralNonContentSubdued); border-radius:2px; }
 
-  .editor-content { padding: var(--space-md); min-height: 6rem; background: inherit; color: inherit; line-height: var(--bodyLineHeight); resize: vertical; overflow: auto; }
-
-  @container (--theme: dark) {
-    .editor-container.app-card { background: var(--surface-dark); color: var(--text-dark); }
-    .editor-btn:focus { outline-color: var(--action-dark); }
-    .editor-btn.active { background: var(--action-dark); color: #fff; }
-  }
+  .editor-content { padding: var(--space-md); min-height: 6rem; background: var(--color-card); color: var(--color-neutralContentStrong); line-height: var(--bodyLineHeight); resize: vertical; overflow: auto; box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSubdued); }
 
   .tag {
     @include border-radius("mx");
@@ -1030,6 +1028,7 @@ main {
       border-bottom: 1px solid var(--color-neutralNonContentSubdued);
       margin: 0;
       padding: 0;
+      background: var(--color-card);
       li {
         list-style: none;
         display: block;
@@ -1041,14 +1040,22 @@ main {
           text-decoration: none;
           position: relative;
           color: var(--color-neutralContentSubdued);
+          background: var(--color-card);
+          border: 1px solid transparent;
+          border-bottom: none;
+          border-radius: var(--borderRadius-md) var(--borderRadius-md) 0 0;
           &:hover {
             color: var(--color-neutralContentStrong);
-            background: var(--color-neutralNonContentSoft);
+            background: var(--color-accentNonContentSoft);
+            border-color: var(--color-neutralNonContentSubdued);
           }
+          &:focus-visible { outline: 2px solid var(--color-accentNonContentStrong); outline-offset: 2px; }
         }
         &.selected {
           a {
-            color: var(--color-neutralContentStrong);
+            color: var(--color-accentContentStrong);
+            background: var(--color-card);
+            border-color: var(--color-neutralNonContentSubdued);
             &::after {
               display: block;
               content: "";
@@ -1060,6 +1067,11 @@ main {
               background: var(--color-accentNonContentStrong);
             }
           }
+        }
+        a[aria-selected="true"] {
+          color: var(--color-accentContentStrong);
+          background: var(--color-card);
+          border-color: var(--color-neutralNonContentSubdued);
         }
       }
     }
@@ -1213,6 +1225,16 @@ main {
   }
 }
 
+/* Fallback for environments where container queries do not apply or palette panels
+   are outside a container with --theme. Ensures value chips remain readable on dark. */
+[data-theme="dark"] .swatch .value,
+[data-theme-mode="dark"] .swatch .value,
+html[data-theme="dark"] .swatch .value {
+  color: var(--value-foreground, #fff);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px color-mix(in oklab, #ffffff 20%, var(--color-neutralNonContentSoft));
+}
+
 .hidden-social-media-thumbnail { display: none; }
 
 /* Resizable split layout used for palette and demo sections */
@@ -1242,6 +1264,7 @@ main {
   flex: 1 1 calc(100% - var(--left-width, var(--split)));
 }
 .splitter {
+  position: relative;
   width: 12px;
   flex: 0 0 12px;
   display: flex;
@@ -1254,6 +1277,19 @@ main {
   user-select: none;
   touch-action: none;
   transition: background 160ms ease;
+}
+.splitter::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -8px;
+  right: -8px;
+  cursor: inherit;
+}
+.splitter:hover::before,
+.splitter:focus-visible::before {
+  background: rgba(0, 0, 0, 0.04);
 }
 .splitter:focus {
   outline: none;
@@ -1324,6 +1360,7 @@ main {
   margin: 0;
   padding: 0;
   border-bottom: 1px solid var(--color-neutralNonContentSubdued);
+  background: var(--color-card);
 }
 
 .nav-tabs li {
@@ -1334,8 +1371,8 @@ main {
   display: block;
   padding: var(--space-sm) var(--space-md);
   text-decoration: none;
-  color: var(--color-neutralContentStrong);
-  background: var(--color-neutralNonContentSoft);
+  color: var(--color-neutralContentSubdued);
+  background: var(--color-card);
   border: 1px solid transparent;
   border-bottom: none;
   margin-right: var(--space-xs);
@@ -1349,11 +1386,18 @@ main {
   border-bottom-color: var(--color-card); /* Connect to panel */
   color: var(--color-accentContentStrong);
   font-weight: bold;
+  box-shadow: inset 0 -3px 0 var(--color-accentNonContentStrong);
 }
 
 .nav-tabs a:hover:not([aria-selected="true"]) {
-  background-color: var(--color-neutralNonContentSubdued);
+  background-color: var(--color-accentNonContentSoft);
   color: var(--color-neutralContentStrong);
+  border-color: var(--color-neutralNonContentSubdued);
+}
+
+.nav-tabs a:focus-visible {
+  outline: 2px solid var(--color-accentNonContentStrong);
+  outline-offset: 2px;
 }
 
 .tab-content {
@@ -1362,6 +1406,7 @@ main {
   padding: var(--space-md);
   background: var(--color-card);
   border-radius: 0 0 var(--borderRadius-md) var(--borderRadius-md);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-neutralNonContentSubdued), transparent 60%);
   margin-top: 0; /* Ensure it connects */
 }
 
@@ -1587,15 +1632,17 @@ main {
   padding: 0;
   width: 100%;
   border-top: 1px solid var(--color-neutralNonContentSubdued);
+  background: var(--color-card);
 }
 
 .usa-accordion__item {
   border-bottom: 1px solid var(--color-neutralNonContentSubdued);
+  background: var(--color-card);
 }
 
 .usa-accordion__button {
   background-color: var(--color-card);
-  border: none;
+  border: 1px solid transparent;
   color: var(--color-neutralContentStrong);
   cursor: pointer;
   display: flex;
@@ -1607,19 +1654,30 @@ main {
   text-align: left;
   text-decoration: none;
   width: 100%;
+  box-shadow: inset 0 -1px 0 var(--color-neutralNonContentSubdued);
 }
 
 .usa-accordion__button:hover {
-  background-color: var(--color-neutralNonContentSoft);
+  background-color: var(--color-accentNonContentSoft);
   color: var(--color-accentContentStrong);
+  border-color: var(--color-neutralNonContentSubdued);
 }
 
 .usa-accordion__button[aria-expanded="true"] {
-  background-color: var(--color-neutralNonContentSoft);
+  background-color: var(--color-accentNonContentSoft);
+  color: var(--color-accentContentStrong);
+  box-shadow: inset 0 -2px 0 var(--color-accentNonContentStrong);
+  border-color: var(--color-neutralNonContentSubdued);
+}
+
+.usa-accordion__button:focus-visible {
+  outline: 2px solid var(--color-accentNonContentStrong);
+  outline-offset: 2px;
 }
 
 .accordion-icon {
   flex-shrink: 0;
+  color: var(--color-accentContentStrong);
   transition: transform 200ms ease;
   transform: rotate(0deg);
 }
@@ -1632,6 +1690,9 @@ main {
   background-color: var(--color-card);
   overflow: hidden;
   padding: var(--space-md);
+  color: var(--color-neutralContentStrong);
+  border: 1px solid var(--color-neutralNonContentSubdued);
+  border-top: none;
 }
 
 .usa-accordion__content[hidden] {
@@ -1644,6 +1705,7 @@ main {
   border-spacing: 0;
   width: 100%;
   margin-top: var(--space-sm);
+  background-color: var(--color-card);
 }
 
 .usa-table th,
@@ -1655,26 +1717,26 @@ main {
 }
 
 .usa-table th {
-  background-color: var(--color-neutralNonContentSoft);
+  background-color: color-mix(in oklab, var(--color-accentNonContentSoft), var(--color-neutralNonContentSoft) 35%);
   font-weight: bold;
 }
 
 .usa-table--striped tbody tr:nth-child(odd) td {
-  background-color: var(--color-neutralNonContentSoft);
+  background-color: color-mix(in oklab, var(--color-accentNonContentSoft), var(--color-neutralNonContentSoft) 55%);
 }
 /* Ensure striped rows have contrast in dark mode */
 @container (--theme: dark) {
   .usa-table--striped tbody tr:nth-child(odd) td {
-    background-color: color-mix(in oklab, var(--color-neutralNonContentSoft), transparent 80%);
+    background-color: color-mix(in oklab, var(--color-accentNonContentSoft), var(--color-card) 70%);
   }
 }
 
 /* Token highlight for demo elements (Global) */
 .token-highlight {
   position: relative;
-  outline: 3px solid #005ea2 !important; /* USWDS blue or similar strong color */
+  outline: 3px solid var(--color-accentNonContentStrong) !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.8), 0 0 12px rgba(0, 94, 162, 0.6) !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-card), transparent 65%), 0 0 12px color-mix(in oklab, var(--color-accentNonContentStrong), transparent 45%) !important;
   z-index: 100 !important;
 }
 

@@ -80,6 +80,21 @@ const root = document.documentElement;
 const whiteColor = "#FFF";
 const blackColor = "#000";
 
+// Deterministic harmony configuration (accent-only overlays)
+const HARMONY_DEFAULT = 'none';
+const HARMONY_MODES = [
+  { id: 'none', label: 'Default model' },
+  { id: 'analogous-30', label: 'Analogous (±30°)' },
+  { id: 'analogous-60', label: 'Analogous (±60°)' },
+  { id: 'complementary', label: 'Complementary (180°)' },
+  { id: 'split-complementary', label: 'Split-complementary (180° ± 30°)' },
+  { id: 'triadic', label: 'Triadic (120° steps)' },
+  { id: 'tetradic', label: 'Tetradic (rectangle)' }
+];
+
+// Shared harmony state for URL + UI sync
+window.HARMONY_STATE = { mode: HARMONY_DEFAULT };
+
 const TOKEN_CATALOG = [
   { id: 'seed', label: 'Accent seed', category: 'dominant', usage: 'seed-accent' },
   { id: 'canvas', label: 'Canvas background', category: 'background', usage: 'canvas-surface' },
@@ -114,6 +129,293 @@ const TOKEN_LOOKUP = TOKEN_CATALOG.reduce(function(acc, token) {
   return acc;
 }, {});
 const CSV_HEADER = ['theme', 'color', 'token', 'role', 'category', 'usage'];
+
+function getHarmonyMode() {
+  const mode = (window.HARMONY_STATE && window.HARMONY_STATE.mode) || HARMONY_DEFAULT;
+  const valid = HARMONY_MODES.some(function(m) { return m.id === mode; });
+  return valid ? mode : HARMONY_DEFAULT;
+}
+
+function setHarmonyMode(mode, opts = {}) {
+  const { persist = true, syncUi = true } = opts;
+  const next = HARMONY_MODES.some(function(m) { return m.id === mode; }) ? mode : HARMONY_DEFAULT;
+  window.HARMONY_STATE = window.HARMONY_STATE || {};
+  window.HARMONY_STATE.mode = next;
+
+  if (persist) {
+    try { localStorage.setItem('harmonyMode', next); } catch (e) {}
+  }
+  if (syncUi) {
+    const select = document.getElementById('harmonyMode');
+    if (select) {
+      select.value = next;
+    }
+  }
+  try { setHashFromOverrides(); } catch (e) {}
+  return next;
+}
+
+function restoreHarmonyModeFromStorage() {
+  try {
+    if (getHarmonyMode() !== HARMONY_DEFAULT) return;
+    const stored = localStorage.getItem('harmonyMode');
+    if (stored && HARMONY_MODES.some(function(m) { return m.id === stored; })) {
+      setHarmonyMode(stored, { syncUi: true, persist: false });
+    }
+  } catch (e) {}
+}
+
+function pickRandomHarmonyMode() {
+  const choices = HARMONY_MODES.filter(function(m) { return m.id !== 'none'; });
+  if (!choices.length) return HARMONY_DEFAULT;
+  const idx = Math.floor(Math.random() * choices.length);
+  return choices[idx].id;
+}
+
+function initHarmonyControls() {
+  const select = document.getElementById('harmonyMode');
+  if (select && !select.options.length) {
+    HARMONY_MODES.forEach(function(mode) {
+      const opt = document.createElement('option');
+      opt.value = mode.id;
+      opt.textContent = mode.label;
+      select.appendChild(opt);
+    });
+  }
+
+  if (select) {
+    select.value = getHarmonyMode();
+    select.addEventListener('change', function(e) {
+      setHarmonyMode(e.target.value);
+      generatePalette();
+    });
+  }
+
+  const randomBtn = document.getElementById('randomHarmonyBtn');
+  if (randomBtn) {
+    randomBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const choice = pickRandomHarmonyMode();
+      setHarmonyMode(choice);
+      generatePalette();
+    });
+  }
+}
+
+// ============================================
+// Harmony utilities (OKLCH-based, deterministic)
+// ============================================
+function clampHue(h) {
+  if (Number.isNaN(h)) return 0;
+  let hue = h % 360;
+  if (hue < 0) hue += 360;
+  return hue;
+}
+
+function clampLightness(l) {
+  // Keep tones in a safe UI range
+  return Math.min(Math.max(l, 0.08), 0.95);
+}
+
+function clampChroma(c) {
+  // OKLCH chroma above ~0.37 often clips on sRGB
+  return Math.min(Math.max(c, 0), 0.37);
+}
+
+function toOklchSafe(hex) {
+  try {
+    const [l, c, h] = chroma(hex).oklch();
+    // Fallback hue if chroma is 0 (achromatic)
+    const hue = Number.isNaN(h) ? clampHue(chroma(hex).get('hsl.h') || 0) : clampHue(h);
+    return { l: clampLightness(l), c: clampChroma(c), h: hue };
+  } catch (e) {
+    return { l: 0.6, c: 0.1, h: 0 };
+  }
+}
+
+function fromOklch(parts) {
+  const l = clampLightness(parts.l);
+  const c = clampChroma(parts.c);
+  const h = clampHue(parts.h);
+  return chroma.oklch(l, c, h).hex();
+}
+
+function rotateHueValue(h, delta) {
+  return clampHue(h + delta);
+}
+
+function enforceContrast(hexColor, bgHex, minContrast, directionHint) {
+  // Deterministically adjust lightness first, then chroma if needed
+  try {
+    let color = chroma(hexColor);
+    const bg = chroma(bgHex);
+    let contrast = chroma.contrast(color, bg);
+    if (contrast >= minContrast) return color.hex();
+
+    const step = 0.02; // 2% L steps
+    const maxSteps = 14; // up to ~28% total shift
+    const base = toOklchSafe(color.hex());
+
+    function tryDirection(sign) {
+      for (let i = 1; i <= maxSteps; i += 1) {
+        const candidate = { ...base, l: clampLightness(base.l + sign * step * i) };
+        const hex = fromOklch(candidate);
+        const c = chroma.contrast(hex, bg);
+        if (c > contrast) {
+          color = chroma(hex);
+          contrast = c;
+          if (contrast >= minContrast) return hex;
+        }
+      }
+      return color.hex();
+    }
+
+    if (directionHint === 'increase') {
+      tryDirection(1);
+    } else if (directionHint === 'decrease') {
+      tryDirection(-1);
+    } else {
+      // Choose the direction that improves contrast most at the first step
+      const lighter = fromOklch({ ...base, l: clampLightness(base.l + step) });
+      const darker = fromOklch({ ...base, l: clampLightness(base.l - step) });
+      const lighterDelta = chroma.contrast(lighter, bg) - contrast;
+      const darkerDelta = chroma.contrast(darker, bg) - contrast;
+      if (lighterDelta >= darkerDelta) {
+        tryDirection(1);
+        if (contrast < minContrast) tryDirection(-1);
+      } else {
+        tryDirection(-1);
+        if (contrast < minContrast) tryDirection(1);
+      }
+    }
+
+    // If still short, reduce chroma in small steps
+    if (contrast < minContrast) {
+      for (let pct = 0.9; pct >= 0.5; pct -= 0.1) {
+        const reduced = { ...toOklchSafe(color.hex()), c: clampChroma(base.c * pct) };
+        const hex = fromOklch(reduced);
+        const c = chroma.contrast(hex, bg);
+        if (c > contrast) {
+          color = chroma(hex);
+          contrast = c;
+          if (contrast >= minContrast) break;
+        }
+      }
+    }
+
+    return color.hex();
+  } catch (e) {
+    return hexColor;
+  }
+}
+
+function getHarmonyHuePlan(seedHue, mode) {
+  const h = clampHue(seedHue);
+  switch (mode) {
+    case 'analogous-30':
+      return {
+        accentNonContentBaseline: rotateHueValue(h, -30),
+        accentNonContentStrong: rotateHueValue(h, 30),
+        accentContentStrong: h
+      };
+    case 'analogous-60':
+      return {
+        accentNonContentBaseline: rotateHueValue(h, -60),
+        accentNonContentStrong: rotateHueValue(h, 60),
+        accentContentStrong: h
+      };
+    case 'complementary':
+      return {
+        accentNonContentBaseline: h,
+        accentNonContentStrong: rotateHueValue(h, 180),
+        accentContentStrong: rotateHueValue(h, 180)
+      };
+    case 'split-complementary':
+      return {
+        accentNonContentBaseline: rotateHueValue(h, 150),
+        accentNonContentStrong: rotateHueValue(h, 210),
+        accentContentStrong: h
+      };
+    case 'triadic':
+      return {
+        accentNonContentBaseline: h,
+        accentNonContentStrong: rotateHueValue(h, 120),
+        accentContentStrong: rotateHueValue(h, 240)
+      };
+    case 'tetradic':
+      return {
+        accentNonContentBaseline: h,
+        accentNonContentStrong: rotateHueValue(h, 180),
+        accentContentStrong: rotateHueValue(h, 60)
+      };
+    default:
+      return null;
+  }
+}
+
+function rebuildColorWithHue(baseHex, targetHue) {
+  const base = toOklchSafe(baseHex);
+  return fromOklch({ ...base, h: clampHue(targetHue) });
+}
+
+function applyHarmonyLayer(mode, options = {}) {
+  if (!mode || mode === 'none') return;
+
+  const seedValue = (document.getElementById('accentColor') && document.getElementById('accentColor').value) || '';
+  const normalizedSeed = normalizeColorValue(seedValue) || seedValue;
+  const seedOklch = toOklchSafe(normalizedSeed || '#888888');
+  const huePlan = getHarmonyHuePlan(seedOklch.h, mode);
+  if (!huePlan) return;
+
+  const nonContentContrast = options.nonContentContrast || wcagNonContentContrast;
+  const softContrast = options.softContrast || 1.1;
+  const strongContrastTarget = options.strongContrast || 1.7;
+  const contentContrast = options.contentContrast || wcagContentContrast;
+
+  ['light', 'dark'].forEach(function(theme) {
+    const card = getSwatchColor(theme, 'card');
+    const canvas = getSwatchColor(theme, 'canvas') || card;
+
+    const baseNonContentBaseline = getSwatchColor(theme, 'accentNonContentBaseline');
+    const baseNonContentStrong = getSwatchColor(theme, 'accentNonContentStrong');
+    const baseContentStrong = getSwatchColor(theme, 'accentContentStrong');
+
+    if (!card || !baseNonContentStrong || !baseContentStrong) return;
+
+    const remappedBaseline = enforceContrast(
+      rebuildColorWithHue(baseNonContentBaseline || baseNonContentStrong, huePlan.accentNonContentBaseline),
+      card,
+      nonContentContrast,
+      theme === 'dark' ? 'increase' : 'decrease'
+    );
+
+    const remappedNonContentStrong = enforceContrast(
+      rebuildColorWithHue(baseNonContentStrong, huePlan.accentNonContentStrong),
+      card,
+      strongContrastTarget,
+      theme === 'dark' ? 'increase' : 'decrease'
+    );
+
+    const remappedContentStrong = enforceContrast(
+      rebuildColorWithHue(baseContentStrong, huePlan.accentContentStrong),
+      canvas,
+      contentContrast,
+      theme === 'dark' ? 'increase' : 'decrease'
+    );
+
+    // Derived tokens stay tied to strong accents
+    const remappedNonContentSoft = decreaseOpacityToContrast(remappedNonContentStrong, card, softContrast);
+    const remappedNonContentSubdued = decreaseOpacityToContrast(remappedNonContentStrong, card, nonContentContrast);
+    const remappedContentSubdued = decreaseOpacityToContrast(remappedContentStrong, card, contentContrast);
+
+    setCssColor(theme, 'accentNonContentBaseline', '--color-accentNonContentBaseline', remappedBaseline);
+    setCssColor(theme, 'accentNonContentStrong', '--color-accentNonContentStrong', remappedNonContentStrong);
+    setCssColor(theme, 'accentNonContentSoft', '--color-accentNonContentSoft', remappedNonContentSoft);
+    setCssColor(theme, 'accentNonContentSubdued', '--color-accentNonContentSubdued', remappedNonContentSubdued);
+    setCssColor(theme, 'accentContentStrong', '--color-accentContentStrong', remappedContentStrong);
+    setCssColor(theme, 'accentContentSubdued', '--color-accentContentSubdued', remappedContentSubdued);
+  });
+}
 
 // Insert the random color value into the text field
 function generateRandomColor() {
@@ -155,6 +457,14 @@ function parseHashToOverrides() {
               accInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
           } catch(e){}
+        }
+        return;
+      }
+
+      if (key.toLowerCase() === 'harmony') {
+        const mode = decodeURIComponent(rest || '').trim();
+        if (mode) {
+          setHarmonyMode(mode, { syncUi: false, persist: false });
         }
         return;
       }
@@ -203,6 +513,12 @@ function setHashFromOverrides() {
         parts.push(`accent=${encodeURIComponent(accentValue)}`);
       }
     } catch(e) {}
+    try {
+      const harmonyMode = getHarmonyMode();
+      if (harmonyMode && harmonyMode !== HARMONY_DEFAULT) {
+        parts.push(`harmony=${encodeURIComponent(harmonyMode)}`);
+      }
+    } catch (e) {}
     if (parts.length) {
       location.hash = `colors=${parts.join(',')}`;
     } else {
@@ -212,6 +528,7 @@ function setHashFromOverrides() {
 }
 
 parseHashToOverrides();
+restoreHarmonyModeFromStorage();
 generatePalette();
 attachPaletteTransferHandlers();
 initColorPicker();
@@ -283,6 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   updateThemeToggleUI();
+  initHarmonyControls();
 });
 
 $('#randomColorBtn').on('click', function(e) {
@@ -595,6 +913,9 @@ function buildPaletteCsv() {
   ['light', 'dark'].forEach(function(theme) {
     TOKEN_CATALOG.forEach(function(token) {
       const color = getSwatchColor(theme, token.id) || '';
+      if (!color) {
+        return; // Skip rows without a color value
+      }
       // CSV_HEADER is: theme, color, token, role, category, usage
       rows.push([
         theme,
@@ -795,6 +1116,9 @@ function generatePalette() {
   const neutralContrast = $('#neutralContrast').val().trim();
   const darkModeSaturation = $('#darkModeSaturation').val().trim();
 
+  const softContrastValue = parseFloat(softContrast) || 1.1;
+  const strongContrastValue = parseFloat(strongContrast) || 1.7;
+
   // **********
   // LIGHT MODE
   // **********
@@ -921,6 +1245,14 @@ function generatePalette() {
     setCssColor('dark', 'neutralNonContentSubdued', '--color-neutralNonContentSubdued', darkNeutralNonContentSubduedColor);
     var darkNeutralNonContentSoftColor = decreaseOpacityToContrast(darkNeutralNonContentStrongColor, darkCardColor, softContrast);
     setCssColor('dark', 'neutralNonContentSoft', '--color-neutralNonContentSoft', darkNeutralNonContentSoftColor);
+
+    // Apply deterministic harmony overlay to accent tokens (light + dark)
+    applyHarmonyLayer(getHarmonyMode(), {
+      nonContentContrast: wcagNonContentContrast,
+      softContrast: softContrastValue,
+      strongContrast: strongContrastValue,
+      contentContrast: wcagContentContrast
+    });
 
     setSwatchValues('light', { scopedOnly: true });
     setSwatchValues('dark', { scopedOnly: true });
@@ -1076,163 +1408,6 @@ function generatePalette() {
       } catch (e) {
         try { root.style.setProperty('--ui-foreground', best); } catch (err) {}
         try { root.style.setProperty('--value-foreground', best); } catch (err) {}
-      }
-    });
-  }
-
-  // ============================================================
-  // Palette Generation Buttons (Rongin and ChromaVerse)
-  // ============================================================
-
-  function setStatusMessage(msg) {
-    const statusEl = document.getElementById('paletteStatus');
-    if (statusEl) {
-      statusEl.textContent = msg;
-      if (msg) {
-        setTimeout(function() {
-          if (statusEl.textContent === msg) {
-            statusEl.textContent = '';
-          }
-        }, 3000);
-      }
-    }
-  }
-
-  function isValidHexColor(hex) {
-    return /^#?[0-9a-f]{6}$/i.test(hex);
-  }
-
-  function applyAlgorithmPalette(algoName, algoFunc) {
-    const accentInput = document.getElementById('accentColor');
-    if (!accentInput) {
-      setStatusMessage('Accent color input not found.');
-      return;
-    }
-
-    const accentHex = accentInput.value.trim();
-    if (!isValidHexColor(accentHex)) {
-      setStatusMessage('Invalid accent color. Please enter a valid hex color (e.g., #FF0000).');
-      console.warn('Invalid hex color for', algoName, ':', accentHex);
-      return;
-    }
-
-    try {
-      // Normalize hex to #RRGGBB format
-      const normalizedHex = '#' + accentHex.replace(/^#/, '').toUpperCase();
-
-      // Call the algorithm
-      const result = algoFunc(normalizedHex);
-      const { lightAccent, darkAccent } = result;
-
-      if (!lightAccent || !darkAccent || lightAccent.length < 2 || darkAccent.length < 2) {
-        setStatusMessage(algoName + ' algorithm returned invalid output.');
-        console.error('Invalid algorithm output:', result);
-        return;
-      }
-
-      // Map algorithm output to token system
-      // lightAccent[0] → accentNonContentBaseline
-      // lightAccent[1] → accentContentBaseline
-      // lightAccent[2] → accentNonContentStrong
-      // lightAccent[3] → accentContentStrong
-      const lightNonContentBaseline = lightAccent[0];
-      const lightContentBaseline = lightAccent[1];
-      const lightNonContentStrong = lightAccent[2];
-      const lightContentStrong = lightAccent[3];
-
-      const darkNonContentBaseline = darkAccent[0];
-      const darkContentBaseline = darkAccent[1];
-      const darkNonContentStrong = darkAccent[2];
-      const darkContentStrong = darkAccent[3];
-
-      // Calculate soft/subdued versions using existing methods
-      // For light mode
-      const lightCardColor = getSwatchColor('light', 'card');
-      const lightNonContentSoftColor = decreaseOpacityToContrast(lightNonContentStrong, lightCardColor, softContrast);
-      const lightNonContentSubduedColor = decreaseOpacityToContrast(lightNonContentStrong, lightCardColor, wcagNonContentContrast);
-      const lightContentSubduedColor = decreaseOpacityToContrast(lightContentStrong, lightCardColor, wcagContentContrast);
-
-      // For dark mode
-      const darkCardColor = getSwatchColor('dark', 'card');
-      const darkNonContentSoftColor = decreaseOpacityToContrast(darkNonContentStrong, darkCardColor, softContrast);
-      const darkNonContentSubduedColor = decreaseOpacityToContrast(darkNonContentStrong, darkCardColor, wcagNonContentContrast);
-      const darkContentSubduedColor = decreaseOpacityToContrast(darkContentStrong, darkCardColor, wcagContentContrast);
-
-      // Update light mode accent tokens
-      setCssColor('light', 'accentNonContentBaseline', '--color-accentNonContentBaseline', lightNonContentBaseline);
-      setCssColor('light', 'accentContentBaseline', '--color-accentContentBaseline', lightContentBaseline);
-      setCssColor('light', 'accentNonContentStrong', '--color-accentNonContentStrong', lightNonContentStrong);
-      setCssColor('light', 'accentNonContentSoft', '--color-accentNonContentSoft', lightNonContentSoftColor);
-      setCssColor('light', 'accentNonContentSubdued', '--color-accentNonContentSubdued', lightNonContentSubduedColor);
-      setCssColor('light', 'accentContentStrong', '--color-accentContentStrong', lightContentStrong);
-      setCssColor('light', 'accentContentSubdued', '--color-accentContentSubdued', lightContentSubduedColor);
-
-      // Update dark mode accent tokens
-      setCssColor('dark', 'accentNonContentBaseline', '--color-accentNonContentBaseline', darkNonContentBaseline);
-      setCssColor('dark', 'accentContentBaseline', '--color-accentContentBaseline', darkContentBaseline);
-      setCssColor('dark', 'accentNonContentStrong', '--color-accentNonContentStrong', darkNonContentStrong);
-      setCssColor('dark', 'accentNonContentSoft', '--color-accentNonContentSoft', darkNonContentSoftColor);
-      setCssColor('dark', 'accentNonContentSubdued', '--color-accentNonContentSubdued', darkNonContentSubduedColor);
-      setCssColor('dark', 'accentContentStrong', '--color-accentContentStrong', darkContentStrong);
-      setCssColor('dark', 'accentContentSubdued', '--color-accentContentSubdued', darkContentSubduedColor);
-
-      // Update swatch display values
-      setSwatchValues('light', { scopedOnly: true });
-      setSwatchValues('dark', { scopedOnly: true });
-
-      // Log debug info
-      console.log('Palette generation debug:', {
-        algorithm: algoName,
-        seedColor: normalizedHex,
-        lightAccent,
-        darkAccent,
-        tokensApplied: {
-          light: {
-            accentNonContentBaseline: lightNonContentBaseline,
-            accentContentBaseline: lightContentBaseline,
-            accentNonContentStrong: lightNonContentStrong,
-            accentContentStrong: lightContentStrong
-          },
-          dark: {
-            accentNonContentBaseline: darkNonContentBaseline,
-            accentContentBaseline: darkContentBaseline,
-            accentNonContentStrong: darkNonContentStrong,
-            accentContentStrong: darkContentStrong
-          }
-        }
-      });
-
-      setStatusMessage(algoName + ' palette applied successfully.');
-    } catch (e) {
-      setStatusMessage('Error applying ' + algoName + ': ' + (e.message || String(e)));
-      console.error('Error in applyAlgorithmPalette:', e);
-    }
-  }
-
-  // Button event handlers
-  const ronginBtn = document.getElementById('ronginBtn');
-  const chromaVersBtn = document.getElementById('chromaVersBtn');
-
-  if (ronginBtn) {
-    ronginBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (window.PaletteAlgos && window.PaletteAlgos.rongin) {
-        applyAlgorithmPalette('Rongin', window.PaletteAlgos.rongin);
-      } else {
-        setStatusMessage('Rongin algorithm not loaded.');
-        console.error('PaletteAlgos.rongin not available');
-      }
-    });
-  }
-
-  if (chromaVersBtn) {
-    chromaVersBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (window.PaletteAlgos && window.PaletteAlgos.chromaVerse) {
-        applyAlgorithmPalette('ChromaVerse', window.PaletteAlgos.chromaVerse);
-      } else {
-        setStatusMessage('ChromaVerse algorithm not loaded.');
-        console.error('PaletteAlgos.chromaVerse not available');
       }
     });
   }

@@ -18,10 +18,9 @@
     Sa11y.Lang.addI18n(Sa11yLangEn.strings);
     const sa11y = new Sa11y.Sa11y({
       checkRoot: "body",
-      panelPosition: "top-right",
+      panelPosition: "bottom-left",
     });
   </script>
-  <script defer src="js/palette-algos.js"></script>
   <script defer src="js/bundle.js"></script>
   <script defer src="js/image-fallback.js"></script>
   <script defer src="js/editor.js"></script>
@@ -63,7 +62,7 @@
 
   <div class="container">
     <!-- Accessibility panel injected for Sa11y/axe checks -->
-    <aside id="a11yPanel" aria-hidden="false" style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
+    <aside id="a11yPanel" aria-hidden="false" style="position:fixed;left:12px;bottom:12px;right:auto;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
       <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
       </div>
       <div id="a11yResults" style="max-height:260px;overflow:auto;font-size:0.85rem;color:#222"></div>
@@ -111,6 +110,25 @@
     </div>
 
     <div class="form-group">
+      <label for="harmonyMode">Harmony</label>
+      <div class="decorated-input">
+        <select id="harmonyMode" aria-describedby="harmony-desc">
+          <option value="none">Default model</option>
+          <option value="analogous-30">Analogous (±30°)</option>
+          <option value="analogous-60">Analogous (±60°)</option>
+          <option value="complementary">Complementary (180°)</option>
+          <option value="split-complementary">Split-complementary (180° ± 30°)</option>
+          <option value="triadic">Triadic (120° steps)</option>
+          <option value="tetradic">Tetradic (rectangle)</option>
+        </select>
+        <button id="randomHarmonyBtn" class="btn btn-icon btn-trailing" aria-label="Pick random harmony mode" aria-describedby="harmony-desc">
+          <span class="material-symbols-rounded">shuffle</span>
+        </button>
+      </div>
+      <p class="input-hint" id="harmony-desc">Deterministic accent harmonies layered on the default model; seed and neutrals remain unchanged.</p>
+    </div>
+
+    <div class="form-group">
       <label for="canvasContrast">Canvas contrast</label>
       <input type="text" id="canvasContrast" value="1.1">
     </div>
@@ -147,15 +165,9 @@
 
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
       <button id="generateBtn" class="btn">Generate</button>
-      <button id="ronginBtn" class="btn btn-secondary" aria-describedby="rongin-desc">Rongin</button>
-      <button id="chromaVersBtn" class="btn btn-secondary" aria-describedby="chromaverse-desc">ChromaVerse</button>
       <label style="display:inline-flex;align-items:center;gap:.5rem;margin-left:.5rem"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
     </div>
     <div id="paletteStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.9rem;color:var(--color-accentContentStrong);margin-top:0.5rem;min-height:1.2em"></div>
-    <div style="display:none">
-      <span id="rongin-desc">Generate accent palette using golden ratio harmonic algorithm</span>
-      <span id="chromaverse-desc">Generate accent palette using analogous harmonic algorithm</span>
-    </div>
 
   </form>
 
