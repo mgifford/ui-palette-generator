@@ -437,7 +437,14 @@ main {
 
     .palette-panel .color-swatch {
       flex: 1 1 calc(50% - var(--space-sm));
-      min-width: 150px;
+      min-width: 100px;
+    }
+  }
+
+  /* Hide swatch value text when too narrow to prevent overflow */
+  @container (max-width: 280px) {
+    .palette-panel .swatch .value {
+      display: none;
     }
   }
 
