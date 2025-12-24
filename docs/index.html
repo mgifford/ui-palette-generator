@@ -12,10 +12,18 @@
 
   <link rel="stylesheet" href="css/main.css">
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ryersondmp/sa11y@latest/dist/css/sa11y.min.css" />
+  <script src="https://cdn.jsdelivr.net/combine/gh/ryersondmp/sa11y@latest/dist/js/lang/en.umd.js,gh/ryersondmp/sa11y@latest/dist/js/sa11y.umd.min.js"></script>
+  <script>
+    Sa11y.Lang.addI18n(Sa11yLangEn.strings);
+    const sa11y = new Sa11y.Sa11y({
+      checkRoot: "body",
+      panelPosition: "top-right",
+    });
+  </script>
   <script defer src="js/bundle.js"></script>
   <script defer src="js/image-fallback.js"></script>
   <script defer src="js/editor.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/ryersondmp/sa11y@latest/dist/js/sa11y.min.js"></script>
 
   <meta property="og:image" content="images/social_media_thumbnail.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -54,8 +62,6 @@
     <!-- Accessibility panel injected for Sa11y/axe checks -->
     <aside id="a11yPanel" aria-hidden="false" style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.96);border:1px solid #ddd;padding:8px;border-radius:6px;max-width:360px;box-shadow:0 6px 24px rgba(0,0,0,0.12);">
       <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;">
-        <strong>Accessibility</strong>
-        <sa11y-control-panel></sa11y-control-panel>
       </div>
       <div id="a11yResults" style="max-height:260px;overflow:auto;font-size:0.85rem;color:#222"></div>
     </aside>

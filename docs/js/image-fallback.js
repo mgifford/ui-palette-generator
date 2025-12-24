@@ -53,9 +53,37 @@
     return h % modulo;
   }
 
+  const AVATAR_FEATURES = [
+    // Long Hair: Frames face, starts high (y=15), goes down sides to y=90. Does not cover eyes (y~50).
+    '<path d="M20 90 L 20 50 Q 20 15 50 15 Q 80 15 80 50 L 80 90 L 70 90 L 70 50 Q 70 25 50 25 Q 30 25 30 50 L 30 90 Z" fill="#333"/>',
+    // Spiky Hair: Sits on top (y < 35).
+    '<path d="M30 35 L 35 15 L 45 30 L 50 10 L 55 30 L 65 15 L 70 35 Q 50 25 30 35 Z" fill="#333"/>',
+    // Mustache: Sits on lower face (y > 60).
+    '<path d="M35 65 Q 50 55 65 65 Q 60 70 50 68 Q 40 70 35 65 Z" fill="#333"/>',
+    // Glasses: Eyes are at y~50.
+    '<g stroke="#333" stroke-width="3" fill="none"><circle cx="35" cy="50" r="10"/><circle cx="65" cy="50" r="10"/><line x1="45" y1="50" x2="55" y2="50"/></g>',
+    // Hat: Sits on top (y < 40).
+    '<path d="M15 40 L 85 40 L 85 35 L 75 35 L 75 15 L 25 15 L 25 35 L 15 35 Z" fill="#333"/>',
+    // Short Hair: Sits on top (y < 40).
+    '<path d="M25 40 Q 50 10 75 40 Q 80 50 80 55 L 75 55 Q 75 45 70 40 Q 50 20 30 40 Q 25 45 25 55 L 20 55 Q 20 50 25 40 Z" fill="#333"/>'
+  ];
+
   function localAvatarForSeed(seed){
-    var idx = hashStringToIndex(seed, 20) + 1; // 1..20
-    return `images/avatars/avatar-${String(idx).padStart(2,'0')}.svg`;
+    const hue = hashStringToIndex(seed, 360);
+    const featureIdx = hashStringToIndex(seed + 'feature', AVATAR_FEATURES.length);
+    const feature = AVATAR_FEATURES[featureIdx];
+    
+    // Base body color
+    const color = `hsl(${hue}, 60%, 80%)`;
+    const bodyColor = `hsl(${hue}, 60%, 70%)`; // slightly darker for body
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="35" fill="${color}" />
+      <path d="M15 100 Q 50 70 85 100" fill="${bodyColor}" />
+      ${feature}
+    </svg>`;
+    
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
   function initialsFromAlt(alt){
