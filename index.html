@@ -25,6 +25,7 @@
   <script defer src="js/image-fallback.js"></script>
   <script defer src="js/editor.js"></script>
   <script defer src="js/tabs.js"></script>
+  <script defer src="js/token-highlighter.js"></script>
 
   <meta property="og:image" content="images/social_media_thumbnail.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -460,59 +461,73 @@
               <div class="demo-canvas">
                 <div class="col">
   
-  <div class="card">
+  <div class="card" data-uses-token="card">
 
     <form>
       <div class="form-group">
         <label>Name</label>
         <div class="form-row">
-          <input type="text">
-          <button class="usa-button">Submit</button>
+          <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
+          <button class="usa-button" data-uses-token="accentNonContentStrong">Submit</button>
         </div>
       </div>
     </form>
 
     <ul class="menu">
-      <li class="selected"><a href="#">John</a></li>
+      <li class="selected" data-uses-token="accentNonContentSoft"><a href="#">John</a></li>
       <li><a href="#">Paul</a></li>
       <li><a href="#">George</a></li>
       <li><a href="#">Ringo</a></li>
       <li><a href="#">Billy</a></li>
     </ul>
 
-    <div class="alert">
+    <div class="alert" data-uses-token="accentContentStrong accentNonContentSoft">
       <span class="material-symbols-rounded">info</span>
       Please upgrade to the new version.
     </div>
 
     <div>
-      <span class="tag">Fully-featured</span>
-      <span class="tag tag-outlined">Open source</span>
+      <span class="tag" data-uses-token="accentContentStrong accentNonContentSoft">Fully-featured</span>
+      <span class="tag tag-outlined" data-uses-token="accentContentStrong accentNonContentSubdued">Open source</span>
     </div>
 
     <div>
-      <button class="usa-button">Submit</button>
-      <button class="usa-button usa-button--outline">Cancel</button>
-      <button class="usa-button usa-button--secondary">Skip</button>
+      <button class="usa-button" data-uses-token="accentNonContentStrong">Submit</button>
+      <button class="usa-button usa-button--outline" data-uses-token="accentNonContentStrong accentContentStrong">Cancel</button>
+      <button class="usa-button usa-button--secondary" data-uses-token="neutralNonContentStrong">Skip</button>
     </div>
 
-    <div>
-      <input type="checkbox">
-      <input type="checkbox" checked>
-      <input type="radio">
-      <input type="radio" checked>
-      <input type="checkbox" role="switch">
-      <input type="checkbox" role="switch" checked>
-    </div>
+    <div class="checkboxes">
+          <div class="usa-checkbox">
+            <input class="usa-checkbox__input" id="check-1-light" type="checkbox" name="check-1-light" value="respond" data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-1-light" data-uses-token="neutralContentStrong">Respond to comment <a href="#">#129</a> from Jake</label>
+          </div>
+          <div class="usa-checkbox">
+            <input class="usa-checkbox__input" id="check-2-light" type="checkbox" name="check-2-light" value="invite" data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-2-light" data-uses-token="neutralContentStrong">Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+          </div>
+          <div class="usa-checkbox">
+            <input class="usa-checkbox__input" id="check-3-light" type="checkbox" name="check-3-light" value="tps" data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-3-light" data-uses-token="neutralContentStrong">Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+          </div>
+          <div class="usa-checkbox usa-checkbox--struckout">
+            <input class="usa-checkbox__input" id="check-4-light" type="checkbox" name="check-4-light" value="layoff" checked data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-4-light" data-uses-token="neutralContentStrong">Lay off 62 employees</label>
+          </div>
+          <div class="usa-checkbox usa-checkbox--struckout">
+            <input class="usa-checkbox__input" id="check-5-light" type="checkbox" name="check-5-light" value="contract" checked data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-5-light" data-uses-token="neutralContentStrong">Review Robert Johnson's contract</label>
+          </div>
+        </div>
 
   </div>
 
-  <div class="card">
+  <div class="card" data-uses-token="card">
     <div class="media">
       <img src="images/generic-female-avatar.svg" alt="Generic female avatar">
       <div class="text-pair text-pair-md-sm">
-        <div class="text-md">Jane I.S. Awesome</div>
-        <div class="text-sm">jane.is.awesome@example.com</div>
+        <div class="text-md" data-uses-token="neutralContentStrong">Jane I.S. Awesome</div>
+        <div class="text-sm" data-uses-token="neutralContentSubdued">jane.is.awesome@example.com</div>
       </div>
     </div>
   </div>
@@ -552,19 +567,19 @@
   <form class="card">
     <div class="form-group">
       <label>Name</label>
-      <input type="text">
+      <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email">
+      <input type="email" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <div class="form-group">
       <label>Password</label>
-      <input type="password">
+      <input type="password" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
-    <button class="usa-button usa-button--big" style="width:100%">Create account</button>
+    <button class="usa-button usa-button--big" data-uses-token="accentNonContentStrong" style="width:100%">Create account</button>
     <p class="or"><span>Or</span></p>
-    <button class="usa-button usa-button--outline usa-button--big" style="width:100%">Continue with GitHub</button>
+    <button class="usa-button usa-button--outline usa-button--big" data-uses-token="accentNonContentStrong accentContentStrong" style="width:100%">Continue with GitHub</button>
   </form>
 
   <div class="toast">
@@ -577,12 +592,12 @@
 	
   <div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="selected"><a href="#tab-team-light" role="tab" aria-selected="true" aria-controls="tab-team-light" id="tab-team-light-trigger">Team</a></li>
-      <li role="presentation"><a href="#tab-tasks-light" role="tab" aria-selected="false" aria-controls="tab-tasks-light" id="tab-tasks-light-trigger" tabindex="-1">Tasks</a></li>
-      <li role="presentation"><a href="#tab-notes-light" role="tab" aria-selected="false" aria-controls="tab-notes-light" id="tab-notes-light-trigger" tabindex="-1">Notes</a></li>
+      <li role="presentation" class="selected"><a href="#tab-team-light" role="tab" data-uses-token="neutralContentStrong neutralNonContentSoft" aria-selected="true" aria-controls="tab-team-light" id="tab-team-light-trigger">Team</a></li>
+      <li role="presentation"><a href="#tab-tasks-light" role="tab" data-uses-token="neutralContentStrong neutralNonContentSoft" aria-selected="false" aria-controls="tab-tasks-light" id="tab-tasks-light-trigger" tabindex="-1">Tasks</a></li>
+      <li role="presentation"><a href="#tab-notes-light" role="tab" data-uses-token="neutralContentStrong neutralNonContentSoft" aria-selected="false" aria-controls="tab-notes-light" id="tab-notes-light-trigger" tabindex="-1">Notes</a></li>
     </ul>
 
-    <div class="card tab-content">
+    <div class="card tab-content" data-uses-token="card neutralNonContentSubdued">
 
       <div id="tab-team-light" role="tabpanel" aria-labelledby="tab-team-light-trigger" class="tab-pane">
         <div class="avatars">
@@ -655,59 +670,73 @@
               <div class="demo-canvas">
                 <div class="col">
   
-  <div class="card">
+  <div class="card" data-uses-token="card">
 
     <form>
       <div class="form-group">
         <label>Name</label>
         <div class="form-row">
-          <input type="text">
-          <button class="usa-button">Submit</button>
+          <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
+          <button class="usa-button" data-uses-token="accentNonContentStrong">Submit</button>
         </div>
       </div>
     </form>
 
     <ul class="menu">
-      <li class="selected"><a href="#">John</a></li>
+      <li class="selected" data-uses-token="accentNonContentSoft"><a href="#">John</a></li>
       <li><a href="#">Paul</a></li>
       <li><a href="#">George</a></li>
       <li><a href="#">Ringo</a></li>
       <li><a href="#">Billy</a></li>
     </ul>
 
-    <div class="alert">
+    <div class="alert" data-uses-token="accentContentStrong accentNonContentSoft">
       <span class="material-symbols-rounded">info</span>
       Please upgrade to the new version.
     </div>
 
     <div>
-      <span class="tag">Fully-featured</span>
-      <span class="tag tag-outlined">Open source</span>
+      <span class="tag" data-uses-token="accentContentStrong accentNonContentSoft">Fully-featured</span>
+      <span class="tag tag-outlined" data-uses-token="accentContentStrong accentNonContentSubdued">Open source</span>
     </div>
 
     <div>
-      <button class="usa-button">Submit</button>
-      <button class="usa-button usa-button--outline">Cancel</button>
-      <button class="usa-button usa-button--secondary">Skip</button>
+      <button class="usa-button" data-uses-token="accentNonContentStrong">Submit</button>
+      <button class="usa-button usa-button--outline" data-uses-token="accentNonContentStrong accentContentStrong">Cancel</button>
+      <button class="usa-button usa-button--secondary" data-uses-token="neutralNonContentStrong">Skip</button>
     </div>
 
-    <div>
-      <input type="checkbox">
-      <input type="checkbox" checked>
-      <input type="radio">
-      <input type="radio" checked>
-      <input type="checkbox" role="switch">
-      <input type="checkbox" role="switch" checked>
-    </div>
+    <div class="checkboxes">
+          <div class="usa-checkbox">
+            <input class="usa-checkbox__input" id="check-1-dark" type="checkbox" name="check-1-dark" value="respond" data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-1-dark" data-uses-token="neutralContentStrong">Respond to comment <a href="#">#129</a> from Jake</label>
+          </div>
+          <div class="usa-checkbox">
+            <input class="usa-checkbox__input" id="check-2-dark" type="checkbox" name="check-2-dark" value="invite" data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-2-dark" data-uses-token="neutralContentStrong">Invite <a href="#">John McClane</a> to Nakatomi Plaza</label>
+          </div>
+          <div class="usa-checkbox">
+            <input class="usa-checkbox__input" id="check-3-dark" type="checkbox" name="check-3-dark" value="tps" data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-3-dark" data-uses-token="neutralContentStrong">Create TPS report <a href="#">requested</a> by Bill Lumbergh</label>
+          </div>
+          <div class="usa-checkbox usa-checkbox--struckout">
+            <input class="usa-checkbox__input" id="check-4-dark" type="checkbox" name="check-4-dark" value="layoff" checked data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-4-dark" data-uses-token="neutralContentStrong">Lay off 62 employees</label>
+          </div>
+          <div class="usa-checkbox usa-checkbox--struckout">
+            <input class="usa-checkbox__input" id="check-5-dark" type="checkbox" name="check-5-dark" value="contract" checked data-uses-token="accentNonContentStrong">
+            <label class="usa-checkbox__label" for="check-5-dark" data-uses-token="neutralContentStrong">Review Robert Johnson's contract</label>
+          </div>
+        </div>
 
   </div>
 
-  <div class="card">
+  <div class="card" data-uses-token="card">
     <div class="media">
      <img src="images/generic-female-avatar.svg" alt="Generic female avatar">
       <div class="text-pair text-pair-md-sm">
-        <div class="text-md">Jane I.S. Awesome</div>
-        <div class="text-sm">jane.is.awesome@example.com</div>
+        <div class="text-md" data-uses-token="neutralContentStrong">Jane I.S. Awesome</div>
+        <div class="text-sm" data-uses-token="neutralContentSubdued">jane.is.awesome@example.com</div>
       </div>
     </div>
   </div>
@@ -747,19 +776,19 @@
   <form class="card">
     <div class="form-group">
       <label>Name</label>
-      <input type="text">
+      <input type="text" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <div class="form-group">
       <label>Email</label>
-      <input type="email">
+      <input type="email" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
     <div class="form-group">
       <label>Password</label>
-      <input type="password">
+      <input type="password" data-uses-token="neutralContentStrong neutralNonContentSubdued">
     </div>
-    <button class="usa-button usa-button--big" style="width:100%">Create account</button>
+    <button class="usa-button usa-button--big" data-uses-token="accentNonContentStrong" style="width:100%">Create account</button>
     <p class="or"><span>Or</span></p>
-    <button class="usa-button usa-button--outline usa-button--big" style="width:100%">Continue with GitHub</button>
+    <button class="usa-button usa-button--outline usa-button--big" data-uses-token="accentNonContentStrong accentContentStrong" style="width:100%">Continue with GitHub</button>
   </form>
 
   <div class="toast">
@@ -772,12 +801,12 @@
 	
   <div class="tabs-container">
     <ul class="nav nav-tabs" role="tablist">
-      <li role="presentation" class="selected"><a href="#tab-team-dark" role="tab" aria-selected="true" aria-controls="tab-team-dark" id="tab-team-dark-trigger">Team</a></li>
-      <li role="presentation"><a href="#tab-tasks-dark" role="tab" aria-selected="false" aria-controls="tab-tasks-dark" id="tab-tasks-dark-trigger" tabindex="-1">Tasks</a></li>
-      <li role="presentation"><a href="#tab-notes-dark" role="tab" aria-selected="false" aria-controls="tab-notes-dark" id="tab-notes-dark-trigger" tabindex="-1">Notes</a></li>
+      <li role="presentation" class="selected"><a href="#tab-team-dark" role="tab" data-uses-token="neutralContentStrong neutralNonContentSoft" aria-selected="true" aria-controls="tab-team-dark" id="tab-team-dark-trigger">Team</a></li>
+      <li role="presentation"><a href="#tab-tasks-dark" role="tab" data-uses-token="neutralContentStrong neutralNonContentSoft" aria-selected="false" aria-controls="tab-tasks-dark" id="tab-tasks-dark-trigger" tabindex="-1">Tasks</a></li>
+      <li role="presentation"><a href="#tab-notes-dark" role="tab" data-uses-token="neutralContentStrong neutralNonContentSoft" aria-selected="false" aria-controls="tab-notes-dark" id="tab-notes-dark-trigger" tabindex="-1">Notes</a></li>
     </ul>
 
-    <div class="card tab-content">
+    <div class="card tab-content" data-uses-token="card neutralNonContentSubdued">
 
       <div id="tab-team-dark" role="tabpanel" aria-labelledby="tab-team-dark-trigger" class="tab-pane">
         <div class="avatars">

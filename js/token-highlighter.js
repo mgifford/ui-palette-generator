@@ -1,17 +1,32 @@
 // Token highlighter: highlights demo elements that declare they use a token
 (function(){
-  function qsAllDemo(sel){ return Array.from(document.querySelectorAll('#demo ' + sel)); }
-
-  function clearHighlights(){
-    qsAllDemo('.token-highlight').forEach(function(el){ el.classList.remove('token-highlight','pop'); });
+  function qsAll(sel, context){ 
+      return Array.from((context || document).querySelectorAll(sel)); 
   }
 
-  function highlightToken(token, swatchColor){
+  function clearHighlights(){
+    qsAll('.token-highlight').forEach(function(el){ el.classList.remove('token-highlight','pop'); });
+  }
+
+  function highlightElements(elements){
+    if (elements.length === 0) return;
+    elements.forEach(function(m){
+      m.classList.add('token-highlight','pop');
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      setTimeout(function(){ m.classList.remove('pop'); }, 500);
+    });
+  }
+
+  // Highlight tokens in the demo, scoped by theme
+  function highlightTokenInDemo(token, themeMode){
     if (!token) return;
-    clearHighlights();
-    
-    // 1. Highlight by attribute (existing logic)
     var esc = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(token) : token;
+    
+    // Determine scope: #demo-light or #demo-dark
+    var demoContainerId = themeMode === 'dark' ? 'demo-dark' : 'demo-light';
+    var demoContainer = document.getElementById(demoContainerId);
+    if (!demoContainer) return;
+
     var selectorParts = [
       '[data-uses-token~="' + esc + '"]',
       '[data-role~="' + esc + '"]',
@@ -20,91 +35,108 @@
       '#' + esc
     ];
     var sel = selectorParts.join(', ');
-    var matches = [];
+    
     try {
-      matches = Array.from(document.querySelectorAll('#demo ' + sel));
+      var matches = qsAll(sel, demoContainer);
+      highlightElements(matches);
     } catch(e){ /* ignore selector errors */ }
+  }
 
-    // 2. Highlight by computed style (new logic)
-    // Only if we have a swatchColor to compare against
-    if (swatchColor) {
-      // Iterate all elements in demo. This is heavy but okay for a demo.
-      var allDemoEls = document.querySelectorAll('#demo *');
-      allDemoEls.forEach(function(el){
-        var style = getComputedStyle(el);
-        // Check common properties
-        if (style.backgroundColor === swatchColor || 
-            style.color === swatchColor || 
-            style.borderColor === swatchColor || 
-            style.outlineColor === swatchColor) {
-          if (!matches.includes(el)) {
-            matches.push(el);
-          }
+  // Highlight swatches in the palette, scoped by theme
+  function highlightSwatches(tokens, themeMode){
+    if (!tokens) return;
+    var tokenList = tokens.split(/\s+/);
+    var matches = [];
+    
+    // Determine scope: #palette-light or #palette-dark
+    var paletteContainerId = themeMode === 'dark' ? 'palette-dark' : 'palette-light';
+    var paletteContainer = document.getElementById(paletteContainerId);
+    if (!paletteContainer) return;
+
+    tokenList.forEach(function(token){
+        if(!token) return;
+        var esc = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(token) : token;
+        
+        // Look for data-swatch-id within the specific palette container
+        var sel = '[data-swatch-id="' + esc + '"]';
+        try {
+            var found = qsAll(sel, paletteContainer);
+            found.forEach(function(el){ matches.push(el); });
+        } catch(e){}
+    });
+    highlightElements(matches);
+  }
+
+  function handleInteraction(target) {
+    // 1. Check if target is a swatch (Swatch -> Demo)
+    var swatch = target.closest('[data-swatch-id], .swatch');
+    if (swatch) {
+        // Determine theme of the swatch
+        var palettePanel = swatch.closest('.palette-panel');
+        if (!palettePanel) return;
+        
+        var themeMode = palettePanel.getAttribute('data-theme-mode') || 'light';
+        
+        var token = swatch.getAttribute('data-swatch-id') || swatch.id;
+        if (token) {
+            clearHighlights();
+            highlightTokenInDemo(token, themeMode);
+            return;
         }
-      });
     }
 
-    matches.forEach(function(m){
-      m.classList.add('token-highlight','pop');
-      // remove 'pop' after a short time so repeated hovers retrigger
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      setTimeout(function(){ m.classList.remove('pop'); }, 500);
-    });
+    // 2. Check if target is a demo element (Demo -> Swatch)
+    var demoEl = target.closest('[data-uses-token]');
+    if (demoEl) {
+        // Determine theme of the demo element
+        var demoPanel = demoEl.closest('.demo-panel');
+        if (!demoPanel) return;
+
+        var themeMode = demoPanel.getAttribute('data-theme-mode') || 'light';
+
+        var tokens = demoEl.getAttribute('data-uses-token');
+        if (tokens) {
+            clearHighlights();
+            highlightSwatches(tokens, themeMode);
+            return;
+        }
+    }
   }
 
   function onPointerOver(e){
-    // support elements that carry data-token or data-swatch-id, or are .swatch
-    var t = e.target.closest('[data-token],[data-swatch-id],.swatch');
-    if (!t) return;
-    var token = t.getAttribute('data-token') || t.getAttribute('data-swatch-id') || t.id;
-    if (!token) return;
-    
-    // Get computed color of the swatch if possible
-    var swatchColor = null;
-    // If t is the swatch or inside it
-    var swatchEl = t.classList.contains('swatch') ? t : t.closest('.swatch');
-    if (swatchEl) {
-        // The color is usually on the .color child, or the swatch itself?
-        // In index.html: <div class="swatch"><span class="color"></span></div>
-        // The .color span has the background color.
-        var colorSpan = swatchEl.querySelector('.color');
-        if (colorSpan) {
-            swatchColor = getComputedStyle(colorSpan).backgroundColor;
-        } else {
-            swatchColor = getComputedStyle(swatchEl).backgroundColor;
-        }
-    }
-
-    highlightToken(token, swatchColor);
+    handleInteraction(e.target);
   }
 
   function onPointerOut(e){
-    var related = e.relatedTarget;
-    if (!related || !document.querySelector('#paletteLeft').contains(related)) clearHighlights();
+      var related = e.relatedTarget;
+      // If we moved to something that is NOT a swatch or demo element, clear.
+      if (!related) {
+          clearHighlights();
+          return;
+      }
+      
+      // If related is inside the SAME interactive element, don't clear.
+      var targetInteractive = e.target.closest('[data-swatch-id], .swatch, [data-uses-token]');
+      var relatedInteractive = related.closest('[data-swatch-id], .swatch, [data-uses-token]');
+      
+      if (targetInteractive && targetInteractive === relatedInteractive) {
+          return;
+      }
+      
+      clearHighlights();
   }
 
   function onFocusIn(e){
-    var t = e.target.closest('[data-token],[data-swatch-id],.swatch');
-    if (!t) return;
-    var token = t.getAttribute('data-token') || t.getAttribute('data-swatch-id') || t.id;
-    if (!token) return;
-    
-    var swatchColor = null;
-    var swatchEl = t.classList.contains('swatch') ? t : t.closest('.swatch');
-    if (swatchEl) {
-        var colorSpan = swatchEl.querySelector('.color');
-        if (colorSpan) {
-            swatchColor = getComputedStyle(colorSpan).backgroundColor;
-        } else {
-            swatchColor = getComputedStyle(swatchEl).backgroundColor;
-        }
-    }
-    
-    highlightToken(token, swatchColor);
+    handleInteraction(e.target);
   }
 
   function onFocusOut(e){
-    clearHighlights();
+    setTimeout(function(){
+        var active = document.activeElement;
+        if (!active || (!active.closest('[data-swatch-id], .swatch') && !active.closest('[data-uses-token]'))) {
+            clearHighlights();
+        }
+    }, 10);
   }
 
   // Use event delegation
