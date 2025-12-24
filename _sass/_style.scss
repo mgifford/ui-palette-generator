@@ -67,10 +67,10 @@ header {
   background: var(--color-card);
 }
 [data-theme="dark"] .color-popover label {
-  color: var(--color-neutralContentStrongOnDark);
+  color: var(--color-neutralContentStrong);
 }
 [data-theme="dark"] .color-popover input {
-  color: var(--color-neutralContentStrongOnDark);
+  color: var(--color-neutralContentStrong);
   border-color: var(--color-neutralNonContentSubdued);
   background: var(--color-card);
 }
@@ -669,7 +669,7 @@ main {
 
 /* Ensure transfer card body text is high-contrast in dark theme */
 [data-theme="dark"] #palette-transfer .transfer-card p {
-  color: var(--color-neutralContentStrongOnDark);
+  color: var(--color-neutralContentStrong);
 }
 
 .demo-canvas {
