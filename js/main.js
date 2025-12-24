@@ -59,151 +59,18 @@ async function runA11yCheck() {
     const issues = results.violations || [];
     if (!issues.length) {
       resultsEl.innerHTML = '<div style="color:green">No violations found (WCAG 2.1 AA subset).</div>';
-      return;
-    }
-    const rows = issues.map(v=> {
-      return `<div style="border-bottom:1px solid #eee;padding:.5rem"><strong>${v.id}</strong> — ${v.impact || ''}<div style="font-size:.9rem;color:#444;margin-top:.25rem">${v.description}</div><details style="margin-top:.25rem"><summary>Nodes (${v.nodes.length})</summary>${v.nodes.map(n=>`<div style="padding:.25rem;border-top:1px dashed #f0f0f0;margin-top:.25rem"><div style="font-size:.8rem;color:#666">Selector: ${n.target.join(', ')}</div><pre style="white-space:pre-wrap">${escapeHtml(n.failureSummary || n.html || '')}</pre></div>`).join('')}</details></div>`;
-    }).join('');
-    resultsEl.innerHTML = rows;
-  } catch (e) {
-    resultsEl.textContent = 'Error running axe: ' + (e && e.message ? e.message : String(e));
-  }
-}
-
-function escapeHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-addA11yPanelHandlers();
-
-const wcagNonContentContrast = 3;
-const wcagContentContrast = 4.5;
-const root = document.documentElement;
-const whiteColor = "#FFF";
-const blackColor = "#000";
-
-const TOKEN_CATALOG = [
-  { id: 'seed', label: 'Accent seed', category: 'dominant', usage: 'seed-accent' },
-  { id: 'canvas', label: 'Canvas background', category: 'background', usage: 'canvas-surface' },
-  { id: 'card', label: 'Card background', category: 'background', usage: 'card-surface' },
-  { id: 'accentNonContentBaseline', label: 'Accent baseline (non-content)', category: 'accent', usage: 'non-content-baseline' },
-  { id: 'accentNonContentSoft', label: 'Accent soft (non-content)', category: 'accent', usage: 'non-content-soft' },
-  { id: 'accentNonContentSubdued', label: 'Accent subdued (non-content)', category: 'accent', usage: 'non-content-subdued' },
-  { id: 'accentNonContentStrong', label: 'Accent strong (non-content)', category: 'accent', usage: 'non-content-strong' },
-  { id: 'accentContentBaseline', label: 'Accent baseline (content)', category: 'accent', usage: 'content-baseline' },
-  { id: 'accentContentSubdued', label: 'Accent subdued (content)', category: 'accent', usage: 'content-subdued' },
-  { id: 'accentContentStrong', label: 'Accent strong (content)', category: 'accent', usage: 'content-strong' },
-  { id: 'neutralNonContentSoft', label: 'Neutral soft (non-content)', category: 'neutral', usage: 'non-content-soft' },
-  { id: 'neutralNonContentSubdued', label: 'Neutral subdued (non-content)', category: 'neutral', usage: 'non-content-subdued' },
-  { id: 'neutralNonContentStrong', label: 'Neutral strong (non-content)', category: 'neutral', usage: 'non-content-strong' },
-  { id: 'neutralContentSubdued', label: 'Neutral subdued (content)', category: 'neutral', usage: 'content-subdued' },
-  { id: 'neutralContentStrong', label: 'Neutral strong (content)', category: 'neutral', usage: 'content-strong' }
-].map(function(token) {
-  return { ...token, cssVar: `--color-${token.id}` };
-});
-
-// Add semantic/policy tokens that are used by the demo but not part
-// of the technical token generation above. These will map to sensible
-// generated colors so the demo reflects the palette fully.
-['primary','secondary','accent','background','surface','error','warning','info','success'].forEach(function(id){
-  TOKEN_CATALOG.push({ id: id, label: id.charAt(0).toUpperCase() + id.slice(1), category: id === 'background' || id === 'surface' ? 'background' : 'dominant', usage: id });
-});
-// ensure cssVar is present on the newly pushed tokens
-TOKEN_CATALOG.forEach(function(token){ token.cssVar = token.cssVar || `--color-${token.id}`; });
-
-const TOKEN_LOOKUP = TOKEN_CATALOG.reduce(function(acc, token) {
-  acc[token.id] = token;
-  return acc;
-}, {});
-const CSV_HEADER = ['theme', 'color', 'token', 'role', 'category', 'usage'];
-
-// Insert the random color value into the text field
-function generateRandomColor() {
-  var randomColor = chroma.random().hex().toUpperCase();
-  $('#accentColor').val(randomColor);
-  $('#accentColor').parent().find('.mini-swatch').css('background-color', randomColor);
-}
-
-// expose generatePalette globally for small modules to call
-window.generatePalette = generatePalette;
-
-initializeScopedIds();
-generateRandomColor();
-// Parse any color overrides from the URL hash before generating
-function parseHashToOverrides() {
-  try {
-    const raw = (location.hash || '').replace(/^#/, '');
-    if (!raw) return null;
-    // Split top-level comma-separated pairs (e.g. "colors=light.seed=AA00AA,light.card=FFF,accent=red")
-    const pairs = raw.split(',').map(s=>s.trim()).filter(Boolean);
-    const obj = {};
-    pairs.forEach(function(pair){
-      const kv = pair.split('=');
-      if (kv.length < 2) return;
-      const key = decodeURIComponent(kv[0]);
-      const rest = kv.slice(1).join('=');
-      // If this is the accent shorthand, handle separately
-      if (key.toLowerCase() === 'accent') {
-        const rawAccent = decodeURIComponent(rest || '').trim();
-        if (rawAccent) {
-          // store raw accent for later serialization
-          window.LAST_RAW_ACCENT = rawAccent;
-          // If the accent input exists in the DOM, set it now (normalize will happen in change handler)
-          try {
-            const accInput = document.getElementById('accentColor');
-            if (accInput) {
-              accInput.value = rawAccent;
-              // trigger change so the normalizer runs
-              accInput.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-          } catch(e){}
-        }
-        return;
+      function generatePalette() {
+        // CSS-First mode: do not perform JS color math.
+        // Instead, read the accent input (or color picker) and write
+        // the seed to the root CSS variable so CSS-derived tokens update.
+        try {
+          var input = document.getElementById('accentColor') || document.getElementById('seedPicker');
+          var val = input ? (input.value || input.getAttribute('value') || '') : '';
+          if (val) {
+            document.documentElement.style.setProperty('--seed', val);
+          }
+        } catch (e) {}
       }
-
-      // Otherwise treat as colors entries like theme.token=HEX or token=HEX
-      const left = key;
-      const hex = '#' + rest.replace(/^#/, '').toUpperCase();
-      const parts = left.split('.'); // theme.token or token
-      if (parts.length === 2) {
-        const theme = parts[0];
-        const token = parts[1];
-        obj[theme] = obj[theme] || {};
-        obj[theme][token] = hex;
-      } else if (parts.length === 1) {
-        obj.light = obj.light || {};
-        obj.light[parts[0]] = hex;
-      }
-    });
-    if (Object.keys(obj).length) {
-      try { localStorage.setItem('customColorOverrides', JSON.stringify(obj)); } catch (e) {}
-      window.CUSTOM_COLOR_OVERRIDES = obj;
-      return obj;
-    }
-  } catch (e) {}
-  return null;
-}
-
-function setHashFromOverrides() {
-  try {
-    const obj = window.CUSTOM_COLOR_OVERRIDES || JSON.parse(localStorage.getItem('customColorOverrides') || '{}');
-    const parts = [];
-    Object.keys(obj).forEach(function(theme){
-      const tokens = obj[theme] || {};
-      Object.keys(tokens).forEach(function(token){
-        const hex = (tokens[token] || '').replace(/^#/, '').toUpperCase();
-        if (!hex) return;
-        parts.push(`${encodeURIComponent(theme)}.${encodeURIComponent(token)}=${hex}`);
-      });
-    });
-    // include accent shorthand if available
-    try {
-      const rawAccent = window.LAST_RAW_ACCENT || (document.getElementById('accentColor') && document.getElementById('accentColor').value) || '';
-      if (rawAccent) {
-        // prefer the raw value (named color) if provided, otherwise the hex without '#'
-        const accentValue = (window.LAST_RAW_ACCENT || rawAccent).toString().replace(/^#/, '');
-        parts.push(`accent=${encodeURIComponent(accentValue)}`);
-      }
-    } catch(e) {}
-    if (parts.length) {
       location.hash = `colors=${parts.join(',')}`;
     } else {
       history.replaceState(null, '', location.pathname + location.search);
