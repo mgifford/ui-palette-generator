@@ -85,6 +85,12 @@
     palette.addEventListener('focusout', onFocusOut);
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') clearHighlights(); });
 
+    // mark initialized for diagnostics
+    try { palette.setAttribute('data-token-init', 'true'); } catch(e){}
+
+    // expose functions for manual testing and unit tests
+    try { window.TokenHighlighter = { highlightToken: highlightToken, clearHighlights: clearHighlights }; } catch(e){}
+
     // Respect reduced motion: reduce animation effects via CSS
   });
 })();
