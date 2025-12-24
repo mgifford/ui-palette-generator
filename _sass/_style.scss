@@ -1267,3 +1267,69 @@ main {
     display: block;
   }
 }
+
+/* Tabs component */
+.tabs-container {
+  margin-bottom: var(--space-md);
+}
+
+.nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--color-neutralNonContentSubdued);
+}
+
+.nav-tabs li {
+  margin-bottom: -1px;
+}
+
+.nav-tabs a {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  text-decoration: none;
+  color: var(--color-neutralContentStrong);
+  background: var(--color-neutralNonContentSoft);
+  border: 1px solid transparent;
+  border-bottom: none;
+  margin-right: var(--space-xs);
+  border-radius: var(--borderRadius-md) var(--borderRadius-md) 0 0;
+}
+
+.nav-tabs li.selected a,
+.nav-tabs a[aria-selected="true"] {
+  background: var(--color-card);
+  border-color: var(--color-neutralNonContentSubdued);
+  border-bottom-color: var(--color-card); /* Connect to panel */
+  color: var(--color-accentContentStrong);
+  font-weight: bold;
+}
+
+.nav-tabs a:hover:not([aria-selected="true"]) {
+  background-color: var(--color-neutralNonContentSubdued);
+  color: var(--color-neutralContentStrong);
+}
+
+.tab-content {
+  border: 1px solid var(--color-neutralNonContentSubdued);
+  border-top: none;
+  padding: var(--space-md);
+  background: var(--color-card);
+  border-radius: 0 0 var(--borderRadius-md) var(--borderRadius-md);
+  margin-top: 0; /* Ensure it connects */
+}
+
+/* Adjust card style if tab-content is also a card */
+.card.tab-content {
+  box-shadow: none; /* Remove default card shadow if we want a flat look or keep it */
+}
+
+.tab-pane {
+  outline: none;
+}
+
+.tab-pane[hidden] {
+  display: none;
+}
