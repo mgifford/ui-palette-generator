@@ -13,8 +13,6 @@
   <link rel="stylesheet" href="css/main.css">
 
   <script defer src="js/bundle.js"></script>
-  <link rel="stylesheet" href="css/variables.css">
-  <script defer src="js/scripts.js"></script>
 
   <meta property="og:image" content="images/social_media_thumbnail.jpg" />
 <meta property="og:image:type" content="image/jpeg" />
@@ -143,25 +141,283 @@
 
 
       <main>
-          <section id="palette">
-            <div class="heading">
-              <h2>Palette (CSS-First Preview)</h2>
-            </div>
-            <p class="section-hint">This simplified preview shows usage of the derived tokens. Change the seed color to verify the CSS math.</p>
-
-            <div class="palette-preview">
-              <div class="preview-card" id="previewCard">
-                <div class="preview-actions">
-                  <button class="preview-button">Primary Action</button>
-                  <div>
-                    <input id="seedPicker" type="color" value="#BA7542" aria-label="Seed color picker">
+        <section id="palette">
+          <div class="heading">
+            <h2>Palette</h2>
+          </div>
+          <p class="section-hint">Two mirrored palettes share the exact same token IDs. Their parent containers carry either <code data-inline="true">data-theme-mode="light"</code> or <code data-inline="true">data-theme-mode="dark"</code> so duplicate IDs resolve to the right CSS variable scope.</p>
+          <div class="palette-panels" aria-live="polite">
+            <div class="split" id="paletteSplit">
+              <div class="split-left" id="paletteLeft">
+                <!-- Light palette uses the light parent container so shared IDs render light values -->
+                <article id="palette-light" class="palette-panel" data-theme-mode="light" data-theme="light" aria-labelledby="palette-light-title">
+              <header class="panel-heading">
+                <h3 id="palette-light-title">Light palette values</h3>
+                <p class="panel-note">Each swatch below reflects the light token for its ID.</p>
+              </header>
+              <div class="palette-accent">
+                <figure class="color-swatch">
+                  <figcaption>Seed</figcaption>
+                  <div class="swatch" id="seed" data-swatch-id="seed">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row ui-swatches palette-backgrounds">
+                <figure class="color-swatch">
+                  <figcaption>Canvas</figcaption>
+                  <div class="swatch" id="canvas" data-swatch-id="canvas">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+                <figure class="color-swatch">
+                  <figcaption>Card</figcaption>
+                  <div class="swatch" id="card" data-swatch-id="card">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row">
+                <div class="col palette-non-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Non-Content Baseline</figcaption>
+                    <div class="swatch" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Soft</figcaption>
+                      <div class="swatch" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Subdued</figcaption>
+                      <div class="swatch" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Strong</figcaption>
+                      <div class="swatch" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Soft</figcaption>
+                      <div class="swatch" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Subdued</figcaption>
+                      <div class="swatch" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Strong</figcaption>
+                      <div class="swatch" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
                   </div>
                 </div>
-                <p class="preview-note">The page root defines <code>--seed</code>. Toggle <code>.dark-theme</code> on the <code>html</code> element to preview dark mode.</p>
+                <div class="col palette-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Content Baseline</figcaption>
+                    <div class="swatch" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Subdued</figcaption>
+                      <div class="swatch" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Strong</figcaption>
+                      <div class="swatch" id="accentContentStrong" data-swatch-id="accentContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Subdued</figcaption>
+                      <div class="swatch" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Strong</figcaption>
+                      <div class="swatch" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+              </div>
+            </article>
+              </div>
+              <div class="splitter" id="paletteSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize palettes">
+                <span class="grip" aria-hidden="true"></span>
+              </div>
+              <div class="split-right" id="paletteRight">
+                <!-- Dark palette reuses identical IDs but inherits from the dark theme container -->
+                <article id="palette-dark" class="palette-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="palette-dark-title">
+              <header class="panel-heading">
+                <h3 id="palette-dark-title">Dark palette values</h3>
+                <p class="panel-note">This mirrored column uses the dark theme parent.</p>
+              </header>
+              <div class="palette-accent">
+                <figure class="color-swatch">
+                  <figcaption>Seed</figcaption>
+                  <div class="swatch" id="seed" data-swatch-id="seed">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row ui-swatches palette-backgrounds">
+                <figure class="color-swatch">
+                  <figcaption>Canvas</figcaption>
+                  <div class="swatch" id="canvas" data-swatch-id="canvas">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+                <figure class="color-swatch">
+                  <figcaption>Card</figcaption>
+                  <div class="swatch" id="card" data-swatch-id="card">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+              </div>
+              <div class="row">
+                <div class="col palette-non-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Non-Content Baseline</figcaption>
+                    <div class="swatch" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Soft</figcaption>
+                      <div class="swatch" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Subdued</figcaption>
+                      <div class="swatch" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Strong</figcaption>
+                      <div class="swatch" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Soft</figcaption>
+                      <div class="swatch" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Subdued</figcaption>
+                      <div class="swatch" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Strong</figcaption>
+                      <div class="swatch" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+                <div class="col palette-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Content Baseline</figcaption>
+                    <div class="swatch" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Subdued</figcaption>
+                      <div class="swatch" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Strong</figcaption>
+                      <div class="swatch" id="accentContentStrong" data-swatch-id="accentContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Subdued</figcaption>
+                      <div class="swatch" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Strong</figcaption>
+                      <div class="swatch" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+              </div>
+                </article>
               </div>
             </div>
-
-          </section>
+          </div>
+        </section>
 
         <section id="demo">
           <h2>Demo</h2>
