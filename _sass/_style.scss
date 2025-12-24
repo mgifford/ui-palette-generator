@@ -405,6 +405,10 @@ main {
 
   .color-swatch {
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
     figcaption {
       @include font-size("sm");
       margin-bottom: var(--space-sm);
@@ -419,6 +423,9 @@ main {
       margin-top: calc(var(--space-xs) / 2);
       text-align: center;
       line-height: 1;
+    }
+    .swatch {
+      margin-top: auto;
     }
   }
 
@@ -1332,4 +1339,73 @@ main {
 
 .tab-pane[hidden] {
   display: none;
+}
+
+/* USWDS Button Styles */
+.usa-button {
+  @include border-radius("md");
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-accentNonContentStrong);
+  color: var(--color-card);
+  border: none;
+  line-height: 1.6;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  
+  &:hover {
+    background-color: color-mix(in oklab, var(--color-accentNonContentStrong), white 15%);
+    text-decoration: none;
+  }
+  
+  &:active {
+    background-color: color-mix(in oklab, var(--color-accentNonContentStrong), black 10%);
+  }
+  
+  &:focus {
+    outline: 3px solid var(--color-accentNonContentSubdued);
+    outline-offset: 2px;
+  }
+}
+
+.usa-button--secondary {
+  background-color: var(--color-neutralNonContentStrong);
+  color: var(--color-card);
+  
+  &:hover {
+    background-color: color-mix(in oklab, var(--color-neutralNonContentStrong), white 15%);
+  }
+}
+
+.usa-button--outline {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--color-accentNonContentStrong);
+  color: var(--color-accentContentStrong);
+  
+  &:hover {
+    background-color: var(--color-accentNonContentSoft);
+    color: var(--color-accentContentStrong);
+  }
+}
+
+.usa-button--big {
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--fontSize-lg);
+}
+
+.usa-button--unstyled {
+  background: none;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  color: var(--color-accentContentStrong);
+  text-decoration: underline;
+  font-weight: normal;
+  
+  &:hover {
+    background: none;
+    color: var(--color-accentContentStrong);
+  }
 }
