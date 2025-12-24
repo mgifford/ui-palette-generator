@@ -802,7 +802,7 @@ main {
 
   .editor-toolbar .divider { width:1px; height:1.4rem; background: rgba(0,0,0,0.06); border-radius:2px; }
 
-  .editor-content { padding: var(--space-md); min-height: 6rem; background: inherit; color: inherit; line-height: var(--bodyLineHeight); }
+  .editor-content { padding: var(--space-md); min-height: 6rem; background: inherit; color: inherit; line-height: var(--bodyLineHeight); resize: vertical; overflow: auto; }
 
   [data-theme="dark"] .editor-container.app-card { background: var(--surface-dark); color: var(--text-dark); }
   [data-theme="dark"] .editor-btn:focus { outline-color: var(--action-dark); }
