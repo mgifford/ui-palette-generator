@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Split Resizer Debugging Checklist</title>
+    <style>
+        body { font-family: monospace; margin: 20px; line-height: 1.6; }
+        .section { margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #333; }
+        h2 { margin-top: 0; }
+        .code { background: #fff; padding: 10px; border: 1px solid #ddd; font-family: monospace; overflow-x: auto; }
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        .todo { color: orange; font-weight: bold; }
+        ul { margin: 10px 0; }
+        li { margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <h1>Split Resizer Debugging Checklist</h1>
+    
+    <div class="section">
+        <h2>1. Layout Structure Verification</h2>
+        <p>In DevTools Console, run:</p>
+        <div class="code">
+// Check container structure
+console.log('appSplit:', document.getElementById('appSplit'));
+console.log('panePalette:', document.getElementById('panePalette'));
+console.log('appGutter:', document.getElementById('appGutter'));
+console.log('paneDemo:', document.getElementById('paneDemo'));
+
+// Check computed styles
+const split = document.getElementById('appSplit');
+const palette = document.getElementById('panePalette');
+const gutter = document.getElementById('appGutter');
+const demo = document.getElementById('paneDemo');
+
+console.log('--- Split Container ---');
+console.log('display:', getComputedStyle(split).display);
+console.log('gap:', getComputedStyle(split).gap);
+
+console.log('--- Palette Pane ---');
+console.log('flex:', getComputedStyle(palette).flex);
+console.log('min-width:', getComputedStyle(palette).minWidth);
+console.log('overflow:', getComputedStyle(palette).overflow);
+
+console.log('--- Gutter ---');
+console.log('width:', getComputedStyle(gutter).width);
+console.log('cursor:', getComputedStyle(gutter).cursor);
+console.log('pointer-events:', getComputedStyle(gutter).pointerEvents);
+
+console.log('--- Demo Pane ---');
+console.log('flex:', getComputedStyle(demo).flex);
+console.log('min-width:', getComputedStyle(demo).minWidth);
+        </div>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: All elements exist (not null)</li>
+            <li><span class="pass">PASS</span>: split has display: flex</li>
+            <li><span class="pass">PASS</span>: palette and demo have min-width: 0</li>
+            <li><span class="pass">PASS</span>: gutter has width: 12px and cursor: col-resize</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>2. Gutter Interactivity</h2>
+        <p>In the browser:</p>
+        <ul>
+            <li>Hover over the divider between Palette and Demo → cursor should change to <code>col-resize</code></li>
+            <li>Click on the gutter → it should highlight (gradient changes to accent color)</li>
+            <li>Click in DevTools on the gutter element → it should highlight in the Elements panel</li>
+            <li>Tab to focus the gutter → should see focus outline</li>
+        </ul>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: Gutter is visibly hoverable with col-resize cursor</li>
+            <li><span class="pass">PASS</span>: Gutter is clickable and focusable</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. Drag-to-Resize</h2>
+        <p>In the browser:</p>
+        <ul>
+            <li>Click and drag the gutter to the left → Palette should shrink, Demo should expand</li>
+            <li>Click and drag the gutter to the right → Palette should expand, Demo should shrink</li>
+            <li>Drag to extremes → should clamp to min (20%) and max (80%) ratio</li>
+            <li>Release the mouse → should retain the new ratio</li>
+        </ul>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: Dragging resizes both panes smoothly</li>
+            <li><span class="pass">PASS</span>: Ratio clamps to min/max bounds</li>
+            <li><span class="pass">PASS</span>: No layout shifts or "stuck" appearance</li>
+        </ul>
+        <p>Debugging: If resizing does NOT work, check:</p>
+        <ul>
+            <li>Is <code>min-width: 0</code> applied to .app-pane? (most common issue)</li>
+            <li>Are flex properties being applied? Check in DevTools live: <code>palette.style.flex</code></li>
+            <li>Is pointerdown firing? Add to console: <code>document.getElementById('appGutter').addEventListener('pointerdown', () => console.log('down'))</code></li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>4. Keyboard Support</h2>
+        <p>In the browser:</p>
+        <ul>
+            <li>Focus the gutter (Tab key or click)</li>
+            <li>Press ArrowLeft → Palette should shrink by ~2%</li>
+            <li>Press ArrowRight → Palette should expand by ~2%</li>
+            <li>Repeat until hitting min/max bounds</li>
+        </ul>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: Arrow keys adjust ratio in small increments</li>
+            <li><span class="pass">PASS</span>: Changes persist on key release</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>5. Persistence</h2>
+        <p>In the browser:</p>
+        <ul>
+            <li>Resize the split to a custom ratio (e.g., 30% / 70%)</li>
+            <li>Reload the page (Ctrl+R or Cmd+R)</li>
+            <li>The ratio should be restored to the previously set value</li>
+        </ul>
+        <p>Debugging: Check localStorage:</p>
+        <div class="code">
+console.log(localStorage.getItem('uiPaletteGen:split:paletteVsDemo'));
+// Should output something like "0.3000"
+        </div>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: localStorage key is set after dragging</li>
+            <li><span class="pass">PASS</span>: Value is between 0.15 and 0.85</li>
+            <li><span class="pass">PASS</span>: Ratio is restored on page reload</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. No Regressions</h2>
+        <p>In the browser:</p>
+        <ul>
+            <li>Theme toggle (top-right button) should still work</li>
+            <li>Light/dark palette swatches should render correctly in both panes</li>
+            <li>Demo components should display correctly in both panes</li>
+            <li>Palette generation (Generate button) should still work</li>
+            <li>URL hash should update when colors change</li>
+            <li>Contrast report should populate and update</li>
+        </ul>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: No visual breaks or layout corruption</li>
+            <li><span class="pass">PASS</span>: All interactive elements remain functional</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. Accessibility</h2>
+        <p>In the browser (DevTools Console):</p>
+        <div class="code">
+const gutter = document.getElementById('appGutter');
+console.log('role:', gutter.getAttribute('role'));
+console.log('aria-orientation:', gutter.getAttribute('aria-orientation'));
+console.log('aria-label:', gutter.getAttribute('aria-label'));
+console.log('tabindex:', gutter.getAttribute('tabindex'));
+        </div>
+        <p>Expected results:</p>
+        <ul>
+            <li><span class="pass">PASS</span>: role="separator"</li>
+            <li><span class="pass">PASS</span>: aria-orientation="vertical"</li>
+            <li><span class="pass">PASS</span>: tabindex="0" (focusable)</li>
+            <li><span class="pass">PASS</span>: aria-label describes purpose</li>
+        </ul>
+        <p>Keyboard testing:</p>
+        <ul>
+            <li>Tab to the gutter and use arrow keys to resize</li>
+            <li>Focus outline should be visible</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Console Diagnostics</h2>
+        <p>Open the page and check the browser console (F12) for initialization messages:</p>
+        <div class="code">
+[split] Palette vs Demo splitter initialized
+        </div>
+        <p>If you see error messages like:</p>
+        <div class="code">
+Split elements not found. Skipping split initialization.
+  - #appSplit not found
+  - #panePalette not found
+  - #appGutter not found
+  - #paneDemo not found
+        </div>
+        <p>Then the HTML structure needs to be corrected.</p>
+    </div>
+
+    <div class="section">
+        <h2>GitHub Pages Deployment</h2>
+        <p>Before deploying to GitHub Pages, verify:</p>
+        <ul>
+            <li>All relative URLs in splitter.js are correct (they are - using document.getElementById)</li>
+            <li>No absolute paths are used</li>
+            <li>localStorage works in the subdirectory (it should - localStorage is per-origin)</li>
+            <li>Test at: https://mgifford.github.io/ui-palette-generator/</li>
+        </ul>
+    </div>
+
+    <script>
+        console.info('=== Split Resizer Debugging Started ===');
+        
+        // Run initial diagnostics
+        const appSplit = document.getElementById('appSplit');
+        const panePalette = document.getElementById('panePalette');
+        const appGutter = document.getElementById('appGutter');
+        const paneDemo = document.getElementById('paneDemo');
+        
+        console.log('Elements found:');
+        console.log('  appSplit:', !!appSplit);
+        console.log('  panePalette:', !!panePalette);
+        console.log('  appGutter:', !!appGutter);
+        console.log('  paneDemo:', !!paneDemo);
+        
+        if (appSplit && panePalette && appGutter && paneDemo) {
+            console.log('%c✓ All split elements exist', 'color: green; font-weight: bold;');
+            
+            const splitStyle = getComputedStyle(appSplit);
+            console.log('Split layout:');
+            console.log('  display:', splitStyle.display);
+            console.log('  flex-direction:', splitStyle.flexDirection);
+            
+            const paletteStyle = getComputedStyle(panePalette);
+            console.log('Palette pane:');
+            console.log('  min-width:', paletteStyle.minWidth);
+            console.log('  flex:', paletteStyle.flex);
+            
+            const gutterStyle = getComputedStyle(appGutter);
+            console.log('Gutter:');
+            console.log('  width:', gutterStyle.width);
+            console.log('  cursor:', gutterStyle.cursor);
+            console.log('  pointer-events:', gutterStyle.pointerEvents);
+        } else {
+            console.log('%c✗ Missing split elements', 'color: red; font-weight: bold;');
+        }
+    </script>
+</body>
+</html>

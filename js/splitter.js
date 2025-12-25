@@ -1,116 +1,204 @@
-// Resizer module: provides a reusable splitter and instantiates splits on DOMContentLoaded
-export function makeSplitResizable(splitEl, leftEl, splitterEl, rightEl, options = {}) {
-  const DEBUG_SPLITTER = true;
-  const debug = (...args) => { if (DEBUG_SPLITTER) console.info('[splitter]', ...args); };
-  const min = options.min || 10;
-  const max = options.max || 90;
-  const step = options.step || 2;
-  const largeStep = options.largeStep || 10;
-  const rootStyle = splitEl.style;
+/**
+ * Split pane resizer with drag and keyboard support
+ * Persists ratio to localStorage for each split instance
+ */
 
-  function clamp(v){ return Math.min(Math.max(v, min), max); }
-  function setLeftPercent(p){
-    p = Math.round(clamp(p));
-    rootStyle.setProperty('--left-width', p + '%');
-    splitterEl.setAttribute('aria-valuenow', String(p));
-    debug('setLeftPercent', { percent: p });
+function initSplit(options) {
+  const {
+    split,        // container element
+    left,         // left pane element
+    gutter,       // gutter element
+    right,        // right pane element
+    storageKey,   // localStorage key for persistence
+    minRatio = 0.15,  // minimum left pane ratio
+    maxRatio = 0.85,  // maximum left pane ratio
+    initialRatio = 0.5 // default ratio when nothing is saved
+  } = options;
+
+  if (!split || !left || !gutter || !right) {
+    console.warn('initSplit: missing required elements', { split, left, gutter, right });
+    return;
   }
 
-  // initialize
-  (function init(){
-    const attr = splitterEl.getAttribute('aria-valuenow');
-    const n = parseInt(attr, 10);
-    debug('init', { attrValue: attr, parsed: n });
-    setLeftPercent(isNaN(n)?50:n);
-  })();
+  // Clamp helper to keep ratios within bounds
+  const clampRatio = (r) => Math.max(minRatio, Math.min(maxRatio, r));
 
-  // pointer handling
-  let dragging = false, startX = 0, startLeft = 50;
-  splitterEl.addEventListener('pointerdown', function(ev){
-    debug('pointerdown', { pointerType: ev.pointerType, button: ev.button, clientX: ev.clientX, target: ev.target });
-    if(ev.pointerType==='mouse' && ev.button!==0) return;
-    dragging = true;
-    try { splitterEl.setPointerCapture(ev.pointerId); } catch(e) { /* ignore capture errors */ }
-    startX = ev.clientX;
-    startLeft = parseFloat(splitterEl.getAttribute('aria-valuenow')) || 50;
-    ev.preventDefault();
-  });
-  let lastMoveLog = 0;
-  window.addEventListener('pointermove', function(ev){
-    if(!dragging) return;
-    const rect = splitEl.getBoundingClientRect();
-    if (!rect || !rect.width) {
-      debug('pointermove skipped: empty rect');
-      return;
+  let currentRatio = clampRatio(initialRatio);
+
+  // Load saved ratio from localStorage
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      const ratio = parseFloat(saved);
+      if (!isNaN(ratio) && ratio >= minRatio && ratio <= maxRatio) {
+        currentRatio = ratio;
+      }
     }
-    const delta = ev.clientX - startX;
-    const percentDelta = (delta / rect.width) * 100;
-    const next = startLeft + percentDelta;
-    const now = performance.now();
-    if (now - lastMoveLog > 120) {
-      debug('pointermove', { clientX: ev.clientX, delta, rectWidth: rect.width, percentDelta, next });
-      lastMoveLog = now;
+  } catch (e) {
+    console.info('Could not read localStorage for split:', storageKey);
+  }
+
+  // Apply initial ratio
+  applyRatio(clampRatio(currentRatio));
+
+  // Persist ratio to localStorage
+  function persistRatio(ratio) {
+    try {
+      localStorage.setItem(storageKey, ratio.toFixed(4));
+    } catch (e) {
+      console.warn('Could not save split ratio to localStorage:', storageKey);
     }
-    setLeftPercent(next);
-  });
-  window.addEventListener('pointerup', function(ev){
-    if(!dragging) return;
-    dragging = false;
-    const finalVal = splitterEl.getAttribute('aria-valuenow');
-    debug('pointerup', { clientX: ev.clientX, finalVal });
-    try{ splitterEl.releasePointerCapture(ev.pointerId); }catch(e){}
-  });
+  }
 
-  // allow quick resizing via simple click on the handle
-  splitterEl.addEventListener('click', function(ev){
-    if (ev.clientX === 0 && ev.clientY === 0) return; // ignore keyboard-triggered click events
-    const rect = splitEl.getBoundingClientRect();
-    const offsetPercent = ((ev.clientX - rect.left) / rect.width) * 100;
-    debug('click resize', { clientX: ev.clientX, rectLeft: rect.left, rectWidth: rect.width, offsetPercent });
-    setLeftPercent(offsetPercent);
-  });
+  // Apply flex ratio to panes
+  function applyRatio(ratio) {
+    const leftPercent = (ratio * 100).toFixed(2);
+    left.style.flex = `0 0 ${leftPercent}%`;
+    right.style.flex = '1 1 auto';
+    currentRatio = ratio;
+  }
 
-  // keyboard
-  splitterEl.addEventListener('keydown', function(ev){ const key = ev.key; const shift = ev.shiftKey; const s = shift?largeStep:step; let cur = parseInt(splitterEl.getAttribute('aria-valuenow'),10) || 50; if(key === 'ArrowLeft' || key === 'Left'){ ev.preventDefault(); setLeftPercent(cur - s); } else if(key === 'ArrowRight' || key === 'Right'){ ev.preventDefault(); setLeftPercent(cur + s); } else if(key === 'Home'){ ev.preventDefault(); setLeftPercent(min); } else if(key === 'End'){ ev.preventDefault(); setLeftPercent(max); } });
+  // Compute ratio from mouse/touch position
+  function computeRatio(clientX) {
+    const rect = split.getBoundingClientRect();
+    const gutterRect = gutter.getBoundingClientRect();
+    const gutterWidth = gutterRect.width;
+    
+    // Position relative to container
+    let x = clientX - rect.left;
+    
+    // Account for gutter width
+    const availableWidth = rect.width - gutterWidth;
+    let ratio = x / availableWidth;
+    
+    // Clamp to min/max
+    ratio = Math.max(minRatio, Math.min(maxRatio, ratio));
+    
+    return ratio;
+  }
 
-  // keep aria-valuenow in sync if style var changes externally
-  const mo = new MutationObserver(function(){ const left = parseFloat(getComputedStyle(splitEl).getPropertyValue('--left-width')) || 50; splitterEl.setAttribute('aria-valuenow', String(Math.round(left))); });
-  mo.observe(splitEl, { attributes: true, attributeFilter: ['style'] });
+  // Pointer events (drag support)
+  let isResizing = false;
+  
+  function onPointerDown(e) {
+    if (e.button && e.button !== 0) return; // Only left mouse button
+    
+    isResizing = true;
+    gutter.setPointerCapture(e.pointerId);
+    gutter.style.background = 'linear-gradient(to right, transparent, var(--color-accentContentStrong) 40%, var(--color-accentContentStrong) 60%, transparent)';
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }
 
-  return { setLeftPercent };
+  function onPointerMove(e) {
+    if (!isResizing) return;
+    
+    const ratio = computeRatio(e.clientX);
+    applyRatio(ratio);
+    persistRatio(ratio);
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onPointerUp(e) {
+    if (!isResizing) return;
+    
+    isResizing = false;
+    gutter.releasePointerCapture(e.pointerId);
+    gutter.style.background = '';
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onPointerCancel(e) {
+    if (!isResizing) return;
+    
+    isResizing = false;
+    try {
+      gutter.releasePointerCapture(e.pointerId);
+    } catch (err) {
+      // Already released
+    }
+    gutter.style.background = '';
+  }
+
+  // Keyboard support
+  function onKeyDown(e) {
+    if (e.key === 'ArrowLeft') {
+      const newRatio = Math.max(minRatio, currentRatio - 0.02);
+      applyRatio(newRatio);
+      persistRatio(newRatio);
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      const newRatio = Math.min(maxRatio, currentRatio + 0.02);
+      applyRatio(newRatio);
+      persistRatio(newRatio);
+      e.preventDefault();
+    }
+  }
+
+  // Attach event listeners
+  gutter.addEventListener('pointerdown', onPointerDown);
+  document.addEventListener('pointermove', onPointerMove);
+  document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerCancel);
+  gutter.addEventListener('keydown', onKeyDown);
+
+  // Return cleanup function
+  return function cleanup() {
+    gutter.removeEventListener('pointerdown', onPointerDown);
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerCancel);
+    gutter.removeEventListener('keydown', onKeyDown);
+  };
 }
 
-// Auto-initialize known splits
-document.addEventListener('DOMContentLoaded', function(){
+// Initialize all split views when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Palette light/dark split
   const paletteSplit = document.getElementById('paletteSplit');
-  if (paletteSplit) {
-    const left = document.getElementById('paletteLeft');
-    const right = document.getElementById('paletteRight');
-    const splitter = document.getElementById('paletteSplitter');
-    if (left && right && splitter) {
-      console.debug('Initializing palette splitter', { paletteSplit, left, right, splitter });
-      // ensure the splitter is on top of nearby content for pointer interactions
-      try { splitter.style.zIndex = '100'; } catch(e){}
-      splitter.setAttribute('data-split-init', 'true');
-      makeSplitResizable(paletteSplit, left, splitter, right);
-    } else {
-      console.warn('[splitter] palette split missing sub-elements', { left: !!left, right: !!right, splitter: !!splitter });
-    }
+  const paletteLeft = document.getElementById('paletteLeft');
+  const paletteSplitter = document.getElementById('paletteSplitter');
+  const paletteRight = document.getElementById('paletteRight');
+
+  if (paletteSplit && paletteLeft && paletteSplitter && paletteRight) {
+    initSplit({
+      split: paletteSplit,
+      left: paletteLeft,
+      gutter: paletteSplitter,
+      right: paletteRight,
+      storageKey: 'uiPaletteGen:split:paletteLightDark',
+      minRatio: 0.15,
+      maxRatio: 0.85
+    });
+    console.info('[split] Palette light/dark splitter initialized');
+  } else {
+    console.warn('Palette split elements not found. Skipping palette split initialization.');
   }
+
+  // Demo light/dark split
   const demoSplit = document.getElementById('demoSplit');
-  if (demoSplit) {
-    const left = document.getElementById('demoLeft');
-    const right = document.getElementById('demoRight');
-    const splitter = document.getElementById('demoSplitter');
-    if (left && right && splitter) {
-      console.debug('Initializing demo splitter', { demoSplit, left, right, splitter });
-      try { splitter.style.zIndex = '100'; } catch(e){}
-      splitter.setAttribute('data-split-init', 'true');
-      makeSplitResizable(demoSplit, left, splitter, right);
-    } else {
-      console.warn('[splitter] demo split missing sub-elements', { left: !!left, right: !!right, splitter: !!splitter });
-    }
+  const demoLeft = document.getElementById('demoLeft');
+  const demoSplitter = document.getElementById('demoSplitter');
+  const demoRight = document.getElementById('demoRight');
+
+  if (demoSplit && demoLeft && demoSplitter && demoRight) {
+    initSplit({
+      split: demoSplit,
+      left: demoLeft,
+      gutter: demoSplitter,
+      right: demoRight,
+      storageKey: 'uiPaletteGen:split:demoLightDark',
+      minRatio: 0.15,
+      maxRatio: 0.85
+    });
+    console.info('[split] Demo light/dark splitter initialized');
+  } else {
+    console.warn('Demo split elements not found. Skipping demo split initialization.');
   }
 });
 
-console.info('[splitter] script loaded');

@@ -127,6 +127,48 @@ h2 {
   }
 }
 
+/* Split container for Palette vs Demo resizing */
+.app-split {
+  display: flex;
+  width: 100%;
+  height: auto;
+  gap: 0;
+  overflow: hidden;
+}
+
+.app-pane {
+  flex: 1 1 0;
+  min-width: 0; /* CRITICAL: allows flex children to shrink below content size */
+  overflow: auto;
+  
+  /* Ensure panes take space properly */
+  @include flex-col(var(--space-md));
+}
+
+.app-gutter {
+  flex: 0 0 12px; /* Fixed width gutter, no grow/shrink */
+  width: 12px;
+  cursor: col-resize;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  background: linear-gradient(to right, transparent, var(--color-neutralNonContentSoft) 45%, var(--color-neutralNonContentSoft) 55%, transparent);
+  transition: background-color 0.2s ease-out;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &:hover,
+  &:focus {
+    background: linear-gradient(to right, transparent, var(--color-neutralNonContentSubdued) 40%, var(--color-neutralNonContentSubdued) 60%, transparent);
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accentContentStrong);
+    outline-offset: -1px;
+  }
+}
+
 #settings form,
 #palette,
 #demo {
