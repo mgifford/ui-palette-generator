@@ -173,10 +173,12 @@
       <div>
         <p class="eyebrow">Accessibility</p>
         <h3>Contrast report</h3>
-        <p class="input-hint">WCAG 2.2 AA and APCA checks run on the current palette.</p>
+        <p class="input-hint">Live summary of WCAG 2.2 AA + APCA text checks. Open the grid for details.</p>
       </div>
-      <div class="contrast-report__meta" aria-hidden="true">
+      <div class="contrast-report__meta">
         <span class="pill">Auto-updates</span>
+        <button type="button" id="openContrastGrid" class="contrast-report__open" disabled>Open grid window</button>
+        <span id="contrastGridStatus" class="input-hint" aria-live="polite"></span>
       </div>
     </div>
     <div id="contrastReportBody" class="contrast-report__body">

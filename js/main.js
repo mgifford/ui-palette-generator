@@ -643,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   updateThemeToggleUI();
   initHarmonyControls();
+  initContrastGridControls();
 });
 
 $('#randomColorBtn').on('click', function(e) {
@@ -1141,6 +1142,18 @@ function formatApca(apca) {
   return `APCA ${Math.round(apca)}`;
 }
 
+function getCheckGlyph() {
+  return '<svg class="contrast-grid__icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13.8 3.8a.8.8 0 0 1 .08 1.01l-.07.1-6.3 7.4a.8.8 0 0 1-1.12.1l-.1-.09-3.1-3a.8.8 0 0 1 1.05-1.2l.1.09 2.5 2.4 5.8-6.8a.8.8 0 0 1 1.16-.11z" fill="currentColor"/></svg>';
+}
+
+function getCrossGlyph() {
+  return '<svg class="contrast-grid__icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4.22 4.22a.75.75 0 0 1 .98-.08l.09.08L8 6.94l2.71-2.72a.75.75 0 0 1 1.06 1.06L9.06 8l2.71 2.72a.75.75 0 0 1-.98 1.13l-.09-.08L8 9.06l-2.72 2.71a.75.75 0 0 1-1.06-1.06L6.94 8 4.22 5.29a.75.75 0 0 1 0-1.07z" fill="currentColor"/></svg>';
+}
+
+function getInfoGlyph() {
+  return '<svg class="contrast-grid__icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 1.5a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm.75 3.25a.75.75 0 0 1 .74.65L9.5 7v3.25a.75.75 0 0 1-1.5.1V7.75A.75.75 0 0 1 8 7l-.02-.1a.75.75 0 0 1 .74-.65Zm-.75-2a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5Z" fill="currentColor"/></svg>';
+}
+
 function renderContrastReport(results) {
   const container = document.getElementById('contrastReportBody');
   if (!container) return;
@@ -1150,43 +1163,450 @@ function renderContrastReport(results) {
     return;
   }
 
-  const grouped = {};
+  const textRows = results.filter(function(r){ return r.usage === 'text'; });
+  const total = textRows.length;
+  const passBoth = textRows.filter(function(r){ return r.wcagPass && (r.apcaPass === null || r.apcaPass === undefined || r.apcaPass); }).length;
+  const wcagOnly = textRows.filter(function(r){ return r.wcagPass && r.apcaPass === false; }).length;
+  const apcaOnly = textRows.filter(function(r){ return r.apcaPass && r.wcagPass === false; }).length;
+  const failBoth = textRows.filter(function(r){ return r.wcagPass === false && (r.apcaPass === false || r.apcaPass === null || r.apcaPass === undefined); }).length;
+
+  const passRate = total ? passBoth / total : 0;
+  let rating = 'Needs work';
+  let ratingTone = 'bad';
+  if (passRate >= 0.9) { rating = 'Great'; ratingTone = 'great'; }
+  else if (passRate >= 0.75) { rating = 'Good'; ratingTone = 'good'; }
+  else if (passRate >= 0.5) { rating = 'Ok'; ratingTone = 'ok'; }
+
+  const summary = `Text pairs: ${passBoth}/${total || '0'} meet WCAG & APCA. ${wcagOnly ? `${wcagOnly} pass WCAG only. ` : ''}${apcaOnly ? `${apcaOnly} pass APCA only. ` : ''}${failBoth ? `${failBoth} fail both.` : ''}`;
+
+  container.innerHTML = `
+    <div class="contrast-summary">
+      <div class="contrast-summary__rating contrast-summary__rating--${ratingTone}" aria-live="polite">
+        <div class="contrast-summary__rating-label">${rating}</div>
+        <div class="contrast-summary__rating-detail">${summary}</div>
+      </div>
+      <div class="contrast-summary__stats" aria-live="polite">
+        <span class="contrast-grid__summary-pill"><strong>Both:</strong> ${passBoth}/${total || '0'}</span>
+        <span class="contrast-grid__summary-pill"><strong>WCAG only:</strong> ${wcagOnly}</span>
+        <span class="contrast-grid__summary-pill"><strong>APCA only:</strong> ${apcaOnly}</span>
+        <span class="contrast-grid__summary-pill"><strong>Fail both:</strong> ${failBoth}</span>
+      </div>
+      <p class="input-hint">Counts use text contrast; open the grid to inspect UI and focus checks.</p>
+    </div>
+  `;
+}
+
+let contrastGridWindow = null;
+let contrastGridLastResults = null;
+
+  function logContrastGrid() {
+    try {
+      const args = Array.prototype.slice.call(arguments);
+      args.unshift('[contrast-grid]');
+      console.debug.apply(console, args);
+    } catch (e) {
+      // best-effort logging only
+    }
+  }
+
+function capitalize(word) {
+  if (!word) return '';
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+function escapeAttribute(val) {
+  return (val || '').toString().replace(/"/g, "'").replace(/[<>]/g, '');
+}
+
+function renderUsageLine(label, row) {
+  if (!row) return '';
+  const apcaText = row.apcaPass === null || row.apcaPass === undefined ? 'APCA n/a' : `${formatApca(row.apca)} ${row.apcaPass ? 'pass' : 'fail'}`;
+  return `<p><strong>${label}:</strong> ${formatRatio(row.ratio)} ${row.wcagPass ? 'pass' : 'fail'} — ${apcaText}</p>`;
+}
+
+function renderGridCell(cell, isFirstFocusable) {
+  const wcagPass = cell.textRow ? cell.textRow.wcagPass : null;
+  const apcaPass = cell.textRow ? cell.textRow.apcaPass : null;
+
+  let statusClass = 'is-unknown';
+  let statusLabel = 'No data';
+  let statusIcon = getInfoGlyph();
+
+  if (wcagPass !== null || apcaPass !== null) {
+    if (wcagPass && (apcaPass === null || apcaPass === undefined || apcaPass)) {
+      statusClass = 'is-pass';
+      statusLabel = 'WCAG & APCA';
+      statusIcon = getCheckGlyph();
+    } else if (wcagPass && apcaPass === false) {
+      statusClass = 'is-mixed';
+      statusLabel = 'WCAG pass / APCA fail';
+      statusIcon = getInfoGlyph();
+    } else if (!wcagPass && apcaPass) {
+      statusClass = 'is-mixed';
+      statusLabel = 'WCAG fail / APCA pass';
+      statusIcon = getInfoGlyph();
+    } else {
+      statusClass = 'is-fail';
+      statusLabel = 'Fail';
+      statusIcon = getCrossGlyph();
+    }
+  }
+
+  const ariaParts = [
+    `${cell.themeLabel} theme`,
+    `${cell.foreground.label} on ${cell.background.label}`
+  ];
+  if (cell.textRow) {
+    ariaParts.push(`Text ${formatRatio(cell.textRow.ratio)} ${cell.textRow.wcagPass ? 'pass' : 'fail'}`);
+    if (cell.textRow.apca !== null && cell.textRow.apca !== undefined) {
+      ariaParts.push(`APCA ${Math.round(cell.textRow.apca)} ${cell.textRow.apcaPass ? 'pass' : 'fail'}`);
+    }
+  }
+  if (cell.nonTextRow) {
+    ariaParts.push(`UI ${formatRatio(cell.nonTextRow.ratio)} ${cell.nonTextRow.wcagPass ? 'pass' : 'fail'}`);
+  }
+  if (cell.focusRow) {
+    ariaParts.push(`Focus ${formatRatio(cell.focusRow.ratio)} ${cell.focusRow.wcagPass ? 'pass' : 'fail'}`);
+  }
+
+  const tooltip = `
+    ${renderUsageLine('Text', cell.textRow)}
+    ${renderUsageLine('UI', cell.nonTextRow)}
+    ${renderUsageLine('Focus', cell.focusRow)}
+  `;
+
+  return `<button type="button" class="contrast-grid__cell ${statusClass}" style="--fg-color:${cell.foreground.color};--bg-color:${cell.background.color};" aria-label="${escapeAttribute(ariaParts.join('. '))}" ${isFirstFocusable ? 'data-contrast-grid-initial="true"' : ''}>
+    <div class="contrast-grid__swatch" aria-hidden="true">Aa</div>
+    <div class="contrast-grid__status ${statusClass}" aria-hidden="true">${statusIcon}<span>${statusLabel}</span></div>
+    <div class="contrast-grid__tooltip" role="tooltip">
+      <p><strong>${cell.foreground.label}</strong> on <strong>${cell.background.label}</strong></p>
+      ${tooltip}
+    </div>
+  </button>`;
+}
+
+function buildContrastMatrix(results) {
+  const byTheme = {};
   results.forEach(function(row) {
-    const key = `${row.theme}|${row.foreground}`;
-    grouped[key] = grouped[key] || { theme: row.theme, foreground: row.foreground, foregroundColor: row.foregroundColor, rows: [] };
-    grouped[key].rows.push(row);
+    const theme = row.theme;
+    byTheme[theme] = byTheme[theme] || {};
+    const key = `${row.foreground}|${row.background}`;
+    byTheme[theme][key] = byTheme[theme][key] || {
+      theme,
+      foreground: row.foreground,
+      foregroundColor: row.foregroundColor,
+      background: row.background,
+      backgroundColor: row.backgroundColor,
+      usages: {}
+    };
+    byTheme[theme][key].usages[row.usage] = row;
   });
 
-  const themeOrder = ['light', 'dark'];
-  const html = themeOrder.map(function(theme) {
-    const groups = Object.values(grouped).filter(function(g){ return g.theme === theme; });
-    if (!groups.length) return '';
+  return ['light', 'dark'].map(function(theme) {
+    const entries = byTheme[theme];
+    if (!entries) return null;
 
-    const groupHtml = groups.map(function(group){
-      const bgBuckets = {};
-      group.rows.forEach(function(r){
-        bgBuckets[r.background] = bgBuckets[r.background] || { background: r.background, backgroundColor: r.backgroundColor, rows: [] };
-        bgBuckets[r.background].rows.push(r);
+    const values = Object.values(entries);
+    const foregrounds = CONTRAST_FOREGROUNDS.filter(function(id) {
+      return values.some(function(entry) { return entry.foreground === id; });
+    }).map(function(id) {
+      const sample = values.find(function(entry) { return entry.foreground === id; });
+      return { id, label: TOKEN_LOOKUP[id] ? TOKEN_LOOKUP[id].label : id, color: sample ? sample.foregroundColor : '' };
+    });
+
+    const backgrounds = CONTRAST_BACKGROUNDS.filter(function(id) {
+      return values.some(function(entry) { return entry.background === id; });
+    }).map(function(id) {
+      const sample = values.find(function(entry) { return entry.background === id; });
+      return { id, label: TOKEN_LOOKUP[id] ? TOKEN_LOOKUP[id].label : id, color: sample ? sample.backgroundColor : '' };
+    });
+
+    if (!foregrounds.length || !backgrounds.length) return null;
+
+    const cells = {};
+    const summary = { pass: 0, fail: 0, unknown: 0 };
+
+    foregrounds.forEach(function(fg) {
+      backgrounds.forEach(function(bg) {
+        const entry = entries[`${fg.id}|${bg.id}`];
+        if (!entry) {
+          summary.unknown += 1;
+          cells[`${fg.id}|${bg.id}`] = {
+            status: 'unknown',
+            theme,
+            themeLabel: capitalize(theme),
+            foreground: fg,
+            background: bg,
+            textRow: null,
+            nonTextRow: null,
+            focusRow: null,
+            ratio: null,
+            apca: null
+          };
+          return;
+        }
+
+        const textRow = entry.usages.text || null;
+        const nonTextRow = entry.usages['non-text'] || null;
+        const focusRow = entry.usages.focus || null;
+        const primary = textRow || nonTextRow || focusRow;
+        const wcagPass = textRow ? textRow.wcagPass : (primary ? primary.wcagPass : null);
+        const apcaPass = textRow ? textRow.apcaPass : (primary ? primary.apcaPass : null);
+        const ratio = textRow ? textRow.ratio : (primary ? primary.ratio : null);
+        const apca = textRow ? textRow.apca : (primary ? primary.apca : null);
+
+        let status = 'unknown';
+        if (wcagPass !== null && wcagPass !== undefined) {
+          const apcaOk = apcaPass === null || apcaPass === undefined ? true : apcaPass;
+          status = wcagPass && apcaOk ? 'pass' : 'fail';
+        }
+        summary[status] = (summary[status] || 0) + 1;
+
+        cells[`${fg.id}|${bg.id}`] = {
+          status,
+          theme,
+          themeLabel: capitalize(theme),
+          foreground: fg,
+          background: bg,
+          textRow,
+          nonTextRow,
+          focusRow,
+          ratio,
+          apca
+        };
       });
+    });
 
-      const bgHtml = Object.values(bgBuckets).map(function(bg){
-        const rowHtml = bg.rows.map(function(r){
-          const usageLabel = r.usage === 'non-text' ? 'Non-text contrast' : (r.usage === 'focus' ? 'Focus visibility' : 'Text');
-          const wcagBadge = `<span class="contrast-badge ${r.wcagPass ? 'pass' : 'fail'}">${r.wcagPass ? 'PASS' : 'FAIL'} ${formatRatio(r.ratio)}</span>`;
-          const apcaLabel = r.apcaPass === null ? '<span class="contrast-badge neutral">APCA n/a</span>' : `<span class="contrast-badge ${r.apcaPass ? 'pass' : 'fail'}">${r.apcaPass ? 'PASS' : 'FAIL'} ${formatApca(r.apca)}</span>`;
-          return `<div class="contrast-row"><div class="contrast-row__bg">on ${TOKEN_LOOKUP[r.background] ? TOKEN_LOOKUP[r.background].label : r.background}</div><div class="contrast-row__usage">${usageLabel}</div><div class="contrast-row__wcag">${wcagBadge}</div><div class="contrast-row__apca">${apcaLabel}</div></div>`;
-        }).join('');
-        return `<div class="contrast-group">${rowHtml}</div>`;
+    return { theme, foregrounds, backgrounds, cells, summary };
+  }).filter(Boolean);
+}
+
+function renderContrastGrid(results) {
+  const trigger = document.getElementById('openContrastGrid');
+  const status = document.getElementById('contrastGridStatus');
+
+  contrastGridLastResults = results;
+
+    logContrastGrid('renderContrastGrid', {
+      resultsCount: results ? results.length : 0,
+      trigger: !!trigger
+    });
+
+  if (!trigger) return;
+
+  if (!results || !results.length) {
+    trigger.disabled = true;
+    setContrastGridStatus('Grid will update after the palette is generated.');
+    updateContrastGridWindow(null, 'Grid will update after the palette is generated.');
+      logContrastGrid('renderContrastGrid:no-results');
+    return;
+  }
+
+  const themes = buildContrastMatrix(results);
+  if (!themes.length) {
+    trigger.disabled = true;
+    setContrastGridStatus('Unable to build a grid from the current palette.');
+    updateContrastGridWindow(null, 'Unable to build a grid from the current palette.');
+      logContrastGrid('renderContrastGrid:no-themes');
+    return;
+  }
+
+  trigger.disabled = false;
+  setContrastGridStatus('Open grid window to view details.');
+  updateContrastGridWindow(themes);
+    logContrastGrid('renderContrastGrid:themes-ready', { themeCount: themes.length });
+
+  function setContrastGridStatus(message) {
+    if (!status) return;
+    status.textContent = message || '';
+  }
+
+  function renderTheme(theme) {
+    const headerRow = [`<div class="contrast-grid__header contrast-grid__row-label">Foreground / Background</div>`].concat(theme.backgrounds.map(function(bg) {
+      return `<div class="contrast-grid__header"><span class="contrast-grid__bg-chip"><span class="contrast-grid__chip-swatch" style="background:${bg.color};"></span>${bg.label}</span></div>`;
+    })).join('');
+
+    let firstFocusableRendered = false;
+    const rows = theme.foregrounds.map(function(fg) {
+      const labelCell = `<div class="contrast-grid__row-label"><span class="contrast-grid__fg-chip"><span class="contrast-grid__chip-swatch" style="background:${fg.color};"></span>${fg.label}</span></div>`;
+      const cells = theme.backgrounds.map(function(bg) {
+        const cell = theme.cells[`${fg.id}|${bg.id}`];
+        const html = renderGridCell(cell, !firstFocusableRendered);
+        if (!firstFocusableRendered) firstFocusableRendered = true;
+        return html;
       }).join('');
-
-      const fgLabel = TOKEN_LOOKUP[group.foreground] ? TOKEN_LOOKUP[group.foreground].label : group.foreground;
-      return `<div class="contrast-group"><div class="contrast-group__header"><span class="contrast-chip" style="--chip-color:${group.foregroundColor};">${fgLabel}</span><span class="contrast-report__group-meta">Foreground vs backgrounds</span></div>${bgHtml}</div>`;
+      return labelCell + cells;
     }).join('');
 
-    return `<div class="contrast-report__theme"><div class="contrast-report__theme-label">${theme} theme</div>${groupHtml}</div>`;
+    return `<section class="contrast-grid__theme" aria-label="${capitalize(theme.theme)} theme grid" data-theme="${theme.theme}"><div class="contrast-grid__theme-header"><h4 class="contrast-grid__theme-title">${capitalize(theme.theme)} theme</h4><span class="pill" aria-hidden="true">Text / UI / Focus</span></div><div class="contrast-grid__matrix-wrap"><div class="contrast-grid__matrix" style="--contrast-grid-cols:${theme.backgrounds.length};">${headerRow}${rows}</div></div></section>`;
+  }
+}
+
+function getBaseHref() {
+  const withoutHash = window.location.href.split('#')[0].split('?')[0];
+  return withoutHash.replace(/[^/]*$/, '');
+}
+
+function ensureContrastGridWindow(openIfMissing = false) {
+  if (contrastGridWindow && !contrastGridWindow.closed) {
+      logContrastGrid('ensureContrastGridWindow:reusing');
+    return contrastGridWindow;
+  }
+  if (!openIfMissing) return null;
+  // Try primary open with named window + features.
+  let win = window.open('about:blank', 'contrastGridWindow', 'noopener=yes,width=1200,height=900');
+  if (!win) {
+    logContrastGrid('ensureContrastGridWindow:popup-blocked-primary');
+    // Fallback: open a plain tab without features; some blockers allow this.
+    win = window.open('about:blank', '_blank');
+  }
+  if (!win) {
+    logContrastGrid('ensureContrastGridWindow:popup-blocked');
+    return null;
+  }
+  try {
+    win.document.open();
+    win.document.write('<!doctype html><html><head><title>Contrast grid</title></head><body><p style="font-family:sans-serif;padding:16px;">Loading contrast grid…</p></body></html>');
+    win.document.close();
+  } catch (e) {
+    logContrastGrid('ensureContrastGridWindow:prefill-failed', e);
+  }
+    logContrastGrid('ensureContrastGridWindow:opened');
+  contrastGridWindow = win;
+  return win;
+}
+
+function copyThemeStylesTo(winDoc) {
+  const head = winDoc.head || winDoc.getElementsByTagName('head')[0];
+  document.querySelectorAll('style[data-theme]').forEach(function(styleEl){
+    try { head.appendChild(styleEl.cloneNode(true)); } catch (e) {}
+  });
+    logContrastGrid('copyThemeStylesTo', { count: document.querySelectorAll('style[data-theme]').length });
+}
+
+function renderGridWindow(themes) {
+  const win = ensureContrastGridWindow(false);
+  if (!win || win.closed) return;
+
+  const baseHref = getBaseHref();
+    logContrastGrid('renderGridWindow', { themeCount: themes.length, baseHref });
+  const summaryHtml = themes.map(function(theme) {
+    const total = theme.summary.pass + theme.summary.fail + theme.summary.unknown;
+    return `<span class="contrast-grid__summary-pill"><strong>${capitalize(theme.theme)}:</strong> Pass ${theme.summary.pass} | Fail ${theme.summary.fail}${theme.summary.unknown ? ` | N/A ${theme.summary.unknown}` : ''} (of ${total})</span>`;
   }).join('');
 
-  container.innerHTML = html || '<p class="contrast-report__empty">No palette data yet.</p>';
+  const themeHtml = themes.map(function(theme){
+    const headerRow = [`<div class="contrast-grid__header contrast-grid__row-label">Foreground / Background</div>`].concat(theme.backgrounds.map(function(bg) {
+      return `<div class="contrast-grid__header"><span class="contrast-grid__bg-chip"><span class="contrast-grid__chip-swatch" style="background:${bg.color};"></span>${bg.label}</span></div>`;
+    })).join('');
+
+    let firstFocusableRendered = false;
+    const rows = theme.foregrounds.map(function(fg) {
+      const labelCell = `<div class="contrast-grid__row-label"><span class="contrast-grid__fg-chip"><span class="contrast-grid__chip-swatch" style="background:${fg.color};"></span>${fg.label}</span></div>`;
+      const cells = theme.backgrounds.map(function(bg) {
+        const cell = theme.cells[`${fg.id}|${bg.id}`];
+        const html = renderGridCell(cell, !firstFocusableRendered);
+        if (!firstFocusableRendered) firstFocusableRendered = true;
+        return html;
+      }).join('');
+      return labelCell + cells;
+    }).join('');
+
+    return `<section class="contrast-grid__theme" aria-label="${capitalize(theme.theme)} theme grid" data-theme="${theme.theme}"><div class="contrast-grid__theme-header"><h4 class="contrast-grid__theme-title">${capitalize(theme.theme)} theme</h4><span class="pill" aria-hidden="true">Text / UI / Focus</span></div><div class="contrast-grid__matrix-wrap"><div class="contrast-grid__matrix" style="--contrast-grid-cols:${theme.backgrounds.length};">${headerRow}${rows}</div></div></section>`;
+  }).join('');
+
+  const html = `<!doctype html>
+<html lang="en" data-theme="${document.documentElement.getAttribute('data-theme') || 'light'}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <base href="${baseHref}">
+  <title>Contrast grid</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="contrast-grid-window" data-theme="${document.documentElement.getAttribute('data-theme') || 'light'}" style="padding:24px;">
+  <header class="contrast-grid-modal__header" style="margin-bottom:16px;">
+    <div>
+      <p class="eyebrow">Accessibility</p>
+      <h3 style="margin:0 0 4px;">Contrast grid</h3>
+      <p class="input-hint">Foreground/background pairings with text, UI, and focus checks. Hover or focus any cell for details.</p>
+    </div>
+    <div class="contrast-grid-modal__actions">
+      <span class="pill" aria-hidden="true">Live</span>
+    </div>
+  </header>
+  <div class="contrast-grid__summary" aria-live="polite">${summaryHtml}</div>
+  <div class="contrast-grid__body">${themeHtml || '<p class="contrast-grid__empty">No pairs calculated.</p>'}</div>
+</body>
+</html>`;
+
+  win.document.open();
+  win.document.write(html);
+  copyThemeStylesTo(win.document);
+  win.document.close();
+    logContrastGrid('renderGridWindow:written', { bodyLength: html.length });
+}
+
+function updateContrastGridWindow(themes, message) {
+  const win = ensureContrastGridWindow(false);
+  if (!win || win.closed) return;
+  if (!themes || !themes.length) {
+    const baseHref = getBaseHref();
+      logContrastGrid('updateContrastGridWindow:empty', { message });
+    const html = `<!doctype html><html><head><base href="${baseHref}"><title>Contrast grid</title><link rel="stylesheet" href="css/main.css"></head><body style="padding:24px;"><p class="input-hint">${message || 'Grid will update after the palette is generated.'}</p></body></html>`;
+    win.document.open();
+    win.document.write(html);
+    copyThemeStylesTo(win.document);
+    win.document.close();
+    return;
+  }
+  renderGridWindow(themes);
+}
+
+function openContrastGridWindow() {
+  const trigger = document.getElementById('openContrastGrid');
+  const status = document.getElementById('contrastGridStatus');
+    logContrastGrid('openContrastGridWindow:clicked');
+  // Open a single window from this click to avoid “multiple popups” blocking.
+  const placeholderHtml = '<!doctype html><html><head><title>Contrast grid</title></head><body><p style="font-family:sans-serif;padding:16px;">Loading contrast grid…</p></body></html>';
+  let win = window.open('about:blank', 'contrastGridWindow');
+  if (!win) {
+    if (status) status.textContent = 'Pop-up blocked. Please allow pop-ups and click again.';
+    if (trigger) trigger.focus();
+      logContrastGrid('openContrastGridWindow:blocked');
+    return;
+  }
+  try {
+    win.document.open();
+    win.document.write(placeholderHtml);
+    win.document.close();
+  } catch (e) {
+    logContrastGrid('openContrastGridWindow:prefill-failed', e);
+  }
+  contrastGridWindow = win;
+
+  logContrastGrid('openContrastGridWindow:window-ready');
+  if (status) status.textContent = '';
+  if (contrastGridLastResults) {
+    const themes = buildContrastMatrix(contrastGridLastResults);
+    if (themes && themes.length) {
+      renderGridWindow(themes);
+        logContrastGrid('openContrastGridWindow:rendered', { themeCount: themes.length });
+    } else {
+      updateContrastGridWindow(null, 'Unable to build a grid from the current palette.');
+        logContrastGrid('openContrastGridWindow:render-failed');
+    }
+  } else {
+    updateContrastGridWindow(null, 'Grid will update after the palette is generated.');
+      logContrastGrid('openContrastGridWindow:no-results');
+  }
+}
+
+function initContrastGridControls() {
+  const trigger = document.getElementById('openContrastGrid');
+  if (trigger) {
+    trigger.addEventListener('click', function(){ openContrastGridWindow(); });
+  }
 }
 
 function ensureContrastReportPlacement() {
@@ -1209,6 +1629,7 @@ function ensureContrastReportPlacement() {
 function updateContrastReport() {
   const results = buildContrastResults();
   renderContrastReport(results);
+  renderContrastGrid(results);
   ensureContrastReportPlacement();
 }
 
