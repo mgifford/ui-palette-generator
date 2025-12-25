@@ -47,6 +47,15 @@ In no particular order, allow user to:
 
 This project is pure HTML, CSS, and vanilla JavaScript—no frameworks, no build tools required for basic use. The build pipeline (npm scripts) is only for asset bundling and SCSS compilation; the output is a static site in `docs/`.
 
+### Accent Non-Content Colors
+
+The palette includes three levels of Accent Non-Content tokens to express visual hierarchy:
+- **Strong:** primary UI emphasis (e.g., button backgrounds, selected states, focus rings).
+- **Subdued:** secondary emphasis and structure (e.g., table headers, grouped outlines).
+- **Soft:** interaction feedback and rhythm (e.g., hover backgrounds, zebra striping).
+
+This hierarchy helps designers reason about when and where to use these colors in real UIs.
+
 ### Quick Start
 
 - **No frameworks required.**

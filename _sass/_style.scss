@@ -636,6 +636,12 @@ main {
     }
   }
 
+  // Soft swatches should render as flat fills without hatch overlay
+  .swatch[data-swatch-id="accentNonContentSoft"]:after,
+  .swatch[data-swatch-id="neutralNonContentSoft"]:after {
+    display: none !important;
+  }
+
   .palette-non-content {
     flex: 3 1 0;
   }
@@ -1281,16 +1287,22 @@ main {
 
 }
 
+[data-theme="light"] body { 
+  background-color: #fff; 
+}
+
 @container (--theme: light) {
-  body { background-color: #fff; }
   #palette .swatch .value { background: #fff; }
   .demo-canvas .card {
     box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSoft);
   }
 }
 
+[data-theme="dark"] body { 
+  background-color: #000; 
+}
+
 @container (--theme: dark) {
-  body { background-color: #000; }
   #palette .swatch .value { background: #000; }
   /* Ensure legible text in the value chip when rendered on dark themes. */
   #palette .swatch .value {

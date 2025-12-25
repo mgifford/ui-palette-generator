@@ -566,13 +566,8 @@ function setHashFromOverrides() {
 
 parseHashToOverrides();
 restoreHarmonyModeFromStorage();
-generatePalette();
-attachPaletteTransferHandlers();
-initColorPicker();
-// Load USWDS colors for snapping
-uswds.loadUswds().then(()=>{ window.uswds = uswds; }).catch(()=>{});
 
-// Initialize theme from saved preference or prefers-color-scheme
+// Initialize theme from saved preference or prefers-color-scheme BEFORE generating palette
 (function initThemeFromPreference(){
   const saved = localStorage.getItem('ui-theme');
   if (saved) {
@@ -583,6 +578,12 @@ uswds.loadUswds().then(()=>{ window.uswds = uswds; }).catch(()=>{});
     document.documentElement.setAttribute('data-theme', 'light');
   }
 })();
+
+generatePalette();
+attachPaletteTransferHandlers();
+initColorPicker();
+// Load USWDS colors for snapping
+uswds.loadUswds().then(()=>{ window.uswds = uswds; }).catch(()=>{});
 
 $('#generateBtn').on('click', function(e) {
   // If the user checked 'Clear custom overrides', clear them before generating
@@ -972,6 +973,23 @@ function setSwatchValues(theme, options = {}) {
     var $value = $swatch.find('.value');
     var displayValue = $swatch.attr(`data-${theme}-color`) || 'N/A';
     $value.text(displayValue);
+    
+    // Add click-to-copy functionality to the value span
+    if (displayValue && displayValue !== 'N/A') {
+      $value.css('cursor', 'pointer');
+      $value.attr('title', 'Click to copy');
+      $value.off('click').on('click', function(e) {
+        e.stopPropagation(); // Prevent swatch click event
+        const color = $(this).text();
+        navigator.clipboard.writeText(color).then(function() {
+          const original = $value.text();
+          $value.text('Copied!');
+          setTimeout(function() { $value.text(original); }, 1000);
+        }).catch(function() {
+          console.warn('Failed to copy:', color);
+        });
+      });
+    }
   });
 }
 
@@ -1355,11 +1373,23 @@ function renderGridCell(cell, isFirstFocusable) {
     ${renderUsageLine('Focus', cell.focusRow)}
   `;
 
+  let tokenInfo = '';
+  try {
+    if (window.uswds && typeof window.uswds.findTokenByHex === 'function') {
+      const fgTk = window.uswds.findTokenByHex(cell.foreground.color);
+      const bgTk = window.uswds.findTokenByHex(cell.background.color);
+      const fgLabel = fgTk && fgTk.token ? ` (${fgTk.token})` : '';
+      const bgLabel = bgTk && bgTk.token ? ` (${bgTk.token})` : '';
+      tokenInfo = `<p class="contrast-grid__tokens"><span class="contrast-grid__fg-chip"><span class="contrast-grid__chip-swatch" style="background:${cell.foreground.color};"></span>${cell.foreground.color.toUpperCase()}${fgLabel}</span> on <span class="contrast-grid__bg-chip"><span class="contrast-grid__chip-swatch" style="background:${cell.background.color};"></span>${cell.background.color.toUpperCase()}${bgLabel}</span></p>`;
+    }
+  } catch (e) {}
+
   return `<button type="button" class="contrast-grid__cell ${statusClass}" style="--fg-color:${cell.foreground.color};--bg-color:${cell.background.color};" aria-label="${escapeAttribute(ariaParts.join('. '))}" ${isFirstFocusable ? 'data-contrast-grid-initial="true"' : ''}>
     <div class="contrast-grid__swatch" aria-hidden="true">Aa</div>
     <div class="contrast-grid__status ${statusClass}" aria-hidden="true">${statusIcon}<span>${statusLabel}</span></div>
     <div class="contrast-grid__tooltip" role="tooltip">
       <p><strong>${cell.foreground.label}</strong> on <strong>${cell.background.label}</strong></p>
+      ${tokenInfo}
       ${tooltip}
     </div>
   </button>`;
@@ -1807,21 +1837,166 @@ async function refineSnapToUswds() {
 
   const tokens = TOKEN_CATALOG.map(function(t){ return t.id; }).filter(function(id){ return id !== 'seed'; });
   const changed = [];
+  const changedPreview = [];
+
+  // Ensure accent content subdued stays a step lighter than the snapped strong value
+  function enforceAccentContentStep(theme) {
+    if (!window.uswds || typeof window.uswds.suggestSubduedFromStrong !== 'function') return false;
+    const strong = getSwatchColor(theme, 'accentContentStrong');
+    const subdued = getSwatchColor(theme, 'accentContentSubdued');
+    if (!strong || !subdued) return false;
+
+    const strongToken = typeof window.uswds.findTokenByHex === 'function' ? window.uswds.findTokenByHex(strong) : null;
+    const subduedToken = typeof window.uswds.findTokenByHex === 'function' ? window.uswds.findTokenByHex(subdued) : null;
+
+    const sameHex = strong.toUpperCase() === subdued.toUpperCase();
+    const sameToken = strongToken && subduedToken && strongToken.token === subduedToken.token;
+
+    if (!sameHex && !sameToken) return false;
+
+    const suggested = window.uswds.suggestSubduedFromStrong(strongToken ? strongToken.token : strong);
+    if (suggested && suggested.toUpperCase() !== subdued.toUpperCase()) {
+      const meta = TOKEN_LOOKUP['accentContentSubdued'];
+      if (meta) {
+        setCssColor(theme, meta.id, meta.cssVar, suggested);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function enforceToneStep(theme, strongId, subduedId, options = {}) {
+    if (!window.uswds || typeof window.uswds.suggestToneBelow !== 'function') return false;
+    const { minDelta = 10, maxDelta = 20 } = options;
+    const strong = getSwatchColor(theme, strongId);
+    const subdued = getSwatchColor(theme, subduedId);
+    if (!strong || !subdued) return false;
+
+    const sameHex = strong.toUpperCase() === subdued.toUpperCase();
+    const delta = typeof window.uswds.gradeDelta === 'function' ? window.uswds.gradeDelta(strong, subdued) : null;
+    const deltaBad = delta === null || delta < minDelta || (maxDelta !== null && delta > maxDelta);
+
+    if (!sameHex && !deltaBad) return false;
+
+    const suggested = window.uswds.suggestToneBelow(strong, { minDelta, maxDelta });
+    if (suggested && suggested.toUpperCase() !== subdued.toUpperCase()) {
+      const meta = TOKEN_LOOKUP[subduedId];
+      if (meta) {
+        setCssColor(theme, meta.id, meta.cssVar, suggested);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function enforceSoftStep(theme, subduedId, softId, options = {}) {
+    if (!window.uswds || typeof window.uswds.suggestSoftBelow !== 'function') return false;
+    const { minDelta = 40, maxDelta = null } = options;
+    const subdued = getSwatchColor(theme, subduedId);
+    const soft = getSwatchColor(theme, softId);
+    if (!subdued || !soft) return false;
+
+    const sameHex = subdued.toUpperCase() === soft.toUpperCase();
+    const delta = typeof window.uswds.gradeDelta === 'function' ? window.uswds.gradeDelta(subdued, soft) : null;
+    const deltaBad = delta === null || delta < minDelta || (maxDelta !== null && delta > maxDelta);
+
+    if (!sameHex && !deltaBad) return false;
+
+    const suggested = window.uswds.suggestSoftBelow(subdued, { minDelta, maxDelta });
+    if (suggested && suggested.toUpperCase() !== soft.toUpperCase()) {
+      const meta = TOKEN_LOOKUP[softId];
+      if (meta) {
+        setCssColor(theme, meta.id, meta.cssVar, suggested);
+        return true;
+      }
+    }
+    return false;
+  }
 
   ['light', 'dark'].forEach(function(theme){
     tokens.forEach(function(id){
       const current = getSwatchColor(theme, id);
       if (!current) return;
       let snapped = current;
-      try { snapped = window.uswds.snapToUswds(current); } catch (e) { snapped = current; }
+      try {
+        let opts = undefined;
+        if (id.startsWith('neutral')) {
+          opts = { allowedFamilies: ['gray','gray-cool','gray-warm'] };
+        }
+        snapped = window.uswds.snapToUswds(current, opts || {});
+      } catch (e) { snapped = current; }
       if (snapped && snapped.toUpperCase() !== current.toUpperCase()) {
         const meta = TOKEN_LOOKUP[id];
         if (meta) {
           setCssColor(theme, meta.id, meta.cssVar, snapped);
           changed.push(id);
+          try {
+            if (window.uswds && typeof window.uswds.findTokenByHex === 'function') {
+              const tk = window.uswds.findTokenByHex(snapped);
+              if (tk && tk.token) {
+                changedPreview.push({ theme, id, token: tk.token });
+              }
+            }
+          } catch (e) {}
         }
       }
     });
+
+    if (enforceAccentContentStep(theme)) {
+      changed.push('accentContentSubdued');
+    }
+
+    // USWDS grade spacing for accent/neutral non-content and neutral content
+    if (enforceToneStep(theme, 'accentNonContentStrong', 'accentNonContentSubdued', { minDelta: 10, maxDelta: 20 })) {
+      changed.push('accentNonContentSubdued');
+    }
+    if (enforceSoftStep(theme, 'accentNonContentSubdued', 'accentNonContentSoft', { minDelta: 40 })) {
+      changed.push('accentNonContentSoft');
+    }
+
+    if (enforceToneStep(theme, 'neutralNonContentStrong', 'neutralNonContentSubdued', { minDelta: 10, maxDelta: 20 })) {
+      changed.push('neutralNonContentSubdued');
+    }
+    if (enforceSoftStep(theme, 'neutralNonContentSubdued', 'neutralNonContentSoft', { minDelta: 40 })) {
+      changed.push('neutralNonContentSoft');
+    }
+
+    if (enforceToneStep(theme, 'neutralContentStrong', 'neutralContentSubdued', { minDelta: 10, maxDelta: 20 })) {
+      changed.push('neutralContentSubdued');
+    }
+
+    // Absolute soft targets near grade 10 (light) or 90 (dark)
+    const targetGrade = theme === 'dark' ? 90 : 10;
+    try {
+      // Accent Non-Content Soft: keep within accent family
+      const accStrong = getSwatchColor(theme, 'accentNonContentStrong');
+      if (accStrong && window.uswds && typeof window.uswds.suggestGradeForBaseFamily === 'function') {
+        const suggested = window.uswds.suggestGradeForBaseFamily(accStrong, targetGrade);
+        const soft = getSwatchColor(theme, 'accentNonContentSoft');
+        if (suggested && soft && suggested.toUpperCase() !== soft.toUpperCase()) {
+          const meta = TOKEN_LOOKUP['accentNonContentSoft'];
+          if (meta) {
+            setCssColor(theme, meta.id, meta.cssVar, suggested);
+            changed.push('accentNonContentSoft');
+          }
+        }
+      }
+    } catch (e) {}
+
+    try {
+      // Neutral Non-Content Soft: force to neutral families at target grade
+      if (window.uswds && typeof window.uswds.suggestNeutralAtGrade === 'function') {
+        const suggestedNeutralSoft = window.uswds.suggestNeutralAtGrade(targetGrade);
+        const neutralSoft = getSwatchColor(theme, 'neutralNonContentSoft');
+        if (suggestedNeutralSoft && neutralSoft && suggestedNeutralSoft.toUpperCase() !== neutralSoft.toUpperCase()) {
+          const meta = TOKEN_LOOKUP['neutralNonContentSoft'];
+          if (meta) {
+            setCssColor(theme, meta.id, meta.cssVar, suggestedNeutralSoft);
+            changed.push('neutralNonContentSoft');
+          }
+        }
+      }
+    } catch (e) {}
   });
 
   setSwatchValues('light', { scopedOnly: true });
@@ -1833,7 +2008,12 @@ async function refineSnapToUswds() {
   if (changed.length) {
     flashSwatches(Array.from(new Set(changed)));
   }
-  setPaletteStatus(changed.length ? 'Palette snapped to closest USWDS colors.' : 'Palette already aligned to USWDS colors.');
+  if (changed.length) {
+    const examples = changedPreview.slice(0, 6).map(function(item){ return `${item.id}: ${item.token}`; }).join(', ');
+    setPaletteStatus(examples ? `Palette snapped to USWDS. ${examples}` : 'Palette snapped to USWDS colors.');
+  } else {
+    setPaletteStatus('Palette already aligned to USWDS colors.');
+  }
 }
 
 function getContrastScore(hex, backgrounds) {

@@ -38,8 +38,12 @@ export function decreaseOpacityToContrast(fgColor, bgColor, targetContrast) {
     // console.log(adjustedOpacity, fgContrast, iteration);
   }
 
-	// Return the color with the adjusted opacity in rgba format
+	// Return the color with the adjusted opacity blended against the background as hex
 	const [r, g, b] = chroma(fgColor).rgb();
-  // console.log(`rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${adjustedOpacity.toFixed(3)})`);
-	return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${adjustedOpacity.toFixed(3)})`;
+	const bgRgb = chroma(bgColor).rgb();
+	const blendedRgb = [r, g, b].map((channel, i) => 
+		channel * adjustedOpacity + bgRgb[i] * (1 - adjustedOpacity)
+	);
+  // console.log(`Blended: ${chroma(blendedRgb).hex()} from rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${adjustedOpacity.toFixed(3)}) on ${bgColor}`);
+	return chroma(blendedRgb).hex().toUpperCase();
 }

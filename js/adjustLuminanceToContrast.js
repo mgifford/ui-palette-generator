@@ -6,6 +6,8 @@ export function adjustLuminanceToContrast(fgColor, bgColor, targetContrast, fgLu
   let fgLuminance = chroma(fgColor).luminance(); // Get foreground luminance
   let stepSize = 0.0001; // Size and direction of luminance adjustment
   let precision = stepSize * 500; // targetContrast precision
+  const MIN_L = 0.0001;
+  const MAX_L = 0.9999;
 
   // console.log(fgColor, bgColor, targetContrast);
 
@@ -17,26 +19,17 @@ export function adjustLuminanceToContrast(fgColor, bgColor, targetContrast, fgLu
   };
 
   // Determine appropriate luminance direction
-  var fgLighterLuminance = chroma(fgColor).luminance(fgLuminance * 1.25).luminance(); // Get luminance of lightened fgColor...
-  var fgLighterContrast = getContrast(fgLighterLuminance); // ... and get its contrast ratio
-  var fgDarkerLuminance = chroma(fgColor).luminance(fgLuminance * 0.75).luminance(); // Get luminance of darkened fgColor...
-  var fgDarkerContrast = getContrast(fgDarkerLuminance); // ... and get its contrast ratio
-  // console.log(`fgLighterContrast: ${fgLighterContrast} | fgDarkerContrast: ${fgDarkerContrast}`);
-
-  // Determine direction by comparing contrast ratios
-  var diffLighter = Math.abs(fgLighterContrast - targetContrast);
-  var diffDarker = Math.abs(fgDarkerContrast - targetContrast);
-  // console.log(`diffLighter: ${diffLighter} | diffDarker: ${diffDarker}`);
-
   if (fgLuminanceDirection === undefined) {
-    // Determine fgLuminanceDirection if underfined
-    if (diffDarker < diffLighter) { // If darkening luminance gets us closer to targetContrast...
-      var fgLuminanceDirection = "decrease";
-      // console.log("should decrease luminance");
-    } else {
-      // console.log("should increase luminance");
-    }
+    const currentContrast = getContrast(fgLuminance);
+    const targetAboveCurrent = targetContrast > currentContrast;
+    const bgIsLighter = bgLuminance >= fgLuminance;
+    // If we need more contrast, move away from bg; if less, move toward bg.
+    const shouldMoveAway = targetAboveCurrent;
+    const moveAwayDirection = bgIsLighter ? "decrease" : "increase";
+    const moveTowardDirection = bgIsLighter ? "increase" : "decrease";
+    fgLuminanceDirection = shouldMoveAway ? moveAwayDirection : moveTowardDirection;
   }
+
   if (fgLuminanceDirection === "decrease") {
     stepSize = -stepSize; // Decrease luminance via negative steps
   }
@@ -50,6 +43,10 @@ export function adjustLuminanceToContrast(fgColor, bgColor, targetContrast, fgLu
   while (Math.abs(fgContrast - targetContrast) > precision && iteration != maxIterations) {
     // console.log(`fgContrast: ${fgContrast} contrastDiff: ${Math.abs(fgContrast - targetContrast)}`);
     adjustedLuminance += stepSize;
+    if (adjustedLuminance <= MIN_L || adjustedLuminance >= MAX_L) {
+      adjustedLuminance = Math.min(Math.max(adjustedLuminance, MIN_L), MAX_L);
+      break; // further movement will not improve contrast meaningfully
+    }
     // console.log(`adjustedLuminance: ${adjustedLuminance}`);
     fgContrast = getContrast(adjustedLuminance);
     iteration++;
