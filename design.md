@@ -39,20 +39,42 @@ The goal is not to showcase arbitrary color usage, but to demonstrate a **determ
 
 ---
 
+## Seed vs Semantic Tokens
+
+- **Seed (generator input):** A single user-provided color used to derive the palette. It is displayed for reference only and is not applied directly to UI components.
+- **Semantic tokens:** Named roles such as canvas, card, content, and non-content colors. These are tuned for accessibility and are the only colors used in the demo UI (text, buttons, focus, and surfaces).
+- **Why this separation:** The seed alone cannot guarantee contrast or role fit. Semantic tokens are adjusted to meet contrast expectations and should be used wherever a “brand” or primary color is needed in the UI.
+
+Seed remains visible to explain where the palette comes from, but the demo and guidance always map UI elements to semantic tokens.
+
+---
+
+## Generation vs Refinement
+
+- **Generate is creative and destructive:** It takes the seed plus current settings and produces a new palette from scratch. Running it replaces the current palette state.
+- **Refine is constraint-based and deterministic:** It operates on the existing palette to enforce alignment or accessibility without re-running generation. The same palette plus the same refine action yields the same result.
+- **Snap to USWDS:** Maps each semantic token (excluding the seed) to the closest USWDS color, preserving token roles and light/dark separation. This is normalization, not creation.
+- **Fix contrast:** Adjusts only content foreground tokens (accentContentStrong/Subdued/Baseline, neutralContentStrong/Subdued) to meet WCAG 2.2 AA and APCA thresholds, preferring lightness adjustments and minimal hue change. Non-content tokens are left untouched unless downstream contrast requires them.
+- **Seed is excluded from refinement:** It remains an input reference; refinement preserves semantic intent and applies constraints to the tokens that ship to UI.
+
+Refinement is explicit and never automatic so that designers can see when and how constraints are applied.
+
+---
+
 ## Token Categories and Their Roles
 
 ### Seed
 
 **Purpose**
-- Source color for palette generation.
+- Source color for palette generation only (input, not a UI role).
 
 **Usage**
-- Not intended for direct UI usage.
-- Used to derive accent content and non-content families.
-- May appear in small, non-critical decorative contexts only.
+- Not used directly in UI components.
+- Used solely to derive accent content and non-content families.
+- Displayed for reference so users see the input that generated the palette.
 
 **Rationale**
-Using the seed directly for text or controls often fails contrast and creates brittle designs.
+Using the seed directly for text or controls often fails contrast and creates brittle designs; semantic tokens are tuned to meet contrast and role expectations.
 
 ---
 

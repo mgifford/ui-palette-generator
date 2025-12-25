@@ -21,8 +21,12 @@ export async function loadUswds(path = 'uswds/uswds-system-color-tokens.csv') {
   }
 }
 
-function labDistance(a, b) {
-  return Math.sqrt(Math.pow(a[0]-b[0],2) + Math.pow(a[1]-b[1],2) + Math.pow(a[2]-b[2],2));
+function oklchDistance(a, b) {
+  // Perceptual distance using OKLCH; weights hue by chroma to avoid hue swing at low saturation
+  const dl = a[0] - b[0];
+  const dc = a[1] - b[1];
+  const dh = (a[2] - b[2]) * (Math.min(a[1], b[1]) + 0.01);
+  return Math.sqrt(dl * dl + dc * dc + dh * dh);
 }
 
 export function snapToUswds(hex) {
@@ -30,11 +34,11 @@ export function snapToUswds(hex) {
   let best = null;
   let bestDist = Infinity;
   try {
-    const labA = chroma(hex).lab();
+    const lchA = chroma(hex).oklch();
     USWDS_COLORS.forEach(function(c){
       try {
-        const labB = chroma(c.hex).lab();
-        const d = labDistance(labA, labB);
+        const lchB = chroma(c.hex).oklch();
+        const d = oklchDistance(lchA, lchB);
         if (d < bestDist) { bestDist = d; best = c; }
       } catch(e){}
     });

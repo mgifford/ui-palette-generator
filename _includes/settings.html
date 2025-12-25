@@ -5,7 +5,7 @@
     <h2>Settings</h2>
 
     <div class="form-group">
-      <label for="accentColor">Accent</label>
+      <label for="accentColor">Seed (generator input)</label>
       <div class="decorated-input">
         <span class="mini-swatch"></span>
         <input type="text" id="accentColor">
@@ -56,10 +56,20 @@
       <input type="text" id="darkModeSaturation" value="0.666">
     </div>
 
-    <div style="display:flex;gap:.5rem;align-items:center">
+    <div class="action-row">
       <button id="generateBtn" class="btn">Generate</button>
-      <label style="display:inline-flex;align-items:center;gap:.5rem;margin-left:.5rem"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
+      <div class="refine-group">
+        <button id="refineBtn" class="btn btn-secondary" aria-haspopup="true" aria-expanded="false">
+          Refine <span aria-hidden="true">▾</span>
+        </button>
+        <div id="refineMenu" class="refine-menu" role="menu" hidden>
+          <button class="refine-menu__item" data-refine-action="snap" role="menuitem">Snap palette to USWDS</button>
+          <button class="refine-menu__item" data-refine-action="fix-contrast" role="menuitem">Fix contrast (WCAG / APCA)</button>
+        </div>
+      </div>
+      <label class="clear-overrides-label"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
     </div>
+    <div id="paletteStatus" role="status" aria-live="polite" aria-atomic="true" class="palette-status"></div>
 
   </form>
 

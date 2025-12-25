@@ -96,7 +96,7 @@
     <h2>Settings</h2>
 
     <div class="form-group">
-      <label for="accentColor">Accent</label>
+      <label for="accentColor">Seed (generator input)</label>
       <div class="decorated-input">
         <span class="mini-swatch"></span>
         <input type="text" id="accentColor">
@@ -160,11 +160,20 @@
       <input type="text" id="darkModeSaturation" value="0.666">
     </div>
 
-    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+    <div class="action-row">
       <button id="generateBtn" class="btn">Generate</button>
-      <label style="display:inline-flex;align-items:center;gap:.5rem;margin-left:.5rem"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
+      <div class="refine-group">
+        <button id="refineBtn" class="btn btn-secondary" aria-haspopup="true" aria-expanded="false">
+          Refine <span aria-hidden="true">▾</span>
+        </button>
+        <div id="refineMenu" class="refine-menu" role="menu" hidden>
+          <button class="refine-menu__item" data-refine-action="snap" role="menuitem">Snap palette to USWDS</button>
+          <button class="refine-menu__item" data-refine-action="fix-contrast" role="menuitem">Fix contrast (WCAG / APCA)</button>
+        </div>
+      </div>
+      <label class="clear-overrides-label"><input type="checkbox" id="clearOverrides"> Clear custom overrides</label>
     </div>
-    <div id="paletteStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.9rem;color:var(--color-accentContentStrong);margin-top:0.5rem;min-height:1.2em"></div>
+    <div id="paletteStatus" role="status" aria-live="polite" aria-atomic="true" class="palette-status"></div>
 
   </form>
 
@@ -194,6 +203,16 @@
           <div class="heading">
             <h2>Palette</h2>
           </div>
+          <div class="palette-seed" aria-live="polite">
+            <figure class="color-swatch">
+              <figcaption>Seed (generator input)</figcaption>
+              <div class="swatch" tabindex="0" id="seed" data-swatch-id="seed">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+              <p class="panel-note">Used to derive semantic tokens; not applied directly to UI elements.</p>
+            </figure>
+          </div>
           <p class="section-hint">The Palette shows a single set of semantic color tokens rendered in light and dark modes.</br>
           Both palettes share the same token IDs. Theme differences are controlled by the parent container using data-theme-mode, allowing consistent overrides and comparisons, including alignment with systems like USWDS.</p>
           <div class="palette-panels" aria-live="polite">
@@ -205,15 +224,6 @@
                 <h3 id="palette-light-title">Light palette values</h3>
                 <p class="panel-note">Each swatch below reflects the light token for its ID.</p>
               </header>
-              <div class="palette-accent">
-                <figure class="color-swatch">
-                  <figcaption>Seed</figcaption>
-                  <div class="swatch" tabindex="0" id="seed" data-swatch-id="seed">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                </figure>
-              </div>
               <div class="row ui-swatches palette-backgrounds">
                 <figure class="color-swatch">
                   <figcaption>Canvas</figcaption>
@@ -340,15 +350,6 @@
                 <h3 id="palette-dark-title">Dark palette values</h3>
                 <p class="panel-note">This mirrored column uses the dark theme parent.</p>
               </header>
-              <div class="palette-accent">
-                <figure class="color-swatch">
-                  <figcaption>Seed</figcaption>
-                  <div class="swatch" tabindex="0" id="seed" data-swatch-id="seed">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                </figure>
-              </div>
               <div class="row ui-swatches palette-backgrounds">
                 <figure class="color-swatch">
                   <figcaption>Canvas</figcaption>
@@ -615,11 +616,11 @@
 
       <div id="tab-team-light" role="tabpanel" aria-labelledby="tab-team-light-trigger" class="tab-pane">
         <div class="avatars">
-          <span class="avatar"><img src="images/avatar-alice.svg" alt="Alice" data-name="Alice"></span>
-          <span class="avatar"><img src="images/avatar-bob.svg" alt="Bob" data-name="Bob"></span>
-          <span class="avatar"><img src="images/avatar-charlie.svg" alt="Charlie" data-name="Charlie"></span>
-          <span class="avatar"><img src="images/avatar-dave.svg" alt="Dave" data-name="Dave"></span>
-          <span class="avatar"><img src="images/avatar-eve.svg" alt="Eve" data-name="Eve"></span>
+          <span class="avatar"><img src="images/avatars/avatar-alice.svg" alt="Alice" data-name="Alice"></span>
+          <span class="avatar"><img src="images/avatars/avatar-bob.svg" alt="Bob" data-name="Bob"></span>
+          <span class="avatar"><img src="images/avatars/avatar-charlie.svg" alt="Charlie" data-name="Charlie"></span>
+          <span class="avatar"><img src="images/avatars/avatar-dave.svg" alt="Dave" data-name="Dave"></span>
+          <span class="avatar"><img src="images/avatars/avatar-eve.svg" alt="Eve" data-name="Eve"></span>
         </div>
         <div class="avatars" style="margin-top: 1rem;">
           <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>
@@ -895,11 +896,11 @@
 
       <div id="tab-team-dark" role="tabpanel" aria-labelledby="tab-team-dark-trigger" class="tab-pane">
         <div class="avatars">
-          <span class="avatar"><img src="images/avatar-alice.svg" alt="Alice" data-name="Alice"></span>
-          <span class="avatar"><img src="images/avatar-bob.svg" alt="Bob" data-name="Bob"></span>
-          <span class="avatar"><img src="images/avatar-charlie.svg" alt="Charlie" data-name="Charlie"></span>
-          <span class="avatar"><img src="images/avatar-dave.svg" alt="Dave" data-name="Dave"></span>
-          <span class="avatar"><img src="images/avatar-eve.svg" alt="Eve" data-name="Eve"></span>
+          <span class="avatar"><img src="images/avatars/avatar-alice.svg" alt="Alice" data-name="Alice"></span>
+          <span class="avatar"><img src="images/avatars/avatar-bob.svg" alt="Bob" data-name="Bob"></span>
+          <span class="avatar"><img src="images/avatars/avatar-charlie.svg" alt="Charlie" data-name="Charlie"></span>
+          <span class="avatar"><img src="images/avatars/avatar-dave.svg" alt="Dave" data-name="Dave"></span>
+          <span class="avatar"><img src="images/avatars/avatar-eve.svg" alt="Eve" data-name="Eve"></span>
         </div>
         <div class="avatars" style="margin-top: 1rem;">
           <span class="avatar avatar-one-letter avatar-solid avatar-subdued">V</span>

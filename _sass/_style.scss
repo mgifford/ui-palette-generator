@@ -313,6 +313,72 @@ input[type=password] {
   }
 }
 
+.action-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.refine-group {
+  position: relative;
+}
+
+.refine-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 220px;
+  background: var(--color-card);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+  border: 1px solid var(--color-neutralNonContentSubdued);
+  @include border-radius("md");
+  padding: 4px;
+  z-index: 10;
+}
+
+.refine-menu__item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-neutralContentStrong);
+  cursor: pointer;
+  font: inherit;
+  @include border-radius("sm");
+  &:hover,
+  &:focus-visible {
+    background: var(--color-neutralNonContentSoft);
+    outline: none;
+  }
+}
+
+.clear-overrides-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
+
+.palette-status {
+  font-size: 0.9rem;
+  color: var(--color-accentContentStrong);
+  margin-top: 0.5rem;
+  min-height: 1.2em;
+}
+
+@keyframes swatch-flash {
+  0% { outline: 0 solid transparent; box-shadow: 0 0 0 0 rgba(0,0,0,0.1); }
+  30% { outline: 2px solid var(--color-accentContentStrong); box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-accentContentStrong), transparent 75%); }
+  100% { outline: 0 solid transparent; box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+}
+
+.swatch-flash {
+  animation: swatch-flash 1.2s ease-out 1;
+}
+
 main {
   @include flex-col(var(--space-xl));
 }
@@ -577,6 +643,22 @@ main {
     flex: 2 1 0;
   }
 
+}
+
+.palette-seed {
+  margin-bottom: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+
+  .color-swatch {
+    max-width: 240px;
+  }
+
+  .panel-note {
+    color: var(--color-neutralContentSubdued);
+    margin: var(--space-xs) 0 0;
+  }
 }
 
 .swatch[data-swatch-id="seed"] > .color { background-color: var(--color-seed); }

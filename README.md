@@ -5,6 +5,14 @@ This tool helps design accessible UI color palettes that work consistently in bo
 - **Palette:** A single set of semantic tokens renders in light and dark via the parent `data-theme-mode`, enabling consistent overrides and comparisons (including USWDS alignment).
 - **Demo:** Identical UI markup runs in light and dark. Visual differences come only from palette values, clarifying how tokens behave in real components, including focus and non-text elements.
 - **Usage and contribution:** Generate from a seed color, override tokens, and review WCAG 2.2 and APCA contrast results in the UI. This project is open source—report issues or contribute on GitHub.
+- **Generate vs Refine:**
+	- **Generate** creates a fresh palette from the seed and current settings (destructive to the current state).
+	- **Refine** operates on the existing palette without regenerating it:
+		- **Snap to USWDS** aligns semantic tokens to the closest USWDS colors.
+		- **Fix contrast** adjusts content tokens to meet WCAG 2.2 and APCA thresholds.
+	- Refinement is optional and intentional; it preserves roles and existing theme separation while normalizing results.
+
+> The seed color is a generator input used to derive the palette. It is shown for reference, but semantic tokens derived from it are used for all UI styling to ensure predictable contrast and accessibility.
 
 [Try it out](https://thisisfranciswu.com/enterprise-ui-palette-generator/).
 

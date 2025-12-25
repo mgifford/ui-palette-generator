@@ -1,8 +1,9 @@
 <div class="palette-grid" data-theme-scope="{{ include.scope }}">
   <div class="palette-row palette-row-seed">
     <figure class="color-swatch">
-      <figcaption>Seed</figcaption>
+      <figcaption>Seed (generator input)</figcaption>
       {% include swatch.html id="seed" scope=include.scope %}
+      <p class="panel-note">Shared input used to derive all tokens; not applied directly to UI.</p>
     </figure>
   </div>
 

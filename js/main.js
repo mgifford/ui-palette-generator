@@ -136,8 +136,7 @@ const CONTRAST_FOREGROUNDS = [
   'accentContentSubdued',
   'accentContentBaseline',
   'neutralContentStrong',
-  'neutralContentSubdued',
-  'seed'
+  'neutralContentSubdued'
 ];
 const CONTRAST_BACKGROUNDS = [
   'canvas',
@@ -145,13 +144,20 @@ const CONTRAST_BACKGROUNDS = [
   'accentNonContentSoft',
   'neutralNonContentSoft'
 ];
-const FOCUS_FOREGROUNDS = ['seed', 'accentContentStrong', 'accentContentBaseline'];
+const FOCUS_FOREGROUNDS = ['accentContentStrong', 'accentContentBaseline'];
 const APCA_THRESHOLDS = {
   text: 60,      // body text
   largeText: 45, // large / bold text
   nonText: 60,   // UI icons/lines
   focus: 60      // focus indicators/outlines
 };
+const CONTENT_REFINEMENT_TOKENS = [
+  'accentContentStrong',
+  'accentContentSubdued',
+  'accentContentBaseline',
+  'neutralContentStrong',
+  'neutralContentSubdued'
+];
 
 function getHarmonyMode() {
   const mode = (window.HARMONY_STATE && window.HARMONY_STATE.mode) || HARMONY_DEFAULT;
@@ -440,11 +446,16 @@ function applyHarmonyLayer(mode, options = {}) {
   });
 }
 
-// Insert the random color value into the text field
-function generateRandomColor() {
-  var randomColor = chroma.random().hex().toUpperCase();
+// Insert a random seed value; optionally regenerate immediately
+function generateRandomColor(options = {}) {
+  const { apply = false } = options;
+  const randomColor = chroma.random().hex().toUpperCase();
   $('#accentColor').val(randomColor);
   $('#accentColor').parent().find('.mini-swatch').css('background-color', randomColor);
+  try { window.LAST_RAW_ACCENT = randomColor; } catch (e) {}
+  if (apply) {
+    try { generatePalette(); } catch (e) {}
+  }
 }
 
 // expose generatePalette globally for small modules to call
@@ -584,6 +595,58 @@ $('#generateBtn').on('click', function(e) {
   e.preventDefault();
 });
 
+function closeRefineMenu() {
+  const menu = document.getElementById('refineMenu');
+  const btn = document.getElementById('refineBtn');
+  if (menu) menu.hidden = true;
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleRefineMenu() {
+  const menu = document.getElementById('refineMenu');
+  const btn = document.getElementById('refineBtn');
+  if (!menu || !btn) return;
+  const nextHidden = !menu.hidden;
+  menu.hidden = nextHidden;
+  btn.setAttribute('aria-expanded', nextHidden ? 'false' : 'true');
+}
+
+function initRefineControls() {
+  const btn = document.getElementById('refineBtn');
+  const menu = document.getElementById('refineMenu');
+  if (!btn || !menu) return;
+
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    toggleRefineMenu();
+  });
+
+  document.addEventListener('click', function(e){
+    if (!menu.hidden && !menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+      closeRefineMenu();
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') {
+      closeRefineMenu();
+    }
+  });
+
+  menu.querySelectorAll('.refine-menu__item').forEach(function(item){
+    item.addEventListener('click', function(ev){
+      ev.preventDefault();
+      const action = item.getAttribute('data-refine-action');
+      closeRefineMenu();
+      if (action === 'snap') {
+        refineSnapToUswds();
+      } else if (action === 'fix-contrast') {
+        refineFixContrast();
+      }
+    });
+  });
+}
+
 let pendingGenerateTimer = null;
 function schedulePaletteRefresh() {
   clearTimeout(pendingGenerateTimer);
@@ -644,10 +707,11 @@ document.addEventListener('DOMContentLoaded', function() {
   updateThemeToggleUI();
   initHarmonyControls();
   initContrastGridControls();
+  initRefineControls();
 });
 
 $('#randomColorBtn').on('click', function(e) {
-  generateRandomColor();
+  generateRandomColor({ apply: true });
   e.preventDefault();
 });
 
@@ -655,6 +719,8 @@ $('#tryBrandColor a').on('click', function(e) {
   var brandColor = $(this).attr('data-color-value');
   $('#accentColor').val(brandColor);
   $('#accentColor').parent().find('.mini-swatch').css('background-color', brandColor);
+  try { window.LAST_RAW_ACCENT = brandColor; } catch (err) {}
+  try { generatePalette(); } catch (err) {}
   e.preventDefault();
 });
 
@@ -684,6 +750,20 @@ $('#accentColor').on('keydown', function(e) {
     $(this).trigger('change');
   }
 });
+
+function flashSwatches(ids = []) {
+  if (!ids.length) return;
+  ids.forEach(function(id){
+    const nodes = document.querySelectorAll(`[data-swatch-id="${id}"]`);
+    nodes.forEach(function(node){
+      node.classList.remove('swatch-flash');
+      // force reflow to restart animation
+      void node.offsetWidth;
+      node.classList.add('swatch-flash');
+      setTimeout(function(){ node.classList.remove('swatch-flash'); }, 1300);
+    });
+  });
+}
 
 function attachPaletteTransferHandlers() {
   const exportButton = document.getElementById('exportPaletteCsv');
@@ -1396,7 +1476,8 @@ function renderContrastGrid(results) {
 
   if (!results || !results.length) {
     trigger.disabled = true;
-    setContrastGridStatus('Grid will update after the palette is generated.');
+    trigger.hidden = true;
+    setContrastGridStatus('Press Generate to show contrast.');
     updateContrastGridWindow(null, 'Grid will update after the palette is generated.');
       logContrastGrid('renderContrastGrid:no-results');
     return;
@@ -1405,6 +1486,7 @@ function renderContrastGrid(results) {
   const themes = buildContrastMatrix(results);
   if (!themes.length) {
     trigger.disabled = true;
+    trigger.hidden = true;
     setContrastGridStatus('Unable to build a grid from the current palette.');
     updateContrastGridWindow(null, 'Unable to build a grid from the current palette.');
       logContrastGrid('renderContrastGrid:no-themes');
@@ -1412,6 +1494,7 @@ function renderContrastGrid(results) {
   }
 
   trigger.disabled = false;
+  trigger.hidden = false;
   setContrastGridStatus('Open grid window to view details.');
   updateContrastGridWindow(themes);
     logContrastGrid('renderContrastGrid:themes-ready', { themeCount: themes.length });
@@ -1453,12 +1536,12 @@ function ensureContrastGridWindow(openIfMissing = false) {
     return contrastGridWindow;
   }
   if (!openIfMissing) return null;
-  // Try primary open with named window + features.
-  let win = window.open('about:blank', 'contrastGridWindow', 'noopener=yes,width=1200,height=900');
+  // Request a real window (features hint most browsers to open a separate window).
+  const features = 'noopener=yes,width=1200,height=900,toolbar=no,menubar=no,location=no,status=no,scrollbars=yes,resizable=yes';
+  let win = window.open('about:blank', 'contrastGridWindow', features);
   if (!win) {
     logContrastGrid('ensureContrastGridWindow:popup-blocked-primary');
-    // Fallback: open a plain tab without features; some blockers allow this.
-    win = window.open('about:blank', '_blank');
+    win = window.open('about:blank', '_blank', features);
   }
   if (!win) {
     logContrastGrid('ensureContrastGridWindow:popup-blocked');
@@ -1567,6 +1650,10 @@ function openContrastGridWindow() {
   const trigger = document.getElementById('openContrastGrid');
   const status = document.getElementById('contrastGridStatus');
     logContrastGrid('openContrastGridWindow:clicked');
+  if (!contrastGridLastResults || !contrastGridLastResults.length || (trigger && (trigger.disabled || trigger.hidden))) {
+    if (status) status.textContent = 'Press Generate to show contrast.';
+    return;
+  }
   // Open a single window from this click to avoid “multiple popups” blocking.
   const placeholderHtml = '<!doctype html><html><head><title>Contrast grid</title></head><body><p style="font-family:sans-serif;padding:16px;">Loading contrast grid…</p></body></html>';
   let win = window.open('about:blank', 'contrastGridWindow');
@@ -1693,6 +1780,176 @@ function setTransferStatus(message, isError = false) {
   statusEl.dataset.state = isError ? 'error' : 'idle';
 }
 
+function setPaletteStatus(message) {
+  const statusEl = document.getElementById('paletteStatus');
+  if (!statusEl) return;
+  statusEl.textContent = message || '';
+}
+
+async function ensureUswdsPaletteLoaded() {
+  if (window.uswds && typeof window.uswds.getUswdsList === 'function') {
+    const list = window.uswds.getUswdsList();
+    if (list && list.length) return true;
+  }
+  if (window.uswds && typeof window.uswds.loadUswds === 'function') {
+    const loaded = await window.uswds.loadUswds();
+    return !!(loaded && loaded.length);
+  }
+  return false;
+}
+
+async function refineSnapToUswds() {
+  const ok = await ensureUswdsPaletteLoaded();
+  if (!ok) {
+    setPaletteStatus('USWDS palette not available.');
+    return;
+  }
+
+  const tokens = TOKEN_CATALOG.map(function(t){ return t.id; }).filter(function(id){ return id !== 'seed'; });
+  const changed = [];
+
+  ['light', 'dark'].forEach(function(theme){
+    tokens.forEach(function(id){
+      const current = getSwatchColor(theme, id);
+      if (!current) return;
+      let snapped = current;
+      try { snapped = window.uswds.snapToUswds(current); } catch (e) { snapped = current; }
+      if (snapped && snapped.toUpperCase() !== current.toUpperCase()) {
+        const meta = TOKEN_LOOKUP[id];
+        if (meta) {
+          setCssColor(theme, meta.id, meta.cssVar, snapped);
+          changed.push(id);
+        }
+      }
+    });
+  });
+
+  setSwatchValues('light', { scopedOnly: true });
+  setSwatchValues('dark', { scopedOnly: true });
+  setSwatchValues($('html').attr('data-theme'));
+  try { computeAndSetUiForegrounds(); } catch (e) {}
+  try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
+
+  if (changed.length) {
+    flashSwatches(Array.from(new Set(changed)));
+  }
+  setPaletteStatus(changed.length ? 'Palette snapped to closest USWDS colors.' : 'Palette already aligned to USWDS colors.');
+}
+
+function getContrastScore(hex, backgrounds) {
+  let minRatio = Infinity;
+  let minApca = Infinity;
+  backgrounds.forEach(function(bg){
+    const ratio = computeWCAGContrast(hex, bg);
+    if (ratio !== null && ratio !== undefined) {
+      minRatio = Math.min(minRatio, ratio);
+    }
+    const apca = computeAPCAContrast(hex, bg);
+    const apcaAbs = apca === null || apca === undefined ? null : Math.abs(apca);
+    if (apcaAbs !== null) {
+      minApca = Math.min(minApca, apcaAbs);
+    }
+  });
+  if (minRatio === Infinity) minRatio = 0;
+  if (minApca === Infinity) minApca = 0;
+  return minRatio + (minApca / 120); // lightweight combined score
+}
+
+function meetsContentContrast(hex, backgrounds) {
+  return backgrounds.every(function(bg){
+    const ratio = computeWCAGContrast(hex, bg);
+    if (ratio === null || ratio === undefined) return false;
+    if (ratio < wcagContentContrast) return false;
+    const apca = computeAPCAContrast(hex, bg);
+    const apcaAbs = apca === null || apca === undefined ? null : Math.abs(apca);
+    if (apcaAbs !== null && apcaAbs < APCA_THRESHOLDS.text) return false;
+    return true;
+  });
+}
+
+function stepLightnessTowardContrast(hex, backgrounds) {
+  let lch;
+  try { lch = chroma(hex).oklch(); } catch (e) { return hex; }
+  const delta = 0.015;
+  const up = chroma.oklch(Math.min(lch[0] + delta, 1), lch[1], lch[2]).hex();
+  const down = chroma.oklch(Math.max(lch[0] - delta, 0), lch[1], lch[2]).hex();
+  const currentScore = getContrastScore(hex, backgrounds);
+  const upScore = getContrastScore(up, backgrounds);
+  const downScore = getContrastScore(down, backgrounds);
+  if (upScore >= downScore && upScore > currentScore) return up;
+  if (downScore > upScore && downScore > currentScore) return down;
+  return hex;
+}
+
+function improveColorForContrast(hex, backgrounds) {
+  if (!backgrounds.length) return hex;
+  let candidate = hex;
+  try { candidate = chroma(hex).hex().toUpperCase(); } catch (e) { return hex; }
+  if (meetsContentContrast(candidate, backgrounds)) return candidate;
+
+  let attempts = 0;
+  while (attempts < 40 && !meetsContentContrast(candidate, backgrounds)) {
+    const next = stepLightnessTowardContrast(candidate, backgrounds);
+    if (next === candidate) break;
+    candidate = next;
+    attempts += 1;
+  }
+
+  if (meetsContentContrast(candidate, backgrounds)) return chroma(candidate).hex().toUpperCase();
+
+  // If lightness adjustments were not enough, gradually desaturate while keeping hue
+  let lch;
+  try { lch = chroma(candidate).oklch(); } catch (e) { return candidate; }
+  for (let i = 0; i < 10; i += 1) {
+    lch[1] = Math.max(0, lch[1] * 0.9);
+    candidate = chroma.oklch(lch[0], lch[1], lch[2]).hex();
+    if (meetsContentContrast(candidate, backgrounds)) {
+      return chroma(candidate).hex().toUpperCase();
+    }
+    // Small lightness nudge after desaturation
+    candidate = stepLightnessTowardContrast(candidate, backgrounds);
+  }
+
+  return chroma(candidate).hex().toUpperCase();
+}
+
+function refineFixContrast() {
+  const backgroundsByTheme = {
+    light: ['canvas', 'card'].map(function(id){ return getSwatchColor('light', id); }).filter(Boolean),
+    dark: ['canvas', 'card'].map(function(id){ return getSwatchColor('dark', id); }).filter(Boolean)
+  };
+
+  const changed = [];
+
+  ['light', 'dark'].forEach(function(theme){
+    const bgs = backgroundsByTheme[theme];
+    if (!bgs || !bgs.length) return;
+    CONTENT_REFINEMENT_TOKENS.forEach(function(id){
+      const current = getSwatchColor(theme, id);
+      if (!current) return;
+      const adjusted = improveColorForContrast(current, bgs);
+      if (adjusted && adjusted.toUpperCase() !== current.toUpperCase()) {
+        const meta = TOKEN_LOOKUP[id];
+        if (meta) {
+          setCssColor(theme, meta.id, meta.cssVar, adjusted);
+          changed.push(id);
+        }
+      }
+    });
+  });
+
+  setSwatchValues('light', { scopedOnly: true });
+  setSwatchValues('dark', { scopedOnly: true });
+  setSwatchValues($('html').attr('data-theme'));
+  try { computeAndSetUiForegrounds(); } catch (e) {}
+  try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
+
+  if (changed.length) {
+    flashSwatches(Array.from(new Set(changed)));
+  }
+  setPaletteStatus(changed.length ? 'Palette adjusted to meet WCAG 2.2 AA / APCA targets.' : 'Palette already meets the contrast targets.');
+}
+
 // Create theme in head's style element
 function createThemeStyle(theme) {
   const style = document.createElement('style');
@@ -1804,7 +2061,8 @@ function generatePalette() {
     // Establish dark mode seed color...
     // by building on light mode colors
     var darkSeedColor = setSaturation(lightSeedColor, darkModeSaturation);
-    setCssColor('dark', 'seed', '--color-seed', darkSeedColor);
+    // Seed is a generator input; keep the displayed seed consistent across themes.
+    setCssColor('dark', 'seed', '--color-seed', lightSeedColor.toUpperCase());
 
     // Establish dark mode background colors...
     // By building on lightNeutralContentStrongColor
