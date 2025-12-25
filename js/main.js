@@ -464,62 +464,127 @@ window.generatePalette = generatePalette;
 initializeScopedIds();
 generateRandomColor();
 // Parse any color overrides from the URL hash before generating
+/**
+ * Parse URL hash into color overrides and settings.
+ * 
+ * Supported formats:
+ *   - seed=COLOR         : Set the seed/accent color (e.g. seed=A7C39F or seed=red)
+ *   - harm=MODE          : Set harmony mode (e.g. harm=split-complementary)
+ *   - lTOKEN=HEX         : Set light theme token (e.g. lcanv=E5F6CA, lcrd=F0FADF)
+ *   - dTOKEN=HEX         : Set dark theme token (e.g. dcanv=232422)
+ * 
+ * Token abbreviations: canv=canvas, crd=card, ans=accentNonContentStrong,
+ *                      ansub=accentNonContentSubdued, etc.
+ * 
+ * Examples:
+ *   #seed=A7C39F,harm=split-complementary
+ *   #seed=red,harm=analogous,lcanv=E5F6CA,dcard=313230
+ *   #seed=FF0000
+ * 
+ * Backwards compatible with old format: #colors=light.seed=AA00AA,accent=red,harmony=triadic
+ */
 function parseHashToOverrides() {
   try {
     const raw = (location.hash || '').replace(/^#/, '');
     if (!raw) return null;
-    // Split top-level comma-separated pairs (e.g. "colors=light.seed=AA00AA,light.card=FFF,accent=red")
+    
+    // Split top-level comma-separated pairs
     const pairs = raw.split(',').map(s=>s.trim()).filter(Boolean);
     const obj = {};
+    
+    // Map short token names back to full names
+    const shortToFullToken = {
+      'seed': 'seed',
+      'canv': 'canvas',
+      'crd': 'card',
+      'anb': 'accentNonContentBaseline',
+      'ans': 'accentNonContentStrong',
+      'ansub': 'accentNonContentSubdued',
+      'ansf': 'accentNonContentSoft',
+      'acb': 'accentContentBaseline',
+      'acs': 'accentContentStrong',
+      'acsub': 'accentContentSubdued',
+      'acsf': 'accentContentSoft',
+      'nnb': 'neutralNonContentBaseline',
+      'nns': 'neutralNonContentStrong',
+      'nnsub': 'neutralNonContentSubdued',
+      'nnsf': 'neutralNonContentSoft',
+      'ncb': 'neutralContentBaseline',
+      'ncs': 'neutralContentStrong',
+      'ncsub': 'neutralContentSubdued',
+      'ncsf': 'neutralContentSoft'
+    };
+    
     pairs.forEach(function(pair){
       const kv = pair.split('=');
       if (kv.length < 2) return;
       const key = decodeURIComponent(kv[0]);
       const rest = kv.slice(1).join('=');
-      // If this is the accent shorthand, handle separately
-      if (key.toLowerCase() === 'accent') {
+      
+      // Handle new short format: seed=..., harm=..., lcanv=..., dcanv=...
+      if (key === 'seed') {
         const rawAccent = decodeURIComponent(rest || '').trim();
         if (rawAccent) {
-          // store raw accent for later serialization
           window.LAST_RAW_ACCENT = rawAccent;
-          // If the accent input exists in the DOM, set it now (normalize will happen in change handler)
           try {
             const accInput = document.getElementById('accentColor');
             if (accInput) {
               accInput.value = rawAccent;
-              // trigger change so the normalizer runs
               accInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
           } catch(e){}
-
-          // Update inline accessibility report so users see current contrasts
           try { updateContrastReport(); } catch (e) { console.info('Contrast report update failed', e); }
         }
         return;
       }
-
-      if (key.toLowerCase() === 'harmony') {
+      
+      if (key === 'harm' || key === 'harmony') {
         const mode = decodeURIComponent(rest || '').trim();
         if (mode) {
           setHarmonyMode(mode, { syncUi: false, persist: false });
         }
         return;
       }
-
-      // Otherwise treat as colors entries like theme.token=HEX or token=HEX
-      const left = key;
-      const hex = '#' + rest.replace(/^#/, '').toUpperCase();
-      const parts = left.split('.'); // theme.token or token
-      if (parts.length === 2) {
-        const theme = parts[0];
-        const token = parts[1];
-        obj[theme] = obj[theme] || {};
-        obj[theme][token] = hex;
-      } else if (parts.length === 1) {
-        obj.light = obj.light || {};
-        obj.light[parts[0]] = hex;
+      
+      // Handle old format: colors=light.token=HEX,... (for backwards compatibility)
+      if (key === 'colors') {
+        // This is the old format combined into one param, parse recursively
+        const oldPairs = rest.split(',').map(s=>s.trim()).filter(Boolean);
+        oldPairs.forEach(function(oldPair) {
+          const oldKv = oldPair.split('=');
+          if (oldKv.length >= 2) {
+            const oldKey = oldKv[0];
+            const oldHex = '#' + oldKv.slice(1).join('=').replace(/^#/, '').toUpperCase();
+            const parts = oldKey.split('.');
+            if (parts.length === 2) {
+              const theme = parts[0];
+              const token = parts[1];
+              obj[theme] = obj[theme] || {};
+              obj[theme][token] = oldHex;
+            } else if (parts.length === 1) {
+              obj.light = obj.light || {};
+              obj.light[parts[0]] = oldHex;
+            }
+          }
+        });
+        return;
+      }
+      
+      // Handle new format: lcanv=HEX, dcanv=HEX, etc.
+      if (key.length >= 2) {
+        const themePrefix = key.charAt(0);
+        const tokenShort = key.substring(1);
+        const theme = themePrefix === 'l' ? 'light' : (themePrefix === 'd' ? 'dark' : null);
+        const token = shortToFullToken[tokenShort] || tokenShort;
+        
+        if (theme && token) {
+          const hex = '#' + rest.replace(/^#/, '').toUpperCase();
+          obj[theme] = obj[theme] || {};
+          obj[theme][token] = hex;
+        }
       }
     });
+    
     if (Object.keys(obj).length) {
       try { localStorage.setItem('customColorOverrides', JSON.stringify(obj)); } catch (e) {}
       window.CUSTOM_COLOR_OVERRIDES = obj;
@@ -529,35 +594,83 @@ function parseHashToOverrides() {
   return null;
 }
 
+/**
+ * Generate URL hash from current color overrides and settings.
+ * 
+ * Creates a compact, shareable URL format:
+ *   seed=COLOR          : Seed/accent color
+ *   harm=MODE           : Harmony mode
+ *   lTOKEN=HEX          : Light theme token overrides (using abbreviations)
+ *   dTOKEN=HEX          : Dark theme token overrides (using abbreviations)
+ * 
+ * Example output: #seed=A7C39F,harm=split-complementary,lcanv=E5F6CA
+ */
 function setHashFromOverrides() {
   try {
-    const obj = window.CUSTOM_COLOR_OVERRIDES || JSON.parse(localStorage.getItem('customColorOverrides') || '{}');
     const parts = [];
-    Object.keys(obj).forEach(function(theme){
-      const tokens = obj[theme] || {};
-      Object.keys(tokens).forEach(function(token){
-        const hex = (tokens[token] || '').replace(/^#/, '').toUpperCase();
-        if (!hex) return;
-        parts.push(`${encodeURIComponent(theme)}.${encodeURIComponent(token)}=${hex}`);
-      });
-    });
-    // include accent shorthand if available
+    
+    // Include seed color (shorthand for accent color)
     try {
       const rawAccent = window.LAST_RAW_ACCENT || (document.getElementById('accentColor') && document.getElementById('accentColor').value) || '';
       if (rawAccent) {
-        // prefer the raw value (named color) if provided, otherwise the hex without '#'
         const accentValue = (window.LAST_RAW_ACCENT || rawAccent).toString().replace(/^#/, '');
-        parts.push(`accent=${encodeURIComponent(accentValue)}`);
+        parts.push(`seed=${encodeURIComponent(accentValue)}`);
       }
     } catch(e) {}
+    
+    // Include harmony mode
     try {
       const harmonyMode = getHarmonyMode();
       if (harmonyMode && harmonyMode !== HARMONY_DEFAULT) {
-        parts.push(`harmony=${encodeURIComponent(harmonyMode)}`);
+        parts.push(`harm=${encodeURIComponent(harmonyMode)}`);
       }
     } catch (e) {}
+    
+    // Include custom color overrides for specific tokens (short param names)
+    try {
+      const obj = window.CUSTOM_COLOR_OVERRIDES || JSON.parse(localStorage.getItem('customColorOverrides') || '{}');
+      const tokenShortNames = {
+        // Canvas/background tokens
+        'canvas': 'canv',
+        'card': 'crd',
+        // Accent colors (non-content)
+        'accentNonContentBaseline': 'anb',
+        'accentNonContentStrong': 'ans',
+        'accentNonContentSubdued': 'ansub',
+        'accentNonContentSoft': 'ansf',
+        // Accent colors (content)
+        'accentContentBaseline': 'acb',
+        'accentContentStrong': 'acs',
+        'accentContentSubdued': 'acsub',
+        'accentContentSoft': 'acsf',
+        // Neutral colors (non-content)
+        'neutralNonContentBaseline': 'nnb',
+        'neutralNonContentStrong': 'nns',
+        'neutralNonContentSubdued': 'nnsub',
+        'neutralNonContentSoft': 'nnsf',
+        // Neutral colors (content)
+        'neutralContentBaseline': 'ncb',
+        'neutralContentStrong': 'ncs',
+        'neutralContentSubdued': 'ncsub',
+        'neutralContentSoft': 'ncsf'
+      };
+      
+      Object.keys(obj).forEach(function(theme){
+        const tokens = obj[theme] || {};
+        Object.keys(tokens).forEach(function(token){
+          if (token === 'seed') return; // seed is handled above
+          const hex = (tokens[token] || '').replace(/^#/, '').toUpperCase();
+          if (!hex) return;
+          const shortToken = tokenShortNames[token] || token;
+          // Use theme initial + short token name to keep it compact
+          const themePrefix = theme === 'light' ? 'l' : (theme === 'dark' ? 'd' : theme);
+          parts.push(`${themePrefix}${shortToken}=${hex}`);
+        });
+      });
+    } catch(e) {}
+    
     if (parts.length) {
-      location.hash = `colors=${parts.join(',')}`;
+      location.hash = parts.join(',');
     } else {
       history.replaceState(null, '', location.pathname + location.search);
     }

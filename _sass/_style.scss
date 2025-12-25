@@ -591,6 +591,7 @@ main {
       font-size: var(--fontSize-xs);
       font-family: monospace, monospace;
       background: var(--color-card);
+      color: var(--color-neutralContentStrong);
       /* Foreground for the value label is intentionally left to defaults; runtime
         per-token foreground variables are available but not forced here. */
       white-space: nowrap;
@@ -744,9 +745,21 @@ main {
     border: 1px solid var(--color-neutralNonContentSubdued);
     padding: var(--space-md);
     background: var(--color-card);
+    
+    h3 {
+      color: var(--color-neutralContentStrong);
+    }
+    
     p {
       color: var(--color-neutralContentSubdued);
     }
+  }
+  
+  .eyebrow {
+    color: var(--color-neutralContentSubdued);
+    text-transform: uppercase;
+    font-size: var(--fontSize-sm);
+    font-weight: 600;
   }
 
   .file-chip {
@@ -1289,6 +1302,7 @@ main {
 
 [data-theme="light"] body { 
   background-color: #fff; 
+  color: var(--color-neutralContentStrong);
 }
 
 @container (--theme: light) {
@@ -1300,6 +1314,29 @@ main {
 
 [data-theme="dark"] body { 
   background-color: #000; 
+  color: var(--color-neutralContentStrong);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] p,
+[data-theme="dark"] label,
+[data-theme="dark"] .input-hint,
+[data-theme="dark"] span {
+  color: inherit;
+}
+
+[data-theme="dark"] .btn-secondary {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .eyebrow,
+[data-theme="dark"] .transfer-card h3 {
+  color: var(--color-neutralContentStrong);
 }
 
 @container (--theme: dark) {
