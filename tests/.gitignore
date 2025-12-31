@@ -1,0 +1,4 @@
+# Ignore scanner output
+*.json
+results/
+reports/
