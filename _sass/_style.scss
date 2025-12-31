@@ -1,3 +1,6 @@
+@import 'mixins';
+@import 'variables';
+
 :root {
   /* default UI foreground; will be adjusted at runtime */
   --ui-foreground: #3a3a3a;
@@ -31,7 +34,7 @@ header {
 /* Theme toggle in the header (top-right) */
 #themeToggle {
   background: none;
-  border: none;
+  border: 2px solid transparent;
   cursor: pointer;
   color: var(--ui-foreground);
   padding: var(--space-xs);
@@ -276,11 +279,10 @@ input[type=email],
 input[type=password] {
   @include border-radius("md");
   background: var(--color-card);
-  box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSubdued);
+  border: 1px solid var(--color-neutralNonContentSubdued);
   padding: var(--space-sm) calc(var(--space-md) * 0.75);
   color: var(--color-neutralContentStrong);
   line-height: var(--bodyLineHeight);
-  border: none;
   flex-grow: 1;
   width: 100%;
   &:focus {
@@ -293,23 +295,28 @@ input[type=password] {
   padding: var(--space-sm) var(--space-md);
   background-color: var(--color-accentNonContentStrong);
   color: var(--color-card);
-  border: none;
+  border: 2px solid transparent;
   line-height: 1.6;
   text-decoration: none;
   cursor: pointer;
   font-weight: 500;
   
+  // Ensure accessible background colors in dark mode
+  background: var(--color-button-background, #333);
+  color: #fff; // Default foreground for dark mode
+
   &:focus-visible {
     outline: 2px solid var(--color-accentContentStrong);
     outline-offset: 2px;
   }
   
   &.btn-secondary {
-    background-color: var(--color-neutralNonContentSubdued);
+    /* Use stronger neutral for sufficient contrast against text */
+    background-color: var(--color-button-secondary, #555);
     color: var(--color-card);
-    
+
     &:hover {
-      background: color-mix(in oklab, var(--color-neutralNonContentSubdued), white 15%);
+      background: color-mix(in oklab, var(--color-neutralNonContentStrong), black 8%);
     }
   }
   
@@ -355,6 +362,66 @@ input[type=password] {
   }
 }
 
+/* Progressive enhancement: use native color-contrast() where available, otherwise fall back
+   to a deterministic token-based color. This is experimental — browsers may not support
+   color-contrast() yet. Keep the fallback `--btn-contrast-fallback` in sync with tokens.
+*/
+
+@supports (color: color-contrast(#000 vs (white, black))) {
+  /* Buttons (all variants) choose the best foreground given their background token */
+  .btn,
+  .btn-secondary,
+  .btn-outlined,
+  .btn-soft,
+  .blue-button,
+  .usa-button {
+    color: color-contrast(var(--btn-bg, var(--btn-bg-strong)) vs (white, black));
+  }
+
+  /* Specific interactive controls flagged by Accessibility Insights */
+  #generateBtn,
+  #refineBtn,
+  #exportPaletteCsv,
+  #copyCssBtn {
+    color: color-contrast(var(--btn-bg, var(--btn-bg-strong)) vs (white, black));
+  }
+
+  /* Icons and small text that were borderline in dark theme */
+  .material-symbols-rounded,
+  .contrast-summary__rating-detail,
+  .transfer-card p,
+  #randomColorBtn .material-symbols-rounded {
+    /* For icons/small text, prefer contrast against the canvas/card background */
+    color: color-contrast(var(--color-card, var(--color-canvas)) vs (white, black));
+  }
+
+  /* Additional coverage for small icon children and specific edge cases flagged by scanners */
+  #randomColorBtn > .material-symbols-rounded,
+  #generateBtn,
+  #refineBtn,
+  #exportPaletteCsv,
+  #copyCssBtn,
+  .reload-button,
+  .demo-card .button {
+    color: color-contrast(var(--btn-bg, var(--btn-bg-strong)) vs (white, black));
+  }
+}
+
+/* Fallback explicit token — used when color-contrast() is not available */
+.btn,
+.blue-button,
+.usa-button {
+  color: var(--btn-contrast-fallback, #ffffff);
+}
+
+/* Icon fallback when color-contrast() is unavailable */
+.material-symbols-rounded,
+.contrast-summary__rating-detail,
+.transfer-card p,
+#randomColorBtn .material-symbols-rounded {
+  color: var(--icon-contrast-fallback, var(--color-neutralContentStrong));
+}
+
 .action-row {
   display: flex;
   gap: 0.5rem;
@@ -383,7 +450,7 @@ input[type=password] {
   width: 100%;
   text-align: left;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   padding: 0.5rem 0.75rem;
   color: var(--color-neutralContentStrong);
   cursor: pointer;
@@ -392,7 +459,7 @@ input[type=password] {
   &:hover,
   &:focus-visible {
     background: var(--color-neutralNonContentSoft);
-    outline: none;
+    outline: 2px solid transparent;
   }
 }
 
@@ -446,6 +513,11 @@ main {
   color: var(--ui-foreground);
   line-height: 1.5;
   margin: var(--space-xs) 0 0;
+}
+
+/* Ensure the small helper text meets contrast thresholds */
+.panel-note {
+  color: color-mix(in oklab, var(--ui-foreground), black 18%);
 }
 
 #palette {
@@ -526,6 +598,104 @@ main {
   .palette-panel[data-theme-mode="dark"] {
     --theme: dark;
   }
+  /* Theme-specific contrast adjustments to ensure WCAG 2 AA */
+  /* Light theme: darken headings/notes so they remain readable against light card backgrounds */
+  .palette-panel[data-theme-mode="light"] {
+    .panel-heading h3 {
+      color: color-mix(in oklab, var(--color-neutralContentStrong), black 60%);
+    }
+    .panel-note {
+      color: color-mix(in oklab, var(--color-neutralContentSubdued), black 52%);
+    }
+  }
+
+  /* Dark theme: lighten headings/notes slightly to exceed minimal contrast thresholds */
+  .palette-panel[data-theme-mode="dark"] {
+    .panel-heading h3 {
+      color: color-mix(in oklab, var(--color-neutralContentStrong), white 6%);
+    }
+    .panel-note {
+      color: color-mix(in oklab, var(--color-neutralContentSubdued), white 10%);
+    }
+    /* Ensure iconography in demo and toolbar is clearly visible */
+    .material-symbols-rounded {
+      color: color-mix(in oklab, var(--ui-foreground), white 8%);
+    }
+    /* Ensure secondary buttons in dark panels retain sufficient contrast */
+    .btn-secondary {
+      background-color: color-mix(in oklab, var(--color-neutralNonContentStrong), black 10%);
+      color: var(--color-card);
+    }
+  }
+
+  /* Demo panel specific titles */
+  .demo-panel[data-theme-mode="light"] .panel-heading h3,
+  #demo-light-title {
+    color: color-mix(in oklab, var(--color-neutralContentStrong), black 60%);
+  }
+
+  .demo-panel[data-theme-mode="dark"] .panel-heading h3,
+  #demo-dark-title {
+    color: color-mix(in oklab, var(--color-neutralContentStrong), white 6%);
+  }
+
+  /* Additional targeted overrides to meet WCAG 2 AA for small text and icons */
+  .palette-panel[data-theme-mode="light"],
+  .demo-panel[data-theme-mode="light"] {
+    .panel-heading h3,
+    .panel-note,
+    .material-symbols-rounded,
+    .contrast-summary__rating-detail,
+    .transfer-card p {
+      color: var(--color-neutralContentStrong);
+    }
+  }
+
+  /* Extra light-theme boost for very small UI text/icons that were near the 4.5:1 threshold */
+  .palette-panel[data-theme-mode="light"],
+  .demo-panel[data-theme-mode="light"] {
+    .material-symbols-rounded,
+    .contrast-summary__rating-detail,
+    .transfer-card p {
+      color: color-mix(in oklab, var(--color-neutralContentStrong), black 12%);
+    }
+  }
+
+  .palette-panel[data-theme-mode="dark"],
+  .demo-panel[data-theme-mode="dark"] {
+    .panel-heading h3,
+    .panel-note,
+    .material-symbols-rounded,
+    .contrast-summary__rating-detail,
+    .transfer-card p {
+      color: color-mix(in oklab, var(--color-neutralContentStrong), white 16%);
+    }
+  }
+
+/* Use the slightly stronger button background where available */
+.demo-card .button {
+  background: var(--btn-bg-strong, var(--btn-bg));
+}
+
+/* Global dark-scope overrides for small UI text/icons that appear outside palette panels
+   Increase contrast slightly for items like #randomColorBtn .material-symbols-rounded */
+
+@container (--theme: dark) {
+  .material-symbols-rounded {
+    color: color-mix(in oklab, var(--color-neutralContentStrong), white 18%);
+  }
+
+  .contrast-summary__rating-detail,
+  .transfer-card p {
+    color: color-mix(in oklab, var(--color-neutralContentStrong), white 16%);
+  }
+
+  /* Stronger button backgrounds in dark scope to help white text */
+  .btn, .blue-button, .usa-button {
+    background: var(--btn-bg-strong, var(--btn-bg));
+    color: var(--btn-contrast-fallback, #eaeaea);
+  }
+}
 
   /* Responsive layout when palette panel is narrow */
   @container (max-width: 480px) {
@@ -618,59 +788,36 @@ main {
   }
 
   .swatch {
+    /* Neutral frame so the fill color stays visible */
+    background: var(--color-card);
     @include border-radius("sm");
     height: 3rem;
     width: 100%;
-    border: none;
+    border: 1px solid var(--color-neutralNonContentSubdued);
     padding: 0;
     overflow: hidden;
     position: relative;
+
+    .color {
+      position: absolute;
+      inset: 0;
+      display: block;
+      border-radius: inherit;
+      z-index: 0;
+    }
+
     .value {
+      position: absolute;
+      left: var(--space-xs);
+      bottom: var(--space-xs);
+      z-index: 1;
+      color: var(--color-neutralContentStrong);
       @include border-radius("sm");
-      font-size: var(--fontSize-sm);
       padding: 0 var(--space-xs);
-      box-shadow: 0 0 0 1px var(--color-neutralNonContentSoft);
+      box-shadow: 0 0 0 1px var(--color-neutralNonContentSubdued);
       font-size: var(--fontSize-xs);
       font-family: monospace, monospace;
       background: var(--color-card);
-      color: var(--color-neutralContentStrong);
-      /* Foreground for the value label is intentionally left to defaults; runtime
-        per-token foreground variables are available but not forced here. */
-      white-space: nowrap;
-      display: inline-block;
-      z-index: 3;
-      position: absolute;
-      bottom: 0.125rem;
-      left: 0.125rem;
-      content: "";
-    }
-    .color {
-      @include border-radius("md");
-      box-shadow: inset 0 0 0 1px var(--color-neutralNonContentSoft);
-      display: block;
-      height: 100%;
-      width: 100%;
-      z-index: 2;
-      position: relative;
-    }
-    &:after {
-      z-index: 1;
-      display: block;
-      width: 50%;
-      height: 100%;
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 50%;
-      background: conic-gradient(
-        var(--color-card) 90deg,
-        var(--color-neutralNonContentSoft) 90deg 180deg,
-        var(--color-card) 180deg 270deg,
-        var(--color-neutralNonContentSoft) 270deg
-      );
-      background-repeat: repeat;
-      background-size: var(--space-md) var(--space-md);
-      background-position: top left;
     }
   }
   .ui-swatches {
@@ -840,6 +987,11 @@ main {
   }
 }
 
+  /* Ensure transfer card body text is high-contrast in light theme */
+  #palette-transfer .transfer-card p {
+    color: var(--color-neutralContentStrong);
+  }
+
 /* Ensure transfer card body text is high-contrast in dark theme */
 @container (--theme: dark) {
   #palette-transfer .transfer-card p {
@@ -975,9 +1127,9 @@ main {
     color: var(--color-neutralContentStrong);
     transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
   }
-  .editor-btn:hover { background: var(--color-accentNonContentSoft); color: var(--color-accentContentStrong); border-color: var(--color-accentNonContentSubdued); }
-  .editor-btn:focus-visible { outline: 2px solid var(--color-accentNonContentStrong); outline-offset: 2px; }
-  .editor-btn.active { background: var(--color-accentNonContentStrong); color: var(--color-card); border-color: var(--color-accentNonContentStrong); }
+  .editor-btn:hover { background: var(--color-accentNonContentSoft); color: var(--color-accentContentStrong); border-color: var(--color-accentContentSubdued); }
+  .editor-btn:focus-visible { outline: 2px solid var(--color-accentContentStrong); outline-offset: 2px; }
+  .editor-btn.active { background: var(--color-accentNonContentStrong); color: var(--color-card); border-color: var(--color-accentContentStrong); }
 
   .editor-toolbar .divider { width:1px; height:1.4rem; background: var(--color-neutralNonContentSubdued); border-radius:2px; }
 
@@ -1192,7 +1344,7 @@ main {
             background: var(--color-accentNonContentSoft);
             border-color: var(--color-neutralNonContentSubdued);
           }
-          &:focus-visible { outline: 2px solid var(--color-accentNonContentStrong); outline-offset: 2px; }
+          &:focus-visible { outline: 2px solid var(--color-accentContentStrong); outline-offset: 2px; }
         }
         &.selected {
           a {
@@ -1207,7 +1359,7 @@ main {
               bottom: 0;
               left: 0;
               position: absolute;
-              background: var(--color-accentNonContentStrong);
+              background: var(--color-accentContentStrong);
             }
           }
         }
@@ -1342,6 +1494,8 @@ main {
 
 }
 
+/* Reverting to the previous state of `_style.scss` to restore the original light and dark palette values. */
+
 [data-theme="light"] body { 
   background-color: #fff; 
   color: var(--color-neutralContentStrong);
@@ -1381,6 +1535,16 @@ main {
   color: var(--color-neutralContentStrong);
 }
 
+[data-theme="dark"] .contrast-summary__rating-detail,
+[data-theme-mode="dark"] .contrast-summary__rating-detail {
+  color: var(--color-neutralContentStrong);
+}
+
+[data-theme="dark"] .transfer-card p,
+[data-theme-mode="dark"] .transfer-card p {
+  color: color-contrast(#27282a vs #fff, #cfd1d5);
+}
+
 @container (--theme: dark) {
   #palette .swatch .value { background: #000; }
   /* Ensure legible text in the value chip when rendered on dark themes. */
@@ -1403,8 +1567,8 @@ main {
 [data-theme="dark"] .swatch .value,
 [data-theme-mode="dark"] .swatch .value,
 html[data-theme="dark"] .swatch .value {
-  color: var(--value-foreground, #fff);
-  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  background: var(--color-card);
   box-shadow: 0 0 0 1px color-mix(in oklab, #ffffff 20%, var(--color-neutralNonContentSoft));
 }
 
@@ -1512,6 +1676,7 @@ html[data-theme="dark"] .swatch .value {
 .contrast-report__empty {
   color: var(--color-neutralContentSubdued);
   font-size: var(--fontSize-sm);
+  margin-top: var(--space-xs);
 }
 
 .contrast-summary {
@@ -1557,7 +1722,7 @@ html[data-theme="dark"] .swatch .value {
   transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
 .contrast-report__open:hover:not(:disabled) {
-  border-color: var(--color-neutralNonContentStrong);
+  border-color: var(--color-neutralContentStrong);
   box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 .contrast-report__open:active:not(:disabled) {
@@ -1717,8 +1882,8 @@ html[data-theme="dark"] .swatch .value {
 }
 .contrast-grid__cell:hover,
 .contrast-grid__cell:focus-visible {
-  border-color: var(--color-neutralNonContentStrong);
-  box-shadow: 0 0 0 1px var(--color-neutralNonContentStrong);
+  border-color: var(--color-neutralContentStrong);
+  box-shadow: 0 0 0 1px var(--color-neutralContentStrong);
 }
 .contrast-grid__cell:focus-visible {
   outline: 2px solid var(--color-accentContentStrong);
@@ -1872,8 +2037,8 @@ body.has-contrast-grid-open {
   background: rgba(0, 0, 0, 0.04);
 }
 .splitter:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(59,130,246,0.18);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   border-radius: 6px;
 }
 .splitter .grip {
@@ -1966,7 +2131,7 @@ body.has-contrast-grid-open {
   border-bottom-color: var(--color-card); /* Connect to panel */
   color: var(--color-accentContentStrong);
   font-weight: bold;
-  box-shadow: inset 0 -3px 0 var(--color-accentNonContentStrong);
+  box-shadow: inset 0 -3px 0 var(--color-accentContentStrong);
 }
 
 .nav-tabs a:hover:not([aria-selected="true"]) {
@@ -1976,7 +2141,7 @@ body.has-contrast-grid-open {
 }
 
 .nav-tabs a:focus-visible {
-  outline: 2px solid var(--color-accentNonContentStrong);
+  outline: 2px solid var(--color-accentContentStrong);
   outline-offset: 2px;
 }
 
@@ -2009,7 +2174,7 @@ body.has-contrast-grid-open {
   padding: var(--space-sm) var(--space-md);
   background-color: var(--color-accentNonContentStrong);
   color: var(--color-card);
-  border: none;
+  border: 2px solid transparent;
   line-height: 1.6;
   text-decoration: none;
   display: inline-block;
@@ -2027,7 +2192,7 @@ body.has-contrast-grid-open {
   }
   
   &:focus {
-    outline: 3px solid var(--color-accentNonContentSubdued);
+    outline: 3px solid var(--color-accentContentSubdued);
     outline-offset: 2px;
   }
 }
@@ -2060,7 +2225,7 @@ body.has-contrast-grid-open {
 .usa-button--unstyled {
   background: none;
   padding: 0;
-  border: none;
+  border: 2px solid transparent;
   box-shadow: none;
   color: var(--color-accentContentStrong);
   text-decoration: underline;
@@ -2098,7 +2263,7 @@ body.has-contrast-grid-open {
   margin: 0;
   padding-left: 2rem;
   position: relative;
-  min-height: 1.5rem;
+   min-height: 1.5rem;
   line-height: 1.5;
   color: var(--color-neutralContentStrong);
 }
@@ -2149,7 +2314,7 @@ body.has-contrast-grid-open {
   position: relative;
   padding: var(--space-md);
   background-color: var(--color-card);
-  border-left: 0.5rem solid var(--color-neutralNonContentStrong);
+  border-left: 0.5rem solid var(--color-neutralContentStrong);
   margin-bottom: var(--space-md);
 }
 
@@ -2246,12 +2411,12 @@ body.has-contrast-grid-open {
 .usa-accordion__button[aria-expanded="true"] {
   background-color: var(--color-accentNonContentSoft);
   color: var(--color-accentContentStrong);
-  box-shadow: inset 0 -2px 0 var(--color-accentNonContentStrong);
+  box-shadow: inset 0 -2px 0 var(--color-accentContentStrong);
   border-color: var(--color-neutralNonContentSubdued);
 }
 
 .usa-accordion__button:focus-visible {
-  outline: 2px solid var(--color-accentNonContentStrong);
+  outline: 2px solid var(--color-accentContentStrong);
   outline-offset: 2px;
 }
 
@@ -2316,7 +2481,7 @@ body.has-contrast-grid-open {
   position: relative;
   outline: 3px solid var(--color-accentNonContentStrong) !important;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-card), transparent 65%), 0 0 12px color-mix(in oklab, var(--color-accentNonContentStrong), transparent 45%) !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-card), transparent 65%), 0 0 12px color-mix(in oklab, var(--color-accentContentStrong), transparent 45%) !important;
   z-index: 100 !important;
 }
 
@@ -2363,5 +2528,120 @@ body.has-contrast-grid-open {
   height: auto;
   max-width: 200px;
   display: block;
+}
+
+/* ============================================
+   FORCED COLORS MODE SUPPORT
+   ============================================
+   
+   Windows High Contrast Mode / Forced Colors Mode support.
+   
+   In forced colors mode:
+   - All custom colors are replaced with user-chosen system colors
+   - Background colors, text colors, shadows disappear
+   - Transparent borders become visible with system colors
+   - SVGs need explicit fill colors
+   - Focus must be clearly indicated with borders/outlines
+   
+   Strategy: Ensure structural boundaries are visible and 
+   SVG icons inherit appropriate system colors.
+   
+   See FORCED-COLORS-KNOWLEDGE.md for comprehensive guidance.
+   ============================================ */
+
+@media (forced-colors: active) {
+  
+  /* SVG Icon Handling
+     Fix currentColor bug - explicitly set SVG fills to system colors */
+  
+  svg,
+  .icon-svg,
+  .material-symbols-rounded {
+    /* Default icons inherit text color */
+    fill: CanvasText;
+    color: CanvasText;
+  }
+  
+  /* Icons inside links should match link color */
+  a svg,
+  a .icon-svg {
+    fill: LinkText;
+  }
+  
+  /* Icons on buttons should match button text */
+  button svg,
+  .btn svg,
+  button .icon-svg,
+  .btn .icon-svg {
+    fill: ButtonText;
+  }
+  
+  /* Structural Borders
+     Ensure card and container boundaries are visible */
+  
+  .color-popover,
+  .refine-menu,
+  #palette .palette-panel,
+  #demo .demo-panel,
+  .transfer-card,
+  .demo-canvas {
+    border: 2px solid CanvasText;
+  }
+  
+  /* Focus Indicators
+     Ensure focus is always clearly visible */
+  
+  button:focus,
+  .btn:focus,
+  input:focus,
+  textarea:focus,
+  select:focus,
+  a:focus {
+    /* Transparent borders/outlines automatically become visible */
+    outline-color: CanvasText;
+  }
+  
+  /* Interactive Element Emphasis
+     Add extra visual weight to hover/focus states */
+  
+  button:hover,
+  .btn:hover,
+  a:hover {
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  
+  /* Form Controls */
+  
+  input,
+  textarea,
+  select {
+    border-color: FieldText;
+  }
+
+  /* Ensure swatch value labels remain visible (box-shadow disappears in forced colors) */
+  .swatch .value {
+    box-shadow: none;
+    border: 1px solid FieldText;
+    background: Canvas;
+    color: FieldText;
+  }
+  
+  /* Ensure disabled states are visible */
+  button:disabled,
+  .btn:disabled,
+  input:disabled {
+    opacity: 0.5;
+  }
+}
+
+/* Dark forced colors theme specific adjustments */
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  /* Add dark-specific overrides if needed */
+}
+
+/* Light forced colors theme specific adjustments */
+@media (forced-colors: active) and (prefers-color-scheme: light) {
+  /* Add light-specific overrides if needed */
 }
 
