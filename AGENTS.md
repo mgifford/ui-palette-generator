@@ -77,6 +77,10 @@ Because the tool is visually oriented:
 - These limitations must be documented
 - Non-visual alternatives should be provided where reasonable (text summaries, tables)
 
+Policy additions for agents and contributors:
+- Only use WAI-ARIA semantics when the same accessibility outcome cannot be achieved using native HTML semantics; prefer semantic HTML first (e.g., use <button>, <nav>, <header>, <main>, <form>, etc.) and add ARIA only to fill real gaps.
+- Only introduce HTML or CSS features that are supported in stable releases of modern browsers; experimental or behind-flag features must be wrapped in progressive enhancement (`@supports`) with robust fallbacks and clearly documented in the contribution notes.
+
 ## Accessibility Expectations (Minimum Bar)
 
 ### Structure and Semantics
@@ -106,6 +110,109 @@ Because the tool is visually oriented:
   </div>
 
 - Why: Embedded SVGs are independent of font availability, can inherit color via `currentColor`, and can be scaled or optimized without impacting the rest of the theme tokens that are editable by users.
+
+## Border and Outline Strategy for Forced Colors Mode
+
+**Core Principle:** If a user can interact with it (click, focus, type), it needs a border that will appear in forced colors mode.
+
+### Use `transparent` Borders on Interactive Elements
+
+Replace `border: none` with transparent borders that become visible automatically in forced colors mode:
+
+```css
+/* ❌ Bad - disappears in forced colors */
+.button {
+  border: none;
+}
+
+/* ✅ Good - appears when needed */
+.button {
+  border: 2px solid transparent;
+}
+```
+
+### When to Use `border: none` (Legitimate Cases)
+
+1. **Native form controls with built-in borders:**
+   ```css
+   input[type="color"] {
+     border: none; /* Native control renders its own UI */
+   }
+   ```
+
+2. **Purely decorative pseudo-elements inside bordered containers:**
+   ```css
+   .toggle:checked::before {
+     border: none; /* Parent has the structural border */
+   }
+   ```
+
+3. **Layout cleanup (removing duplicate borders):**
+   ```css
+   .list-item:last-child {
+     border: none; /* Prevents double borders */
+   }
+   ```
+
+4. **Non-interactive content containers:**
+   ```css
+   .tab-pane {
+     outline: none; /* Tab itself is focusable, not the panel */
+   }
+   ```
+
+### Replace Box-Shadow Borders with Real Borders
+
+Box-shadows disappear in forced colors mode:
+
+```css
+/* ❌ Bad - shadow disappears */
+input {
+  box-shadow: inset 0 0 0 1px var(--color);
+  border: none;
+}
+
+/* ✅ Good - border persists */
+input {
+  border: 1px solid var(--color);
+}
+```
+
+### Focus Indicators Must Use Real Outlines
+
+```css
+/* ❌ Bad - shadow disappears */
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0,0,255,0.3);
+}
+
+/* ✅ Good - outline appears */
+button:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+```
+
+### Priority Guide for Replacements
+
+**HIGH Priority (Interactive Elements):**
+- Buttons: `border: 2px solid transparent`
+- Text inputs: `border: 1px solid var(--color)` (replace box-shadow)
+- Focus states: `outline: 2px solid transparent`
+
+**MEDIUM Priority (Structural/Contextual):**
+- Menu items: `border: 1px solid transparent`
+- Color swatches: `border: 1px solid transparent`
+- Link-styled buttons: `border: 2px solid transparent`
+
+**Keep `border: none` (Appropriate Cases):**
+- Native color pickers
+- Decorative pseudo-elements
+- Layout cleanup (last-child borders)
+- Non-interactive containers
+
+See FORCED-COLORS-KNOWLEDGE.md for comprehensive forced colors mode guidance.
 ## Error Handling and Reliability
 - Invalid color values must be handled gracefully.
 - Errors must be explained in plain language.

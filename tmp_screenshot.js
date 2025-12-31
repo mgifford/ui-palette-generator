@@ -13,7 +13,7 @@ const puppeteer = require('puppeteer');
   const el = await page.$('#previewCard');
   if(el){
     const path = require('path'); const fs = require('fs');
-    const outDir = path.join(process.cwd(), 'docs');
+    const outDir = path.join(process.cwd(), 'docs', 'images');
     if(!fs.existsSync(outDir)) fs.mkdirSync(outDir, {recursive:true});
     const outPath = path.join(outDir, 'preview-screenshot.png');
     await el.screenshot({path: outPath});

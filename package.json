@@ -9,6 +9,8 @@
     "build:html": "node scripts/build-html.js",
     "build:css": "node scripts/build-css.js",
     "build": "npm run build:html && npm run build:css && webpack --mode production",
+    "scan:light": "node scripts/serve.js & sleep 0.5 && node scripts/axe-scan.js http://localhost:5000/tests/scan-light.html docs/tests/axe-light.json && kill $(lsof -ti tcp:5000) || true",
+    "scan:dark": "node scripts/serve.js & sleep 0.5 && node scripts/axe-scan.js http://localhost:5000/tests/scan-dark.html docs/tests/axe-dark.json && kill $(lsof -ti tcp:5000) || true",
     "a11y": "npx sa11y http://localhost:5000 --format json --output reports/sa11y.json",
     "watch": "webpack --mode development --watch",
     "start": "npx serve docs --listen 5000",
@@ -23,6 +25,8 @@
     "webpack-cli": "^6.0.1",
     "serve": "^14.1.1",
     "gh-pages": "^5.0.0",
-    "sass": "^1.70.0"
+    "sass": "^1.70.0",
+    "puppeteer": "^21.3.0",
+    "axe-core": "^4.8.2"
   }
 }
