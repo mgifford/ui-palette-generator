@@ -5,3 +5,6 @@ _site
 .parcel-cache
 vendor
 node_modules
+docs/reports/
+docs/tests/results/
+docs/tests/reports/
