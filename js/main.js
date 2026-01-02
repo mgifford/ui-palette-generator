@@ -223,6 +223,41 @@ function updateContrastReport() {
 const contrastGridThreshold = 4.5;
 const contrastGridWindowFeatures = 'width=960,height=760,scrollbars=yes,resizable=yes,location=no,status=no,menubar=no,toolbar=no';
 let contrastGridWindow = null;
+const contrastGridStorageKey = 'contrastGridIsOpen';
+
+function setContrastGridOpenState(isOpen) {
+  try {
+    localStorage.setItem(contrastGridStorageKey, isOpen ? '1' : '0');
+  } catch (e) {
+    // ignore storage errors
+  }
+}
+
+function getContrastGridOpenState() {
+  try {
+    return localStorage.getItem(contrastGridStorageKey) === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
+function ensureContrastGridWindowReference() {
+  if (contrastGridWindow && !contrastGridWindow.closed) {
+    return true;
+  }
+  if (!getContrastGridOpenState()) {
+    contrastGridWindow = null;
+    return false;
+  }
+  const existing = window.open('', 'contrast-grid', contrastGridWindowFeatures);
+  if (existing && !existing.closed) {
+    contrastGridWindow = existing;
+    return true;
+  }
+  contrastGridWindow = null;
+  setContrastGridOpenState(false);
+  return false;
+}
 
 const colorBlindSimulators = {
   protanomaly: blinder.protanomaly,
@@ -397,6 +432,16 @@ function openContrastGridWindow(checks) {
     contrastGridWindow = window.open('', 'contrast-grid', contrastGridWindowFeatures);
   }
   if (!contrastGridWindow) return;
+  setContrastGridOpenState(true);
+  const windowRef = contrastGridWindow;
+  const handleClose = function() {
+    setContrastGridOpenState(false);
+    try { windowRef.removeEventListener('beforeunload', handleClose); } catch (e) {}
+    if (contrastGridWindow === windowRef) {
+      contrastGridWindow = null;
+    }
+  };
+  try { windowRef.addEventListener('beforeunload', handleClose); } catch (e) {}
   renderContrastGridContent(contrastGridWindow, previewChecks);
   contrastGridWindow.focus();
 }
@@ -542,7 +587,7 @@ function syncContrastGridTheme() {
 }
 
 function refreshContrastGridWindow() {
-  if (!contrastGridWindow || contrastGridWindow.closed) return;
+  if (!ensureContrastGridWindowReference()) return;
   const checks = collectContrastChecks();
   renderContrastGridContent(contrastGridWindow, checks);
 }
@@ -1556,6 +1601,206 @@ function downloadPaletteCsv() {
   }
 }
 
+function getPaletteLabel() {
+  const heading = document.querySelector('header h1');
+  const base = (heading && heading.textContent) ? heading.textContent : (document.title || 'Accessible Color Palette');
+  return (base || 'Accessible Color Palette').trim().replace(/\s+/g, ' ');
+}
+
+function slugifyLabel(text) {
+  if (!text) return 'palette';
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    || 'palette';
+}
+
+function getTokenLabel(tokenId) {
+  if (!tokenId) return '';
+  const swatch = document.querySelector(`.swatch[data-swatch-id="${tokenId}"]`);
+  if (!swatch) return tokenId;
+  const figure = swatch.closest('figure');
+  if (!figure) return tokenId;
+  const caption = figure.querySelector('figcaption');
+  return (caption && caption.textContent.trim()) ? caption.textContent.trim() : tokenId;
+}
+
+function buildPenpotPaletteJson(rows) {
+  const label = getPaletteLabel();
+  const safeLabel = label.replace(/[\\/]+/g, '-');
+  const themeNames = ['Light', 'Dark'];
+  const payload = {
+    $themes: [],
+    $metadata: {
+      activeThemes: [],
+      tokenSetOrder: [],
+      activeSets: []
+    }
+  };
+  const tokenSets = {};
+
+  themeNames.forEach(function(theme) {
+    const key = `${safeLabel}/${theme}`;
+    payload.$themes.push({
+      name: theme,
+      group: 'Modes',
+      description: '',
+      selectedTokenSets: {
+        [key]: 'enabled'
+      }
+    });
+    payload.$metadata.tokenSetOrder.push(key);
+    tokenSets[key] = {};
+  });
+
+  rows.forEach(function(row) {
+    if (!row.token) return;
+    const labelText = getTokenLabel(row.token) || row.token;
+    ['Light', 'Dark'].forEach(function(theme) {
+      const key = `${safeLabel}/${theme}`;
+      const hex = normalizeColorValue(row[theme.toLowerCase()]);
+      if (!hex) return;
+      tokenSets[key][row.token] = {
+        $type: 'color',
+        $value: hex,
+        $description: `${labelText} (${theme})`
+      };
+    });
+  });
+
+  return Object.assign(payload, tokenSets);
+}
+
+function downloadPaletteJson() {
+  const rows = collectPaletteTokenRows();
+  if (!rows.length) {
+    setTransferStatus('No palette tokens available to export.', true);
+    return;
+  }
+  setTransferStatus('Preparing JSON download...');
+  const payload = buildPenpotPaletteJson(rows);
+  const jsonText = JSON.stringify(payload, null, 2);
+  const slug = slugifyLabel(getPaletteLabel());
+  const timestamp = (new Date()).toISOString().slice(0, 10);
+  const fileName = `palette-${slug}-${timestamp}.json`;
+  let url;
+  try {
+    const blob = new Blob([jsonText], { type: 'application/json;charset=utf-8;' });
+    url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.setAttribute('download', fileName);
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    setTransferStatus(`Exported ${rows.length} palette token${rows.length === 1 ? '' : 's'} as JSON.`);
+  } catch (error) {
+    console.error('Palette JSON download failed', error);
+    setTransferStatus('Unable to prepare JSON download.', true);
+  } finally {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  }
+}
+
+function colorComponentsToHex(components, colorSpace) {
+  if (!Array.isArray(components) || components.length < 3) return null;
+  try {
+    let color;
+    const [a, b, c] = components;
+    if (colorSpace === 'oklch') {
+      color = chroma.oklch(a, b, c);
+    } else if (colorSpace === 'lch') {
+      color = chroma.lch(a, b, c);
+    } else if (colorSpace === 'lab') {
+      color = chroma.lab(a, b, c);
+    } else {
+      const r = a <= 1 ? a * 255 : a;
+      const g = b <= 1 ? b * 255 : b;
+      const mappedB = c <= 1 ? c * 255 : c;
+      color = chroma.rgb(r, g, mappedB);
+    }
+    return color.hex().toUpperCase();
+  } catch (e) {
+    return null;
+  }
+}
+
+function extractColorValue(node) {
+  if (!node) return null;
+  if (typeof node === 'string') return node;
+  if (typeof node === 'object') {
+    if (typeof node.hex === 'string') return node.hex;
+    if (typeof node.value === 'string') return node.value;
+    if (typeof node['$value'] === 'string') return node['$value'];
+    if (node.value && typeof node.value === 'object') {
+      const nested = extractColorValue(node.value);
+      if (nested) return nested;
+    }
+    if (node['$value'] && typeof node['$value'] === 'object') {
+      const nested = extractColorValue(node['$value']);
+      if (nested) return nested;
+    }
+    if (Array.isArray(node.components)) {
+      return colorComponentsToHex(node.components, node.colorSpace);
+    }
+  }
+  return null;
+}
+
+function extractColorEntriesFromPenpotJson(json) {
+  const entries = [];
+  Object.keys(json || {}).forEach(function(topKey) {
+    if (!topKey || topKey.startsWith('$')) return;
+    const themeName = topKey.split('/').pop();
+    const normalizedTheme = normalizeThemeName(themeName);
+    if (!normalizedTheme) return;
+    const themeBlock = json[topKey];
+    if (!themeBlock || typeof themeBlock !== 'object') return;
+    Object.keys(themeBlock).forEach(function(tokenKey) {
+      const color = extractColorValue(themeBlock[tokenKey]);
+      if (!color) return;
+      entries.push({ tokenKey, theme: normalizedTheme, color });
+    });
+  });
+  return entries;
+}
+
+function applyImportedPaletteJson(jsonText) {
+  if (!jsonText || typeof jsonText !== 'string') {
+    throw new Error('Import failed: JSON content is empty.');
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch (error) {
+    throw new Error('Import failed: Invalid JSON file.');
+  }
+  const entries = extractColorEntriesFromPenpotJson(parsed);
+  if (!entries.length) {
+    throw new Error('Import failed: The JSON file does not contain any token colors.');
+  }
+  const lookup = buildTokenLookup();
+  const appliedTokens = new Set();
+  entries.forEach(function(entry) {
+    const tokenId = resolveTokenId(entry.tokenKey, lookup);
+    if (!tokenId) return;
+    if (window.applyCustomColor && window.applyCustomColor(entry.theme, tokenId, entry.color)) {
+      appliedTokens.add(`${entry.theme}:${tokenId}`);
+    }
+  });
+  if (!appliedTokens.size) {
+    throw new Error('Import failed: No recognizable tokens were found in the JSON.');
+  }
+  setSwatchValues('light', { scopedOnly: true });
+  setSwatchValues('dark', { scopedOnly: true });
+  try { updateContrastReport(); } catch (e) {}
+  return appliedTokens.size;
+}
+
 function parseCsvRows(csvText = '') {
   const cleaned = (csvText || '').replace(/^\uFEFF/, '');
   const rows = [];
@@ -1834,6 +2079,14 @@ function attachPaletteTransferHandlers() {
     });
   }
 
+  const exportJsonButton = document.getElementById('exportPaletteJson');
+  if (exportJsonButton) {
+    exportJsonButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      downloadPaletteJson();
+    });
+  }
+
   const importInput = document.getElementById('importPaletteCsv');
   if (importInput) {
     importInput.addEventListener('change', function(e) {
@@ -1852,6 +2105,28 @@ function attachPaletteTransferHandlers() {
         setTransferStatus('Unable to read the selected CSV file.', true);
       };
       reader.readAsText(file);
+    });
+  }
+
+  const importJsonInput = document.getElementById('importPaletteJson');
+  if (importJsonInput) {
+    importJsonInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const applied = applyImportedPaletteJson(evt.target.result || '');
+          setTransferStatus(`Applied ${applied} token${applied === 1 ? '' : 's'} from ${file.name}.`);
+        } catch (error) {
+          setTransferStatus(error.message || 'Unable to import palette.', true);
+        }
+      };
+      reader.onerror = function() {
+        setTransferStatus('Unable to read the selected JSON file.', true);
+      };
+      reader.readAsText(file);
+      e.target.value = '';
     });
   }
 }
@@ -2129,9 +2404,11 @@ function reapplyCustomOverrides() {
 }
 
 function normalizeThemeName(theme) {
-  const normalized = (theme || '').toString().trim().toLowerCase();
+  const normalized = (theme || '').toString().trim().toLowerCase().replace(/\s+/g, '');
   if (normalized === 'dark') return 'dark';
   if (normalized === 'light') return 'light';
+  if (normalized === 'darkmode' || normalized === 'dmode') return 'dark';
+  if (normalized === 'lightmode' || normalized === 'lmode') return 'light';
   return null;
 }
 
@@ -2260,7 +2537,7 @@ function parseCssColor(input) {
 
 // Enhance enforceAccessibleForegrounds to adjust background colors dynamically
 function enforceAccessibleForegrounds(theme) {
-  const selectors = ['.btn', '.blue-button', '.usa-button', '.btn-secondary', '#generateBtn', '#refineBtn', '#exportPaletteCsv', '#copyCssBtn'];
+  const selectors = ['.btn', '.blue-button', '.usa-button', '.btn-secondary', '#generateBtn', '#refineBtn', '#exportPaletteCsv', '#exportPaletteJson', '#copyCssBtn'];
   const nodes = document.querySelectorAll(selectors.join(','));
   nodes.forEach(function(node) {
     try {

@@ -368,6 +368,7 @@ input[type=password] {
 #randomHarmonyBtn,
 #generateBtn,
 #exportPaletteCsv,
+#exportPaletteJson,
 #copyCssBtn {
   --btn-bg: var(--color-accentNonContentStrong);
   --btn-bg-strong: var(--color-accentNonContentStrong);
@@ -409,6 +410,7 @@ input[type=password] {
   #generateBtn,
   #refineBtn,
   #exportPaletteCsv,
+  #exportPaletteJson,
   #copyCssBtn {
     color: color-contrast(var(--btn-bg, var(--btn-bg-strong)) vs (white, black));
   }
@@ -427,6 +429,7 @@ input[type=password] {
   #generateBtn,
   #refineBtn,
   #exportPaletteCsv,
+  #exportPaletteJson,
   #copyCssBtn,
   .reload-button,
   .demo-card .button {
@@ -1003,6 +1006,13 @@ main {
       li + li {
         margin-top: var(--space-xs);
       }
+    }
+  }
+
+  .json-guidance {
+    margin-top: var(--space-sm);
+    p {
+      color: var(--color-neutralContentSubdued);
     }
   }
 
