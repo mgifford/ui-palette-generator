@@ -36,7 +36,8 @@ header {
   background: none;
   border: 2px solid transparent;
   cursor: pointer;
-  color: var(--ui-foreground);
+  /* Ensure icon stays visible even when .btn defaults would force a dark fallback */
+  color: var(--ui-foreground) !important;
   padding: var(--space-xs);
 }
 
@@ -362,6 +363,32 @@ input[type=password] {
   }
 }
 
+/* Randomize / generate buttons — force a high-contrast background + icon/label */
+#randomColorBtn,
+#randomHarmonyBtn,
+#generateBtn,
+#exportPaletteCsv,
+#copyCssBtn {
+  --btn-bg: var(--color-accentNonContentStrong);
+  --btn-bg-strong: var(--color-accentNonContentStrong);
+  background: var(--btn-bg);
+  border: 1px solid var(--color-accentNonContentStrong);
+  color: var(--btn-contrast-fallback, #ffffff);
+
+  .material-symbols-rounded {
+    color: var(--btn-contrast-fallback, #ffffff);
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in oklab, var(--color-accentNonContentStrong), white 10%);
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-accentNonContentStrong), transparent 50%);
+  }
+}
+
 /* Progressive enhancement: use native color-contrast() where available, otherwise fall back
    to a deterministic token-based color. This is experimental — browsers may not support
    color-contrast() yet. Keep the fallback `--btn-contrast-fallback` in sync with tokens.
@@ -504,7 +531,7 @@ main {
   h3 {
     margin: 0;
     font-size: var(--fontSize-h3);
-    color: var(--color-neutralContentStrong);
+    color: var(--ui-foreground);
   }
 }
 
@@ -515,9 +542,9 @@ main {
   margin: var(--space-xs) 0 0;
 }
 
-/* Ensure the small helper text meets contrast thresholds */
+/* Ensure small helper text tracks the computed UI foreground for contrast */
 .panel-note {
-  color: color-mix(in oklab, var(--ui-foreground), black 18%);
+  color: var(--ui-foreground);
 }
 
 #palette {
@@ -599,24 +626,15 @@ main {
     --theme: dark;
   }
   /* Theme-specific contrast adjustments to ensure WCAG 2 AA */
-  /* Light theme: darken headings/notes so they remain readable against light card backgrounds */
+  /* Light/dark themes: use computed UI foreground for headings/notes */
   .palette-panel[data-theme-mode="light"] {
-    .panel-heading h3 {
-      color: color-mix(in oklab, var(--color-neutralContentStrong), black 60%);
-    }
-    .panel-note {
-      color: color-mix(in oklab, var(--color-neutralContentSubdued), black 52%);
-    }
+    .panel-heading h3 { color: var(--ui-foreground); }
+    .panel-note { color: var(--ui-foreground); }
   }
 
-  /* Dark theme: lighten headings/notes slightly to exceed minimal contrast thresholds */
   .palette-panel[data-theme-mode="dark"] {
-    .panel-heading h3 {
-      color: color-mix(in oklab, var(--color-neutralContentStrong), white 6%);
-    }
-    .panel-note {
-      color: color-mix(in oklab, var(--color-neutralContentSubdued), white 10%);
-    }
+    .panel-heading h3 { color: var(--ui-foreground); }
+    .panel-note { color: var(--ui-foreground); }
     /* Ensure iconography in demo and toolbar is clearly visible */
     .material-symbols-rounded {
       color: color-mix(in oklab, var(--ui-foreground), white 8%);
@@ -628,47 +646,33 @@ main {
     }
   }
 
-  /* Demo panel specific titles */
-  .demo-panel[data-theme-mode="light"] .panel-heading h3,
-  #demo-light-title {
-    color: color-mix(in oklab, var(--color-neutralContentStrong), black 60%);
-  }
-
-  .demo-panel[data-theme-mode="dark"] .panel-heading h3,
-  #demo-dark-title {
-    color: color-mix(in oklab, var(--color-neutralContentStrong), white 6%);
-  }
-
   /* Additional targeted overrides to meet WCAG 2 AA for small text and icons */
-  .palette-panel[data-theme-mode="light"],
-  .demo-panel[data-theme-mode="light"] {
+  .palette-panel[data-theme-mode="light"] {
     .panel-heading h3,
     .panel-note,
     .material-symbols-rounded,
     .contrast-summary__rating-detail,
     .transfer-card p {
-      color: var(--color-neutralContentStrong);
+      color: var(--ui-foreground);
     }
   }
 
   /* Extra light-theme boost for very small UI text/icons that were near the 4.5:1 threshold */
-  .palette-panel[data-theme-mode="light"],
-  .demo-panel[data-theme-mode="light"] {
+  .palette-panel[data-theme-mode="light"] {
     .material-symbols-rounded,
     .contrast-summary__rating-detail,
     .transfer-card p {
-      color: color-mix(in oklab, var(--color-neutralContentStrong), black 12%);
+      color: color-mix(in oklab, var(--ui-foreground), black 12%);
     }
   }
 
-  .palette-panel[data-theme-mode="dark"],
-  .demo-panel[data-theme-mode="dark"] {
+  .palette-panel[data-theme-mode="dark"] {
     .panel-heading h3,
     .panel-note,
     .material-symbols-rounded,
     .contrast-summary__rating-detail,
     .transfer-card p {
-      color: color-mix(in oklab, var(--color-neutralContentStrong), white 16%);
+      color: color-mix(in oklab, var(--ui-foreground), white 12%);
     }
   }
 
@@ -841,23 +845,6 @@ main {
 
 }
 
-.palette-seed {
-  margin-bottom: var(--space-lg);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-
-  .color-swatch {
-    max-width: 240px;
-  }
-
-  .panel-note {
-    color: var(--color-neutralContentSubdued);
-    margin: var(--space-xs) 0 0;
-  }
-}
-
-.swatch[data-swatch-id="seed"] > .color { background-color: var(--color-seed); }
 .swatch[data-swatch-id="canvas"] > .color { background-color: var(--color-canvas); }
 .swatch[data-swatch-id="card"] > .color { background-color: var(--color-card); }
 .swatch[data-swatch-id="accentNonContentBaseline"] > .color { background-color: var(--color-accentNonContentBaseline); }
@@ -914,6 +901,43 @@ main {
     .demo-panel .demo-canvas > .col {
       width: 100%;
       display: block;
+    }
+  }
+
+  /* Ensure demo headings/notes mirror the palette panels in light/dark themes */
+  .demo-panel[data-theme-mode="light"] .panel-heading h3,
+  #demo-light-title {
+    color: var(--ui-foreground);
+  }
+
+  .demo-panel[data-theme-mode="dark"] .panel-heading h3,
+  #demo-dark-title {
+    color: var(--ui-foreground);
+  }
+
+  .demo-panel[data-theme-mode="light"] {
+    .panel-heading h3,
+    .panel-note,
+    .material-symbols-rounded,
+    .contrast-summary__rating-detail,
+    .transfer-card p {
+      color: var(--ui-foreground);
+    }
+
+    .material-symbols-rounded,
+    .contrast-summary__rating-detail,
+    .transfer-card p {
+      color: color-mix(in oklab, var(--ui-foreground), black 12%);
+    }
+  }
+
+  .demo-panel[data-theme-mode="dark"] {
+    .panel-heading h3,
+    .panel-note,
+    .material-symbols-rounded,
+    .contrast-summary__rating-detail,
+    .transfer-card p {
+      color: color-mix(in oklab, var(--ui-foreground), white 12%);
     }
   }
 }
