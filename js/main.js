@@ -1,5 +1,6 @@
 import chroma from 'chroma-js';
 
+import blinder from 'color-blind';
 import $ from 'jquery';
 // Suppress noisy extension-origin errors (e.g. background-redux-new.js)
 // These errors come from browser extensions running in the page context
@@ -223,6 +224,173 @@ const contrastGridThreshold = 4.5;
 const contrastGridWindowFeatures = 'width=960,height=760,scrollbars=yes,resizable=yes,location=no,status=no,menubar=no,toolbar=no';
 let contrastGridWindow = null;
 
+const colorBlindSimulators = {
+  protanomaly: blinder.protanomaly,
+  protanopia: blinder.protanopia,
+  deuteranomaly: blinder.deuteranomaly,
+  deuteranopia: blinder.deuteranopia,
+  tritanomaly: blinder.tritanomaly,
+  tritanopia: blinder.tritanopia,
+  achromatomaly: blinder.achromatomaly,
+  achromatopsia: blinder.achromatopsia,
+};
+
+const visionSimulations = [
+  {
+    id: 'protanomaly',
+    label: 'Protanomaly',
+    description: 'Reduced sensitivity to red - trouble distinguishing reds and greens',
+    percent: '1.3',
+    type: 'colorBlind'
+  },
+  {
+    id: 'protanopia',
+    label: 'Protanopia',
+    description: 'Red blind - can’t see reds at all',
+    percent: '1.5',
+    type: 'colorBlind'
+  },
+  {
+    id: 'deuteranomaly',
+    label: 'Deuteranomaly',
+    description: 'Reduced sensitivity to green - trouble distinguishing reds and greens',
+    percent: '5.3',
+    type: 'colorBlind'
+  },
+  {
+    id: 'deuteranopia',
+    label: 'Deuteranopia',
+    description: 'Green blind - can’t see greens at all',
+    percent: '1.2',
+    type: 'colorBlind'
+  },
+  {
+    id: 'tritanomaly',
+    label: 'Tritanomaly',
+    description: 'Trouble distinguishing blues and greens, and yellows and reds',
+    percent: '0.02',
+    type: 'colorBlind'
+  },
+  {
+    id: 'tritanopia',
+    label: 'Tritanopia',
+    description: 'Unable to distinguish between blues and greens, purples and reds, and yellows and pinks',
+    percent: '0.03',
+    type: 'colorBlind'
+  },
+  {
+    id: 'achromatomaly',
+    label: 'Achromatomaly',
+    description: 'Partial color blindness, sees the absence of most colors',
+    percent: '0.09',
+    type: 'colorBlind'
+  },
+  {
+    id: 'achromatopsia',
+    label: 'Achromatopsia',
+    description: 'Complete color blindness, can only see shades',
+    percent: '0.05',
+    type: 'colorBlind'
+  },
+  {
+    id: 'cataracts',
+    label: 'Cataracts',
+    description: 'Clouding of the lens in the eye that affects vision',
+    percent: '33',
+    type: 'filter',
+    contrastModifier: -0.2
+  },
+  {
+    id: 'glaucoma',
+    label: 'Glaucoma',
+    description: 'Slight vision loss',
+    percent: '2',
+    type: 'filter'
+  },
+  {
+    id: 'lowvision',
+    label: 'Low vision',
+    description: 'Decreased and/or blurry vision (not fixable by usual means such as glasses)',
+    percent: '31',
+    type: 'filter',
+    contrastModifier: -0.2
+  },
+  {
+    id: 'sunlight',
+    label: 'Direct sunlight',
+    description: 'Simulating the effect of direct sunlight on a phone or screen',
+    percent: '',
+    type: 'filter',
+    contrastModifier: -0.4
+  },
+  {
+    id: 'nightshift',
+    label: 'Night Shift Mode',
+    description: 'Simulating the effect of night mode on a phone or screen',
+    percent: '',
+    type: 'filter',
+    contrastModifier: -0.1
+  }
+];
+
+function escapeHtml(value) {
+  if (!value) return '';
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function getSimulationMetaText(simulation) {
+  return simulation.percent ? `${simulation.percent}% affected` : 'Situational';
+}
+
+function simulateVisionCheck(check, simulation) {
+  const baseFg = check.fg || '#000000';
+  const baseBg = check.bg || '#ffffff';
+  let simulatedFg = baseFg;
+  let simulatedBg = baseBg;
+  if (simulation.type === 'colorBlind') {
+    const converter = colorBlindSimulators[simulation.id];
+    if (converter) {
+      try {
+        simulatedFg = converter(simulatedFg);
+        simulatedBg = converter(simulatedBg);
+      } catch (e) {
+        console.warn(`Vision simulation failed for ${simulation.id}`, e);
+      }
+    }
+  }
+
+  const contrast = computeContrastRatio(simulatedFg, simulatedBg) || 0;
+  const modifier = Number.isFinite(simulation.contrastModifier) ? simulation.contrastModifier : 0;
+  const adjusted = contrast + contrast * modifier;
+  const valid = Number.isFinite(adjusted) && adjusted > 0;
+  const ratioValue = valid ? adjusted : 0;
+  const ratioText = valid ? ratioValue.toFixed(2) : 'N/A';
+  return {
+    pairFg: simulatedFg,
+    pairBg: simulatedBg,
+    ratioValue,
+    ratioText,
+    passes: valid && ratioValue >= contrastGridThreshold
+  };
+}
+
+function renderVisionSimulationCell(check, simulation) {
+  const result = simulateVisionCheck(check, simulation);
+  const statusLabel = result.passes ? 'Pass' : 'Fail';
+  const ratioLabel = result.ratioText === 'N/A' ? 'Ratio unavailable' : `${result.ratioText}:1`;
+  const meta = getSimulationMetaText(simulation);
+  const description = simulation.description ? `${simulation.description}. ` : '';
+  const title = escapeHtml(`${simulation.label} • ${meta} • ${description}${ratioLabel}`);
+  const statusText = `${statusLabel} - ${ratioLabel}`;
+  return `<td class="vision-sim-cell ${simulation.id} ${statusLabel.toLowerCase()}" title="${title}">
+    <div class="vision-sim-swatch" style="background:${result.pairBg};color:${result.pairFg};">${escapeHtml(statusText)}</div>
+  </td>`;
+}
+
 function openContrastGridWindow(checks) {
   const previewChecks = checks || collectContrastChecks();
   if (!contrastGridWindow || contrastGridWindow.closed) {
@@ -242,6 +410,11 @@ function renderContrastGridContent(win, checks) {
   const doc = win.document;
   doc.title = 'Contrast grid';
   ensureContrastGridStyle(doc);
+  const simulationHeaders = visionSimulations.map(function(sim) {
+    const meta = escapeHtml(getSimulationMetaText(sim));
+    const title = escapeHtml(`${sim.label} • ${meta}`);
+    return `<th class="vision-sim-header" title="${title}">${sim.label}<span class="vision-sim-header__meta">${meta}</span></th>`;
+  }).join('');
   const rows = checks.map(function(c){
     const ratioText = c.ratio ? c.ratio.toFixed(2) : 'N/A';
     const ratioValue = c.ratio || 0;
@@ -252,11 +425,13 @@ function renderContrastGridContent(win, checks) {
     const fgLabel = c.fg || 'N/A';
     const bgLabel = c.bg || 'N/A';
     const pairCell = `<td class="contrast-pair-cell" style="background:${pairBg};color:${pairFg};">
-      <div class="contrast-pair-character">Aa</div>
       <div class="contrast-values">${fgLabel} / ${bgLabel}</div>
     </td>`;
     const foregroundCell = c.fg ? `<td class="contrast-swatch-cell" style="background:${c.fg};color:${getReadableSwatchTextColor(c.fg)};">${fgLabel}</td>` : '<td class="contrast-empty">N/A</td>';
     const backgroundCell = c.bg ? `<td class="contrast-swatch-cell" style="background:${c.bg};color:${getReadableSwatchTextColor(c.bg)};">${bgLabel}</td>` : '<td class="contrast-empty">N/A</td>';
+    const simulationCells = visionSimulations.map(function(sim) {
+      return renderVisionSimulationCell(c, sim);
+    }).join('');
     return `<tr class="contrast-row ${passes ? 'pass' : 'fail'}">
       <td>${c.theme}</td>
       ${pairCell}
@@ -264,6 +439,7 @@ function renderContrastGridContent(win, checks) {
       ${backgroundCell}
       <td>${ratioText}:1</td>
       <td><span class="contrast-status">${status}</span></td>
+      ${simulationCells}
     </tr>`;
   }).join('');
 
@@ -271,19 +447,24 @@ function renderContrastGridContent(win, checks) {
     <div class="contrast-grid">
       <h2>Contrast grid</h2>
       <p class="contrast-grid__hint">Paired contrast shows the foreground on its background. Foreground samples render the foreground glyph with the background mix, and Background swatches show the raw background color. Rows will update whenever the palette regenerates.</p>
-      <table>
-        <thead>
-          <tr>
-            <th>Theme</th>
-            <th>Pair (FG/BG)</th>
-            <th>Foreground</th>
-            <th>Background</th>
-            <th>Ratio</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="contrast-grid__table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Theme</th>
+              <th>Pair (FG/BG)</th>
+              <th>Foreground</th>
+              <th>Background</th>
+              <th>Ratio</th>
+              <th>Status</th>
+              ${simulationHeaders}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <p class="contrast-grid__note">The simulation columns, starting with PROTANOMALY, are approximations of how the palette might look for people navigating other color differences. They highlight the situations tied to the listed permanent, temporary, or situational vision differences and do not affect your WCAG compliance.</p>
+      <p class="contrast-grid__credit">Simulations inspired by <a href="https://whocanuse.com/" target="_blank" rel="noopener noreferrer">WhoCanUse.com</a>.</p>
     </div>
   `;
   syncContrastGridTheme();
@@ -297,16 +478,16 @@ function ensureContrastGridStyle(doc) {
     :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     body { margin: 0; padding: 24px; background: #fdfdfd; color: #111; }
     body[data-theme='dark'] { background: #050809; color: #f2f2f2; }
-    .contrast-grid { max-width: 960px; margin: 0 auto; }
+    .contrast-grid { width: 100%; max-width: none; margin: 0 auto; }
     .contrast-grid__hint { color: inherit; margin-bottom: 1rem; }
-    table { width: 100%; border-collapse: collapse; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    th, td { padding: 12px; border: 1px solid rgba(0,0,0,0.08); }
+    .contrast-grid__table-wrap { width: 100%; overflow-x: auto; overflow-y: hidden; margin-top: 1rem; }
+    table { width: 100%; min-width: 1200px; border-collapse: collapse; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    th, td { padding: 12px; border: 1px solid rgba(0,0,0,0.08); vertical-align: top; }
     body[data-theme='dark'] th, body[data-theme='dark'] td { border-color: rgba(255,255,255,0.08); }
     th { text-align: left; background: rgba(0,0,0,0.04); }
     body[data-theme='dark'] th { background: rgba(255,255,255,0.08); }
     .contrast-pair-cell { padding: 16px 12px; min-width: 180px; border-radius: 8px; }
-    .contrast-pair-character { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.35rem; }
-    .contrast-pair-cell .contrast-values { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+    .contrast-pair-cell .contrast-values { font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em; opacity: 0.85; }
     .contrast-swatch-cell { padding: 18px 12px; font-weight: 700; text-align: center; border-radius: 6px; }
     .contrast-row.pass { background: #e7ffe6; }
     .contrast-row.fail { background: #ffecec; }
@@ -318,6 +499,34 @@ function ensureContrastGridStyle(doc) {
     body[data-theme='dark'] .contrast-row.pass .contrast-status { background: #2fdb5a; }
     body[data-theme='dark'] .contrast-row.fail .contrast-status { background: #ff4b4b; }
     .contrast-empty { color: rgba(0,0,0,0.5); text-align: center; font-style: italic; }
+    .contrast-grid__note { font-size: 0.9rem; margin-top: 1rem; color: rgba(0,0,0,0.7); max-width: 960px; }
+    body[data-theme='dark'] .contrast-grid__note { color: rgba(255,255,255,0.7); }
+    .contrast-grid__credit { font-size: 0.85rem; margin-top: 0.5rem; color: rgba(0,0,0,0.65); }
+    .contrast-grid__credit a { color: inherit; font-weight: 600; }
+    body[data-theme='dark'] .contrast-grid__credit { color: rgba(255,255,255,0.6); }
+    .vision-sim-header { text-align: center; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .vision-sim-header__meta { display: block; margin-top: 4px; font-size: 0.65rem; text-transform: none; letter-spacing: 0; color: rgba(0,0,0,0.65); }
+    body[data-theme='dark'] .vision-sim-header__meta { color: rgba(255,255,255,0.6); }
+    .vision-sim-cell { min-width: 140px; padding: 8px 6px; position: relative; vertical-align: top; }
+    .vision-sim-swatch { position: relative; overflow: hidden; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); min-height: 48px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; text-transform: none; letter-spacing: 0.04em; padding: 0 4px; }
+    .vision-sim-swatch::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1; }
+    body[data-theme='dark'] .vision-sim-swatch { color: rgba(255,255,255,0.9); }
+    .vision-sim-cell.pass { background: rgba(34, 153, 84, 0.08); }
+    .vision-sim-cell.fail { background: rgba(210, 50, 45, 0.2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+    body[data-theme='dark'] .vision-sim-cell.fail { background: rgba(255, 179, 179, 0.15); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3); }
+    .vision-sim-cell.cataracts .vision-sim-swatch { filter: blur(0.8px) saturate(0.5); }
+    .vision-sim-cell.glaucoma .vision-sim-swatch { filter: blur(0.6px); }
+    .vision-sim-cell.glaucoma .vision-sim-swatch::before { box-shadow: inset 0 0 50px 1px rgba(0, 0, 0, 0.15); background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 60%); }
+    .vision-sim-cell.lowvision .vision-sim-swatch { filter: blur(0.6px); }
+    .vision-sim-cell.lowvision .vision-sim-swatch::before { box-shadow: inset 0 0 60px 1px rgba(0, 0, 0, 0.15); }
+    .vision-sim-cell.sunlight .vision-sim-swatch { filter: brightness(1.2); }
+    .vision-sim-cell.sunlight .vision-sim-swatch::before { background-image: linear-gradient(-41deg, #ffffff 0%, rgba(255, 255, 255, 0.3) 15%, rgba(255, 255, 255, 0.4) 25%, rgba(255, 255, 255, 0.6) 52%, rgba(255, 255, 255, 0.4) 74%, rgba(255, 255, 255, 0.5) 88%, rgba(255, 255, 255, 0.7) 100%); }
+    .vision-sim-cell.nightshift .vision-sim-swatch { filter: saturate(1.2); }
+    .vision-sim-cell.nightshift .vision-sim-swatch::before { mix-blend-mode: multiply; background-color: rgba(253, 194, 66, 0.1); }
+    .vision-sim-cell.lowvision .vision-sim-swatch::before,
+    .vision-sim-cell.glaucoma .vision-sim-swatch::before,
+    .vision-sim-cell.sunlight .vision-sim-swatch::before,
+    .vision-sim-cell.nightshift .vision-sim-swatch::before { inset: 0; content: ''; position: absolute; border-radius: inherit; pointer-events: none; z-index: 1; }
   `;
   doc.head.appendChild(style);
 }
@@ -1347,6 +1556,165 @@ function downloadPaletteCsv() {
   }
 }
 
+function parseCsvRows(csvText = '') {
+  const cleaned = (csvText || '').replace(/^\uFEFF/, '');
+  const rows = [];
+  let curr = [];
+  let cell = '';
+  let inQuotes = false;
+  for (let i = 0; i < cleaned.length; i += 1) {
+    const ch = cleaned[i];
+    if (ch === '"') {
+      if (inQuotes && cleaned[i + 1] === '"') {
+        cell += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (ch === ',' && !inQuotes) {
+      curr.push(cell);
+      cell = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && cleaned[i + 1] === '\n') {
+        i += 1;
+      }
+      curr.push(cell);
+      rows.push(curr);
+      curr = [];
+      cell = '';
+    } else {
+      cell += ch;
+    }
+  }
+  if (cell !== '' || curr.length) {
+    curr.push(cell);
+    rows.push(curr);
+  }
+  return rows;
+}
+
+function detectColumnType(headerValue) {
+  const normalized = (headerValue || '').toString().trim().toLowerCase();
+  if (!normalized) return null;
+  const simplified = normalized.replace(/[^a-z]/g, '');
+  if (simplified === 'token' || simplified === 'tokenid' || simplified === 'swatch' || simplified === 'name' || simplified === 'id') {
+    return 'token';
+  }
+  if (normalized.includes('token')) return 'token';
+  if (normalized.includes('light') || normalized.includes('claro') || normalized.includes('day') || normalized.includes('lmode')) {
+    return 'light';
+  }
+  if (normalized.includes('dark') || normalized.includes('night') || normalized.includes('dmode')) {
+    return 'dark';
+  }
+  if (normalized === 'value' || normalized === 'hex' || normalized.includes('color')) {
+    return 'light';
+  }
+  return null;
+}
+
+function normalizeTokenKey(value) {
+  if (!value) return '';
+  return value.toString().trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function buildTokenLookup() {
+  const lookup = {};
+  document.querySelectorAll('.swatch').forEach(function(swatch) {
+    const tokenId = swatch.dataset.swatchId || swatch.getAttribute('id');
+    if (!tokenId) return;
+    const normalized = normalizeTokenKey(tokenId);
+    if (normalized) {
+      lookup[normalized] = tokenId;
+    }
+    lookup[tokenId.toLowerCase()] = tokenId;
+  });
+  return lookup;
+}
+
+function resolveTokenId(rawToken, lookup) {
+  if (!rawToken) return null;
+  const trimmed = rawToken.toString().trim();
+  if (!trimmed) return null;
+  if (lookup[trimmed]) return lookup[trimmed];
+  const lower = trimmed.toLowerCase();
+  if (lookup[lower]) return lookup[lower];
+  const normalized = normalizeTokenKey(trimmed);
+  if (lookup[normalized]) return lookup[normalized];
+  return null;
+}
+
+function applyImportedPaletteCsv(csvText) {
+  if (!csvText || typeof csvText !== 'string') {
+    throw new Error('Import failed: CSV content is empty.');
+  }
+  const rows = parseCsvRows(csvText).filter(function(row) {
+    return row.some(function(cell) { return (cell || '').toString().trim() !== ''; });
+  });
+  if (!rows.length) {
+    throw new Error('Import failed: CSV file contains no data.');
+  }
+
+  const headerRow = rows[0];
+  const headerTypes = headerRow.map(detectColumnType);
+  const hasHeader = headerTypes.some(function(type) { return !!type; });
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+  const colCount = headerRow.length || 0;
+  const columnIndexes = { token: null, light: null, dark: null };
+
+  headerTypes.forEach(function(type, index) {
+    if (!type || columnIndexes[type] !== null) return;
+    columnIndexes[type] = index;
+  });
+
+  const fallbackOrder = ['token', 'light', 'dark'];
+  for (let idx = 0; idx < Math.max(colCount, 3); idx += 1) {
+    if (Object.values(columnIndexes).includes(idx)) continue;
+    const nextType = fallbackOrder.find(function(type) { return columnIndexes[type] === null; });
+    if (!nextType) break;
+    columnIndexes[nextType] = idx;
+  }
+
+  if (columnIndexes.token === null) {
+    throw new Error('Import failed: Unable to detect the token column.');
+  }
+
+  const lookup = buildTokenLookup();
+  const appliedTokens = new Set();
+  dataRows.forEach(function(row) {
+    const rawToken = row[columnIndexes.token];
+    const tokenId = resolveTokenId(rawToken, lookup);
+    if (!tokenId) return;
+    let touched = false;
+    if (columnIndexes.light !== null) {
+      const lightColor = (row[columnIndexes.light] || '').trim();
+      if (lightColor && window.applyCustomColor && window.applyCustomColor('light', tokenId, lightColor)) {
+        touched = true;
+      }
+    }
+    if (columnIndexes.dark !== null) {
+      const darkColor = (row[columnIndexes.dark] || '').trim();
+      if (darkColor && window.applyCustomColor && window.applyCustomColor('dark', tokenId, darkColor)) {
+        touched = true;
+      }
+    }
+    if (touched) {
+      appliedTokens.add(tokenId);
+    }
+  });
+
+  if (!appliedTokens.size) {
+    throw new Error('Import failed: The uploaded file did not contain any recognizable tokens.');
+  }
+
+  setSwatchValues('light', { scopedOnly: true });
+  setSwatchValues('dark', { scopedOnly: true });
+  try { updateContrastReport(); } catch (e) {}
+  return appliedTokens.size;
+}
+
 // Copy CSS variables button in transfer panel
 const copyCssBtn = document.getElementById('copyCssBtn');
 if (copyCssBtn) {
@@ -1726,6 +2094,64 @@ function setCssColor(theme, swatchId, cssVariable, color) {
     // noop; best-effort
   }
 
+
+function ensureCustomOverrides() {
+  if (window.CUSTOM_COLOR_OVERRIDES && typeof window.CUSTOM_COLOR_OVERRIDES === 'object') {
+    return window.CUSTOM_COLOR_OVERRIDES;
+  }
+  try {
+    window.CUSTOM_COLOR_OVERRIDES = JSON.parse(localStorage.getItem('customColorOverrides') || '{}');
+  } catch (e) {
+    window.CUSTOM_COLOR_OVERRIDES = {};
+  }
+  return window.CUSTOM_COLOR_OVERRIDES;
+}
+
+function persistCustomOverrides() {
+  try {
+    localStorage.setItem('customColorOverrides', JSON.stringify(window.CUSTOM_COLOR_OVERRIDES || {}));
+  } catch (e) {}
+}
+
+function reapplyCustomOverrides() {
+  const overrides = ensureCustomOverrides();
+  Object.keys(overrides).forEach(function(theme) {
+    const themeTokens = overrides[theme];
+    if (!themeTokens || typeof themeTokens !== 'object') return;
+    Object.keys(themeTokens).forEach(function(tokenId) {
+      const color = themeTokens[tokenId];
+      if (!color) return;
+      setCssColor(theme, tokenId, `--color-${tokenId}`, color);
+    });
+  });
+  setSwatchValues('light', { scopedOnly: true });
+  setSwatchValues('dark', { scopedOnly: true });
+}
+
+function normalizeThemeName(theme) {
+  const normalized = (theme || '').toString().trim().toLowerCase();
+  if (normalized === 'dark') return 'dark';
+  if (normalized === 'light') return 'light';
+  return null;
+}
+
+window.applyCustomColor = function(theme, tokenId, color) {
+  const normalizedTheme = normalizeThemeName(theme);
+  const normalizedToken = (tokenId || '').toString().trim();
+  const normalizedColor = normalizeColorValue(color);
+  if (!normalizedTheme || !normalizedToken || !normalizedColor) {
+    return false;
+  }
+  setCssColor(normalizedTheme, normalizedToken, `--color-${normalizedToken}`, normalizedColor);
+  const overrides = ensureCustomOverrides();
+  overrides[normalizedTheme] = overrides[normalizedTheme] || {};
+  overrides[normalizedTheme][normalizedToken] = normalizedColor;
+  persistCustomOverrides();
+  try { setHashFromOverrides(); } catch (e) {}
+  flashSwatches([normalizedToken]);
+  try { updateContrastReport(); } catch (e) {}
+  return true;
+};
   // Ensure any buttons on the page that derive their background from dynamic
   // swatches get an enforced foreground color that meets WCAG 2 AA.
   try {
