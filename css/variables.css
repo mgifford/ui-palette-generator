@@ -112,7 +112,20 @@
   --btn-bg: var(--action-dark);
   --surface-bg: var(--surface-dark);
   --text-color: var(--text-dark);
+  /* Slightly stronger button background and fallback contrast for dark scope */
+  --btn-bg-strong: color-mix(in oklab, var(--btn-bg), black 30%);
+  --btn-contrast-fallback: #eaeaea;
+  --icon-contrast-fallback: #efefef;
 }
+
+/* Slightly stronger button background for better contrast (light scope) */
+.light-scope {
+  --btn-bg-strong: color-mix(in oklab, var(--btn-bg), black 6%);
+  /* Fallback foreground color for buttons when native contrast helpers are unavailable */
+  --btn-contrast-fallback: #ffffff;
+  --icon-contrast-fallback: #222222;
+}
+
 
 
 .demo-card {
@@ -152,14 +165,28 @@
 }
 
 .demo-card .button {
-  background: var(--btn-bg);
+  background: var(--btn-bg-strong, var(--btn-bg));
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   padding: 0.75em 1.5em;
   border-radius: 0.5em;
   font-size: 1.1em;
   margin-bottom: 1em;
   cursor: pointer;
+}
+
+/* Explicit class for the blue reload button used in the neterror demo */
+.blue-button {
+  background: var(--btn-bg-strong, var(--btn-bg));
+  color: #ffffff;
+  border: 2px solid transparent;
+  padding: 0.5em 0.9em;
+  border-radius: 0.4em;
+}
+
+.blue-button:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--btn-bg-strong, var(--btn-bg)), white 20%);
+  outline-offset: 2px;
 }
 
 .demo-card a {
