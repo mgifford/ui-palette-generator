@@ -216,39 +216,126 @@ function renderContrastReport(checks) {
 function updateContrastReport() {
   const checks = collectContrastChecks();
   renderContrastReport(checks);
+  refreshContrastGridWindow();
 }
 
+const contrastGridThreshold = 4.5;
+const contrastGridWindowFeatures = 'width=960,height=760,scrollbars=yes,resizable=yes,location=no,status=no,menubar=no,toolbar=no';
+let contrastGridWindow = null;
+
 function openContrastGridWindow(checks) {
-  const threshold = 4.5;
-  const win = window.open('', 'contrast-grid', 'width=900,height=700');
-  if (!win) return;
+  const previewChecks = checks || collectContrastChecks();
+  if (!contrastGridWindow || contrastGridWindow.closed) {
+    contrastGridWindow = window.open('', 'contrast-grid', contrastGridWindowFeatures);
+  }
+  if (!contrastGridWindow) return;
+  renderContrastGridContent(contrastGridWindow, previewChecks);
+  contrastGridWindow.focus();
+}
+
+function getReadableSwatchTextColor(color) {
+  if (!color) return '#000000';
+  return computeAccessibleForeground(color);
+}
+
+function renderContrastGridContent(win, checks) {
+  const doc = win.document;
+  doc.title = 'Contrast grid';
+  ensureContrastGridStyle(doc);
   const rows = checks.map(function(c){
     const ratioText = c.ratio ? c.ratio.toFixed(2) : 'N/A';
-    const status = c.ratio >= threshold ? 'Pass' : 'Fail';
-    return `<tr>
+    const ratioValue = c.ratio || 0;
+    const passes = ratioValue >= contrastGridThreshold;
+    const status = passes ? 'Pass' : 'Fail';
+    const pairBg = c.bg || '#ffffff';
+    const pairFg = c.fg || '#000000';
+    const fgLabel = c.fg || 'N/A';
+    const bgLabel = c.bg || 'N/A';
+    const pairCell = `<td class="contrast-pair-cell" style="background:${pairBg};color:${pairFg};">
+      <div class="contrast-pair-character">Aa</div>
+      <div class="contrast-values">${fgLabel} / ${bgLabel}</div>
+    </td>`;
+    const foregroundCell = c.fg ? `<td class="contrast-swatch-cell" style="background:${c.fg};color:${getReadableSwatchTextColor(c.fg)};">${fgLabel}</td>` : '<td class="contrast-empty">N/A</td>';
+    const backgroundCell = c.bg ? `<td class="contrast-swatch-cell" style="background:${c.bg};color:${getReadableSwatchTextColor(c.bg)};">${bgLabel}</td>` : '<td class="contrast-empty">N/A</td>';
+    return `<tr class="contrast-row ${passes ? 'pass' : 'fail'}">
       <td>${c.theme}</td>
-      <td>${c.label}</td>
-      <td>${c.fg || 'N/A'}</td>
-      <td>${c.bg || 'N/A'}</td>
+      ${pairCell}
+      ${foregroundCell}
+      ${backgroundCell}
       <td>${ratioText}:1</td>
-      <td>${status}</td>
+      <td><span class="contrast-status">${status}</span></td>
     </tr>`;
   }).join('');
 
-  win.document.body.innerHTML = `
-    <style>
-      body { font-family: system-ui, sans-serif; padding: 16px; color: #222; }
-      table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-      th { background: #f5f5f5; }
-    </style>
-    <h2>Contrast grid</h2>
-    <p>WCAG 2.2 AA target: ${threshold}:1 for text.</p>
-    <table>
-      <thead><tr><th>Theme</th><th>Pair</th><th>Foreground</th><th>Background</th><th>Ratio</th><th>Status</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
+  doc.body.innerHTML = `
+    <div class="contrast-grid">
+      <h2>Contrast grid</h2>
+      <p class="contrast-grid__hint">Paired contrast shows the foreground on its background. Foreground samples render the foreground glyph with the background mix, and Background swatches show the raw background color. Rows will update whenever the palette regenerates.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Theme</th>
+            <th>Pair (FG/BG)</th>
+            <th>Foreground</th>
+            <th>Background</th>
+            <th>Ratio</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
   `;
+  syncContrastGridTheme();
+}
+
+function ensureContrastGridStyle(doc) {
+  if (doc.getElementById('contrast-grid-style')) return;
+  const style = doc.createElement('style');
+  style.id = 'contrast-grid-style';
+  style.textContent = `
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { margin: 0; padding: 24px; background: #fdfdfd; color: #111; }
+    body[data-theme='dark'] { background: #050809; color: #f2f2f2; }
+    .contrast-grid { max-width: 960px; margin: 0 auto; }
+    .contrast-grid__hint { color: inherit; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    th, td { padding: 12px; border: 1px solid rgba(0,0,0,0.08); }
+    body[data-theme='dark'] th, body[data-theme='dark'] td { border-color: rgba(255,255,255,0.08); }
+    th { text-align: left; background: rgba(0,0,0,0.04); }
+    body[data-theme='dark'] th { background: rgba(255,255,255,0.08); }
+    .contrast-pair-cell { padding: 16px 12px; min-width: 180px; border-radius: 8px; }
+    .contrast-pair-character { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 0.35rem; }
+    .contrast-pair-cell .contrast-values { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; }
+    .contrast-swatch-cell { padding: 18px 12px; font-weight: 700; text-align: center; border-radius: 6px; }
+    .contrast-row.pass { background: #e7ffe6; }
+    .contrast-row.fail { background: #ffecec; }
+    body[data-theme='dark'] .contrast-row.pass { background: rgba(0,255,128,0.08); }
+    body[data-theme='dark'] .contrast-row.fail { background: rgba(255,0,0,0.1); }
+    .contrast-status { font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; display: inline-flex; align-items: center; }
+    .contrast-row.pass .contrast-status { background: #1d7a1d; color: #fff; }
+    .contrast-row.fail .contrast-status { background: #a00; color: #fff; }
+    body[data-theme='dark'] .contrast-row.pass .contrast-status { background: #2fdb5a; }
+    body[data-theme='dark'] .contrast-row.fail .contrast-status { background: #ff4b4b; }
+    .contrast-empty { color: rgba(0,0,0,0.5); text-align: center; font-style: italic; }
+  `;
+  doc.head.appendChild(style);
+}
+
+function syncContrastGridTheme() {
+  if (!contrastGridWindow || contrastGridWindow.closed) return;
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  const doc = contrastGridWindow.document;
+  try {
+    doc.documentElement.setAttribute('data-theme', theme);
+    doc.body.setAttribute('data-theme', theme);
+  } catch (e) {}
+}
+
+function refreshContrastGridWindow() {
+  if (!contrastGridWindow || contrastGridWindow.closed) return;
+  const checks = collectContrastChecks();
+  renderContrastGridContent(contrastGridWindow, checks);
 }
 
 function initContrastGridControls() {
@@ -1176,12 +1263,100 @@ function schedulePaletteRefresh() {
   });
 });
 
+function setTransferStatus(message = '', isError = false, duration = 4000) {
+  const statusEl = document.getElementById('paletteTransferStatus');
+  if (!statusEl) return;
+  if (statusEl._transferTimeout) {
+    clearTimeout(statusEl._transferTimeout);
+    statusEl._transferTimeout = null;
+  }
+  if (!message) {
+    statusEl.textContent = '';
+    statusEl.dataset.state = '';
+    return;
+  }
+  statusEl.textContent = message;
+  statusEl.dataset.state = isError ? 'error' : 'success';
+  if (duration > 0) {
+    statusEl._transferTimeout = setTimeout(function(){
+      statusEl.textContent = '';
+      statusEl.dataset.state = '';
+      statusEl._transferTimeout = null;
+    }, duration);
+  }
+}
+
+function collectPaletteTokenRows() {
+  const rows = {};
+  document.querySelectorAll('.swatch').forEach(function(swatch){
+    const tokenId = (swatch.dataset.swatchId || swatch.id || '').trim();
+    if (!tokenId) return;
+    if (!rows[tokenId]) {
+      rows[tokenId] = { token: tokenId, light: '', dark: '' };
+    }
+    const lightColor = swatch.getAttribute('data-light-color');
+    const darkColor = swatch.getAttribute('data-dark-color');
+    if (lightColor) rows[tokenId].light = lightColor;
+    if (darkColor) rows[tokenId].dark = darkColor;
+  });
+  return Object.keys(rows).map(function(key){ return rows[key]; }).filter(function(row){
+    return row.light || row.dark;
+  });
+}
+
+function quoteCsvValue(value = '') {
+  const text = (value || '').toString().trim();
+  if (/,|"|\n/.test(text)) {
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+  return text;
+}
+
+function downloadPaletteCsv() {
+  const rows = collectPaletteTokenRows();
+  if (!rows.length) {
+    setTransferStatus('No palette tokens available to export.', true);
+    return;
+  }
+  setTransferStatus('Preparing CSV download...');
+  const header = ['token','light','dark'].map(quoteCsvValue).join(',');
+  const body = rows.map(function(row){
+    return [row.token, row.light, row.dark].map(quoteCsvValue).join(',');
+  });
+  const csvContent = [header].concat(body).join('\n');
+  let url;
+  try {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const timestamp = (new Date()).toISOString().slice(0, 10);
+    anchor.href = url;
+    anchor.setAttribute('download', `palette-${timestamp}.csv`);
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    setTransferStatus(`Prepared ${rows.length} palette token${rows.length === 1 ? '' : 's'} for download.`);
+  } catch (error) {
+    console.error('Palette CSV download failed', error);
+    setTransferStatus('Unable to prepare CSV download.', true);
+  } finally {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  }
+}
+
 // Copy CSS variables button in transfer panel
 const copyCssBtn = document.getElementById('copyCssBtn');
 if (copyCssBtn) {
   copyCssBtn.addEventListener('click', function(e){
     e.preventDefault();
-    try { copyCssVariables(); } catch (err) {}
+    copyCssVariables().then(function(){
+      setTransferStatus('Copied CSS variables to clipboard.');
+    }).catch(function(){
+      setTransferStatus('Unable to copy CSS variables.', true);
+    });
   });
 }
 
@@ -1215,9 +1390,11 @@ document.addEventListener('DOMContentLoaded', function() {
       updateThemeToggleUI();
       try { localStorage.setItem('ui-theme', next); } catch (e) {}
       setSwatchValues(next);
+      syncContrastGridTheme();
     });
   }
   updateThemeToggleUI();
+  syncContrastGridTheme();
   initHarmonyControls();
   initContrastGridControls();
   initRefineControls();

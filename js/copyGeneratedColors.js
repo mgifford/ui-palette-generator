@@ -25,15 +25,17 @@ function collectCssVariables() {
 }
 
 export function copyCssVariables() {
-  let cssText = collectCssVariables();
-  let copyBtn = document.getElementById('copyBtn');
-  let originalText = copyBtn.textContent;
+  const cssText = collectCssVariables();
+  const copyBtn = document.getElementById('copyBtn');
+  const originalText = copyBtn ? copyBtn.textContent : '';
 
-  navigator.clipboard.writeText(cssText).then(() => {
-    copyBtn.textContent = 'Copied';
-
-    setTimeout(()=>{ copyBtn.textContent = originalText }, 1000) // Display original text after 1 second
+  return navigator.clipboard.writeText(cssText).then(() => {
+    if (copyBtn) {
+      copyBtn.textContent = 'Copied';
+      setTimeout(() => { copyBtn.textContent = originalText; }, 1000); // Display original text after 1 second
+    }
   }).catch(err => {
     console.error('Failed to copy: ', err);
+    throw err;
   });
 }
