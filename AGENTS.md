@@ -43,6 +43,11 @@ The project consists of:
 - Client-side color generation, manipulation, and evaluation
 - Interactive UI for previewing and adjusting palettes
 
+## Code Layout (keep these distinct)
+- `js/`: Client-side source modules compiled by webpack into `docs/js/bundle.js` (and other built assets). Update here when changing UI behavior.
+- `scripts/`: Tooling and automation (Node/Python) used for build, CI, serving, extraction, and scanning. Add new developer/CI scripts here, not in `js/`.
+- `docs/js/`: Generated artifacts served to users; do not edit by hand.
+
 No server-side processing is assumed unless explicitly documented.
 
 ## Conceptual Integrity
@@ -235,6 +240,13 @@ Manual testing is required for meaningful changes:
 - Focus visibility verification
 - Verification that information is perceivable without color
 - Zoom testing up to 200%
+
+Automated quality checks (CI and local):
+- Run `npm run lint:html` to catch HTML syntax/structure issues.
+- Run `npm run scan:security` to flag inline scripts, http assets, suspected secrets, and tracking domains (warnings do not block CI; errors do).
+- Run `npm run test:a11y` after starting a local server (e.g., `python3 -m http.server 4173 --directory docs`) to execute Playwright + axe scans. CI blocks on serious/critical impacts and reports moderates as warnings.
+- CI workflow (`.github/workflows/quality.yml`) runs on `main` and PRs; failures block merge when HTML validation, accessibility, or security errors are present.
+- Legacy Puppeteer axe scans (`scan:light` / `scan:dark`) have been retired; use the Playwright-based `test:a11y` instead.
 
 Automated tests are encouraged for color math and transformations but do not replace manual review.
 

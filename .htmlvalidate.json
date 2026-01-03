@@ -1,0 +1,15 @@
+{
+  "extends": ["html-validate:recommended"],
+  "root": true,
+  "rules": {
+    "void-style": "off",
+    "no-dup-id": "warn",
+    "no-implicit-button-type": "warn",
+    "no-inline-style": "warn",
+    "unique-landmark": "warn",
+    "prefer-native-element": "warn",
+    "void-content": "warn",
+    "no-trailing-whitespace": "warn",
+    "doctype-style": "warn"
+  }
+}
