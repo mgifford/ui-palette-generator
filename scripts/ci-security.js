@@ -24,7 +24,8 @@ const trackingSignatures = [
   'matomo',
 ];
 
-const secretPattern = /(api[_-]?key|secret|token|password)\s*[:=]\s*["'][A-Za-z0-9_\-\.=]{16,}["']/i;
+// Ignore design-time token attributes (e.g., data-uses-token="...") while still catching real secrets.
+const secretPattern = /(?<!uses-)(api[_-]?key|secret|token|password)\s*[:=]\s*["'][A-Za-z0-9_\-\.=]{16,}["']/i;
 const inlineScriptPattern = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
 const targetBlankPattern = /<a[^>]*target=["']_blank["'][^>]*>/gi;
 
