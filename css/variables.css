@@ -7,13 +7,13 @@
     --color-accentNonContentSoft: rgba(103, 111, 91, 0.084);
     --color-accentNonContentSubdued: rgba(103, 111, 91, 0.749);
     --color-accentNonContentStrong: #676F5B;
-    --color-accentContentBaseline: #6D7560;
-    --color-accentContentSubdued: rgba(77, 83, 68, 0.804);
-    --color-accentContentStrong: #4D5344;
+    --color-accentContentBaseline: #4B5340;
+    --color-accentContentSubdued: rgba(66, 73, 58, 0.86);
+    --color-accentContentStrong: #3A4132;
     --color-neutralNonContentSoft: rgba(49, 50, 48, 0.059);
     --color-neutralNonContentSubdued: rgba(49, 50, 48, 0.526);
     --color-neutralNonContentStrong: #313230;
-    --color-neutralContentSubdued: rgba(35, 36, 34, 0.631);
+    --color-neutralContentSubdued: #2E3029;
     --color-neutralContentStrong: #232422;
 
     /* Data Visualization */
@@ -32,14 +32,15 @@
     --color-accentNonContentSoft-dark: rgba(77, 83, 68, 0.084);
     --color-accentNonContentSubdued-dark: rgba(77, 83, 68, 0.749);
     --color-accentNonContentStrong-dark: #4D5344;
-    --color-accentContentBaseline-dark: #8A947A;
-    --color-accentContentSubdued-dark: rgba(103, 111, 91, 0.804);
-    --color-accentContentStrong-dark: #676F5B;
+    --color-accentContentBaseline-dark: #C5CFB0;
+    --color-accentContentSubdued-dark: rgba(203, 211, 187, 0.86);
+    --color-accentContentStrong-dark: #A8B692;
     --color-neutralNonContentSoft-dark: rgba(35, 36, 34, 0.059);
     --color-neutralNonContentSubdued-dark: rgba(35, 36, 34, 0.526);
     --color-neutralNonContentStrong-dark: #232422;
-    --color-neutralContentSubdued-dark: rgba(49, 50, 48, 0.631);
-    --color-neutralContentStrong-dark: #313230;
+    --color-neutralContentSubdued-dark: #DCDDD6;
+    --color-neutralContentStrong-dark: #F2F2ED;
+    --color-neutralContentStrongOnDark: #F2F2ED;
 
     /* Data Visualization Dark */
     --data-1-dark: var(--color-accentContentStrong-dark);

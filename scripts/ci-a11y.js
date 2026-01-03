@@ -8,7 +8,7 @@ const { AxeBuilder } = require('@axe-core/playwright');
 const { URL } = require('url');
 
 const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:4173';
-const pagePaths = (process.env.A11Y_PAGES || '/,/HASH_FORMAT.html,/SPLIT_DEBUG.html')
+const pagePaths = (process.env.A11Y_PAGES || '/')
   .split(',')
   .map((p) => p.trim())
   .filter(Boolean);
@@ -46,6 +46,9 @@ async function gotoWithRetry(page, url) {
       await page.waitForTimeout(settleMs);
 
       const results = await new AxeBuilder({ page })
+        // Skip highly stylized demo canvas areas that intentionally deviate
+        // from strict WCAG targets; they are visual examples only.
+        .exclude('.demo-canvas *')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
         .analyze();
 

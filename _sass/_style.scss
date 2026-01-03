@@ -1445,7 +1445,10 @@ main {
         &.avatar-strong {
           background: var(--color-accentNonContentStrong);
         }
-        color: var(--color-card);
+        color: var(--color-neutralContentStrong);
+        @container (--theme: dark) {
+          color: var(--color-neutralContentStrongOnDark, var(--color-neutralContentStrong));
+        }
       }
       &.avatar-soft {
         &.avatar-subdued {
@@ -1463,7 +1466,12 @@ main {
           line-height: var(--space-xl);
         }
         &.avatar-solid {
-          span { color: var(--color-card); }
+          span {
+            color: var(--color-neutralContentStrong);
+            @container (--theme: dark) {
+              color: var(--color-neutralContentStrongOnDark, var(--color-neutralContentStrong));
+            }
+          }
         }
         &.avatar-soft {
           &.avatar-subdued {
