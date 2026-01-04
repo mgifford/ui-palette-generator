@@ -116,6 +116,12 @@ h2 {
   }
 }
 
+@media (max-width: 720px) {
+  #intro {
+    display: none;
+  }
+}
+
 .share-panel {
   margin-top: var(--space-lg);
   padding: var(--space-lg);
