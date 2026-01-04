@@ -430,6 +430,11 @@ input[type=password] {
   }
 }
 
+#generateBtn {
+  color: #ffffff;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
 /* Randomize / generate buttons — force a high-contrast background + icon/label */
 #randomColorBtn,
 #randomHarmonyBtn,
