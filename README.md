@@ -83,3 +83,8 @@ Notes:
 - The project uses `webpack` to bundle `js/bundle.js`. The HTML expects `css/main.css` and `js/bundle.js` to be present in the repository root when served.
 - If you prefer GitHub Pages to serve from `docs/`, I can update `webpack.config.js` to output into `docs/` and adjust `package.json` scripts.
 ````
+
+
+## AI Disclosure
+
+Yes. AI was used in creating this tool. There be dragons! 
