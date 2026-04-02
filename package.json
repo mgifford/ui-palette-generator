@@ -7,6 +7,7 @@
     "webpack": "^5.97.1"
   },
   "scripts": {
+    "test": "jest",
     "build:html": "node scripts/build-html.js",
     "build:css": "node scripts/build-css.js",
     "build": "npm run build:html && npm run build:css && webpack --mode production",
@@ -26,9 +27,12 @@
     "@babel/preset-env": "^7.26.0",
     "@playwright/test": "^1.57.0",
     "axe-core": "^4.8.2",
+    "babel-jest": "^30.3.0",
     "babel-loader": "^9.2.1",
     "gh-pages": "^5.0.0",
     "html-validate": "^10.5.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "sass": "^1.70.0",
     "serve": "^14.1.1",
     "webpack-cli": "^6.0.1"
