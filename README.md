@@ -84,6 +84,24 @@ Notes:
 - If you prefer GitHub Pages to serve from `docs/`, I can update `webpack.config.js` to output into `docs/` and adjust `package.json` scripts.
 
 
+## Related Tools and Resources
+
+This project is part of a broader ecosystem of accessible color and palette tools. The following resources offer complementary approaches to palette generation, accessibility evaluation, and data visualization.
+
+### UI Color Tools
+
+- [Accessible Color Matrix](https://toolness.github.io/accessible-color-matrix/) — Visualises every foreground/background pair in a palette as a WCAG contrast matrix.
+- [Viz Palette](https://projects.susielu.com/viz-palette) — Evaluates palettes for data visualization, including colorblind simulation across multiple deficiency modes.
+- [Color Safe](https://colorsafe.co/) — Generates accessible web color combinations from a background color using WCAG guidance.
+- [Adobe Leonardo](https://leonardocolor.io/scales.html) — Creates adaptive, contrast-based color scales; open source under the Apache 2.0 license ([GitHub](https://github.com/adobe/leonardo)).
+
+### Color Libraries
+
+- [Palettes (gka)](https://gka.github.io/palettes/) — Generates perceptually uniform color palettes with colorblind-safe optimization.
+- [chroma.js](https://gka.github.io/chroma.js/) — JavaScript color manipulation library used in this project for color generation and interpolation.
+- [Colorgorical](https://vrl.cs.brown.edu/color) — Generates categorical palettes optimized for information visualization (Brown University VRL).
+- [Accessible Color Palette (donnieberg)](https://github.com/donnieberg/accessible-color-palette) — Reference implementation and guidelines for building accessible color palettes.
+
 ## AI Disclosure
 
 Yes. AI was used in creating this tool. There be dragons! 
