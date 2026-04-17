@@ -2172,6 +2172,14 @@ body.has-contrast-grid-open {
   top: calc(50vh - 20px);
 }
 
+/* Disable sticky grip on short viewports or when zoomed heavily to avoid the
+   grip becoming unreachable */
+@media (max-height: 400px) {
+  .splitter .grip {
+    position: static;
+  }
+}
+
 /* Improve hit target and focus-visible styling */
 .splitter:focus-visible {
   box-shadow: 0 0 0 6px rgba(59,130,246,0.14);
