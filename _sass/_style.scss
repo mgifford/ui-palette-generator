@@ -524,12 +524,10 @@ input[type=password] {
   /* Avatar icon solid: the <span class="material-symbols-rounded"> sits on the avatar
      background, not the card/canvas, so override the broad .material-symbols-rounded
      rule with the correct source color. */
-  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-subdued .material-symbols-rounded,
-  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-subdued span {
+  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-subdued .material-symbols-rounded {
     color: color-contrast(var(--color-accentNonContentSubdued) vs (white, black));
   }
-  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-strong .material-symbols-rounded,
-  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-strong span {
+  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-strong .material-symbols-rounded {
     color: color-contrast(var(--color-accentNonContentStrong) vs (white, black));
   }
 }
