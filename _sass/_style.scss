@@ -509,6 +509,27 @@ input[type=password] {
   .demo-card .button {
     color: color-contrast(var(--btn-bg, var(--btn-bg-strong)) vs (white, black));
   }
+
+  /* Avatar solid: text/initials must contrast against the avatar's accent background,
+     not the surrounding card/canvas. These more-specific selectors override both the
+     parent-level fallback (--color-neutralContentStrong) and the broad
+     .material-symbols-rounded rule above. */
+  .demo-canvas .avatars .avatar.avatar-solid.avatar-subdued {
+    color: color-contrast(var(--color-accentNonContentSubdued) vs (white, black));
+  }
+  .demo-canvas .avatars .avatar.avatar-solid.avatar-strong {
+    color: color-contrast(var(--color-accentNonContentStrong) vs (white, black));
+  }
+
+  /* Avatar icon solid: the <span class="material-symbols-rounded"> sits on the avatar
+     background, not the card/canvas, so override the broad .material-symbols-rounded
+     rule with the correct source color. */
+  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-subdued .material-symbols-rounded {
+    color: color-contrast(var(--color-accentNonContentSubdued) vs (white, black));
+  }
+  .demo-canvas .avatars .avatar.avatar-icon.avatar-solid.avatar-strong .material-symbols-rounded {
+    color: color-contrast(var(--color-accentNonContentStrong) vs (white, black));
+  }
 }
 
 /* Fallback explicit token — used when color-contrast() is not available */
