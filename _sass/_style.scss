@@ -1718,7 +1718,8 @@ html[data-theme="dark"] .swatch .value {
 
 /* Accessible link colors in dark mode.
    Browser default #0000ee gives only ~2.23:1 on dark backgrounds.
-   #6ab4ff (≥4.5:1 on #000 and #313230) and #c791f5 (visited) pass WCAG AA. */
+   #6ab4ff: ~9.69:1 on #000, ~5.84:1 on #313230 (card bg) — passes WCAG AA.
+   #c791f5 (visited): ~8.84:1 on #000, ~5.32:1 on #313230 — passes WCAG AA. */
 [data-theme="dark"] a,
 [data-theme="dark"] a:link {
   color: #6ab4ff;
