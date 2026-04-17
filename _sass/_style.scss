@@ -1716,6 +1716,18 @@ html[data-theme="dark"] .swatch .value {
   box-shadow: 0 0 0 1px color-mix(in oklab, #ffffff 20%, var(--color-neutralNonContentSoft));
 }
 
+/* Accessible link colors in dark mode.
+   Browser default #0000ee gives only ~2.23:1 on dark backgrounds.
+   #6ab4ff (≥4.5:1 on #000 and #313230) and #c791f5 (visited) pass WCAG AA. */
+[data-theme="dark"] a,
+[data-theme="dark"] a:link {
+  color: #6ab4ff;
+}
+
+[data-theme="dark"] a:visited {
+  color: #c791f5;
+}
+
 .hidden-social-media-thumbnail { display: none; }
 
 /* Inline accessibility contrast report */
