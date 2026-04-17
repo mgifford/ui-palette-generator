@@ -1536,14 +1536,13 @@ main {
       &.avatar-solid {
         &.avatar-subdued {
           background: var(--color-accentNonContentSubdued);
+          color: var(--avatar-subdued-fg, var(--color-neutralContentStrong));
         }
         &.avatar-strong {
           background: var(--color-accentNonContentStrong);
+          color: var(--avatar-strong-fg, var(--color-neutralContentStrong));
         }
-        color: var(--color-neutralContentStrong);
-        @container (--theme: dark) {
-          color: var(--color-neutralContentStrongOnDark, var(--color-neutralContentStrong));
-        }
+        color: var(--avatar-strong-fg, var(--color-neutralContentStrong));
       }
       &.avatar-soft {
         &.avatar-subdued {
@@ -1562,9 +1561,16 @@ main {
         }
         &.avatar-solid {
           span {
-            color: var(--color-neutralContentStrong);
-            @container (--theme: dark) {
-              color: var(--color-neutralContentStrongOnDark, var(--color-neutralContentStrong));
+            color: var(--avatar-strong-fg, var(--color-neutralContentStrong));
+          }
+          &.avatar-subdued {
+            span {
+              color: var(--avatar-subdued-fg, var(--color-neutralContentStrong));
+            }
+          }
+          &.avatar-strong {
+            span {
+              color: var(--avatar-strong-fg, var(--color-neutralContentStrong));
             }
           }
         }
@@ -2472,13 +2478,13 @@ body.has-contrast-grid-open {
 }
 
 .usa-alert--error {
-  background-color: color-mix(in oklab, #d54309, white 90%); /* USWDS Red-cool-5v */
-  border-left-color: #d54309; /* USWDS Red-cool-50v */
+  background-color: color-mix(in oklab, var(--color-error, #d54309), white 90%); /* USWDS Red-cool-5v */
+  border-left-color: var(--color-error, #d54309); /* USWDS Red-cool-50v */
 }
 /* Dark mode adjustment for error alert background */
 @container (--theme: dark) {
   .usa-alert--error {
-     background-color: color-mix(in oklab, #d54309, black 80%);
+     background-color: color-mix(in oklab, var(--color-error, #d54309), black 80%);
   }
 }
 
@@ -2501,7 +2507,7 @@ body.has-contrast-grid-open {
 
 /* USWDS Form Validation */
 .usa-form-group--error {
-  border-left: 0.25rem solid #d54309; /* USWDS Red-cool-50v */
+  border-left: 0.25rem solid var(--color-error, #d54309); /* USWDS Red-cool-50v */
   padding-left: var(--space-sm);
   margin-left: calc(var(--space-sm) * -1);
 }
@@ -2513,14 +2519,14 @@ body.has-contrast-grid-open {
 
 .usa-error-message {
   display: block;
-  color: #d54309; /* USWDS Red-cool-50v */
+  color: var(--color-error, #d54309); /* USWDS Red-cool-50v; overridden per-theme by JS */
   font-weight: bold;
   margin-top: var(--space-xs);
   margin-bottom: var(--space-xs);
 }
 
 .usa-input--error {
-  border: 2px solid #d54309 !important; /* USWDS Red-cool-50v */
+  border: 2px solid var(--color-error, #d54309) !important; /* USWDS Red-cool-50v */
 }
 
 /* USWDS Accordion */

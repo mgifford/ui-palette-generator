@@ -920,8 +920,14 @@ function generatePalette() {
       setCssColor('light', 'accent', '--color-accent', lightAccentContentBaselineColor || lightAccentNonContentBaselineColor);
       setCssColor('light', 'background', '--color-background', lightCanvasColor || lightCardColor);
       setCssColor('light', 'surface', '--color-surface', lightCardColor || lightCanvasColor);
-      // semantic states (use accent shades or contrast mixes)
-      setCssColor('light', 'error', '--color-error', '#D32F2F');
+      // semantic states - compute accessible error color based on canvas background
+      // so the error message always meets WCAG 2 AA contrast (4.5:1) regardless of palette
+      const lightBgForError = lightCanvasColor || lightCardColor || '#ffffff';
+      const darkBgForError = darkCanvasColor || darkCardColor || '#121212';
+      const errorBase = '#d54309'; // USWDS Red-cool-50v hue preserved
+      const lightErrorColor = adjustLuminanceToContrast(errorBase, lightBgForError, wcagContentContrast);
+      const darkErrorColor = adjustLuminanceToContrast(errorBase, darkBgForError, wcagContentContrast);
+      setCssColor('light', 'error', '--color-error', lightErrorColor);
       setCssColor('light', 'warning', '--color-warning', '#FBC02D');
       setCssColor('light', 'info', '--color-info', '#1976D2');
       setCssColor('light', 'success', '--color-success', '#388E3C');
@@ -932,7 +938,7 @@ function generatePalette() {
       setCssColor('dark', 'accent', '--color-accent', darkAccentContentBaselineColor || darkAccentNonContentBaselineColor);
       setCssColor('dark', 'background', '--color-background', darkCanvasColor || darkCardColor);
       setCssColor('dark', 'surface', '--color-surface', darkCardColor || darkCanvasColor);
-      setCssColor('dark', 'error', '--color-error', '#EF5350');
+      setCssColor('dark', 'error', '--color-error', darkErrorColor);
       setCssColor('dark', 'warning', '--color-warning', '#FDD835');
       setCssColor('dark', 'info', '--color-info', '#64B5F6');
       setCssColor('dark', 'success', '--color-success', '#66BB6A');
@@ -2182,6 +2188,12 @@ function setCssColor(theme, swatchId, cssVariable, color) {
       writeCssVariable(theme, '--btn-contrast-fallback', fg);
       // also set icon fallback to the same or a high-contrast alternative
       writeCssVariable(theme, '--icon-contrast-fallback', fg === '#000000' ? '#111111' : '#ffffff');
+      // set per-avatar-background foreground variables for solid avatar icon contrast
+      if (cssVariable === '--color-accentNonContentStrong') {
+        writeCssVariable(theme, '--avatar-strong-fg', fg === '#000000' ? '#111111' : '#ffffff');
+      } else if (cssVariable === '--color-accentNonContentSubdued') {
+        writeCssVariable(theme, '--avatar-subdued-fg', fg === '#000000' ? '#111111' : '#ffffff');
+      }
     }
   } catch (e) {
     // noop; best-effort
