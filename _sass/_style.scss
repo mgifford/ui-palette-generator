@@ -2172,8 +2172,8 @@ body.has-contrast-grid-open {
   top: calc(50vh - 20px);
 }
 
-/* Disable sticky grip on short viewports or when zoomed heavily to avoid the
-   grip becoming unreachable */
+/* Disable sticky grip on very short viewports (e.g. phone landscape, heavily
+   zoomed). Note: CSS zoom and browser zoom both affect viewport height in px. */
 @media (max-height: 400px) {
   .splitter .grip {
     position: static;
