@@ -159,46 +159,24 @@ function initSplit(options) {
 
 // Initialize all split views when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // Palette light/dark split
-  const paletteSplit = document.getElementById('paletteSplit');
-  const paletteLeft = document.getElementById('paletteLeft');
-  const paletteSplitter = document.getElementById('paletteSplitter');
-  const paletteRight = document.getElementById('paletteRight');
+  // Single unified light/dark split covering both palette and demo
+  const mainSplit = document.getElementById('mainSplit');
+  const lightPanel = document.getElementById('lightPanel');
+  const mainSplitter = document.getElementById('mainSplitter');
+  const darkPanel = document.getElementById('darkPanel');
 
-  if (paletteSplit && paletteLeft && paletteSplitter && paletteRight) {
+  if (mainSplit && lightPanel && mainSplitter && darkPanel) {
     initSplit({
-      split: paletteSplit,
-      left: paletteLeft,
-      gutter: paletteSplitter,
-      right: paletteRight,
-      storageKey: 'uiPaletteGen:split:paletteLightDark',
+      split: mainSplit,
+      left: lightPanel,
+      gutter: mainSplitter,
+      right: darkPanel,
+      storageKey: 'uiPaletteGen:split:lightDark',
       minRatio: 0.15,
       maxRatio: 0.85
     });
-    console.info('[split] Palette light/dark splitter initialized');
+    console.info('[split] Unified light/dark splitter initialized');
   } else {
-    console.warn('Palette split elements not found. Skipping palette split initialization.');
-  }
-
-  // Demo light/dark split
-  const demoSplit = document.getElementById('demoSplit');
-  const demoLeft = document.getElementById('demoLeft');
-  const demoSplitter = document.getElementById('demoSplitter');
-  const demoRight = document.getElementById('demoRight');
-
-  if (demoSplit && demoLeft && demoSplitter && demoRight) {
-    initSplit({
-      split: demoSplit,
-      left: demoLeft,
-      gutter: demoSplitter,
-      right: demoRight,
-      storageKey: 'uiPaletteGen:split:demoLightDark',
-      minRatio: 0.15,
-      maxRatio: 0.85
-    });
-    console.info('[split] Demo light/dark splitter initialized');
-  } else {
-    console.warn('Demo split elements not found. Skipping demo split initialization.');
+    console.warn('Main split elements not found. Skipping split initialization.');
   }
 });
-

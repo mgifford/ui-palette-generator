@@ -195,6 +195,8 @@
 
 
       <main>
+        <div class="split" id="mainSplit">
+          <div class="split-left" id="lightPanel">
         <section id="palette">
           <div class="heading">
             <h2>Palette</h2>
@@ -202,8 +204,6 @@
           <p class="section-hint">The Palette shows a single set of semantic color tokens rendered in light and dark modes.</br>
           Both palettes share the same token IDs. Theme differences are controlled by the parent container using data-theme-mode, allowing consistent overrides and comparisons, including alignment with systems like USWDS.</p>
           <div class="palette-panels" aria-live="polite">
-            <div class="split" id="paletteSplit">
-              <div class="split-left" id="paletteLeft">
                 <!-- Light palette uses the light parent container so shared IDs render light values -->
                 <article id="palette-light" class="palette-panel" data-theme-mode="light" data-theme="light" aria-labelledby="palette-light-title">
               <header class="panel-heading">
@@ -325,144 +325,13 @@
                 </div>
               </div>
             </article>
-              </div>
-              <div class="splitter" id="paletteSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize palettes">
-                <span class="grip" aria-hidden="true"></span>
-              </div>
-              <div class="split-right" id="paletteRight">
-                <!-- Dark palette reuses identical IDs but inherits from the dark theme container -->
-                <article id="palette-dark" class="palette-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="palette-dark-title">
-              <header class="panel-heading">
-                <h3 id="palette-dark-title">Dark palette values</h3>
-                <p class="panel-note">This mirrored column uses the dark theme parent.</p>
-              </header>
-              <div class="row ui-swatches palette-backgrounds">
-                <figure class="color-swatch">
-                  <figcaption>Canvas</figcaption>
-                  <div class="swatch" tabindex="0" id="canvas" data-swatch-id="canvas">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                </figure>
-                <figure class="color-swatch">
-                  <figcaption>Card</figcaption>
-                  <div class="swatch" tabindex="0" id="card" data-swatch-id="card">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                </figure>
-              </div>
-              <div class="row">
-                <div class="col palette-non-content">
-                  <figure class="color-swatch">
-                    <figcaption>Accent Non-Content Baseline</figcaption>
-                    <div class="swatch" tabindex="0" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                  </figure>
-                  <div class="row ui-swatches">
-                    <figure class="color-swatch">
-                      <figcaption>Accent Non-Content Soft</figcaption>
-                      <div class="swatch" tabindex="0" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                    <figure class="color-swatch">
-                      <figcaption>Accent Non-Content Subdued</figcaption>
-                      <div class="swatch" tabindex="0" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                    <figure class="color-swatch">
-                      <figcaption>Accent Non-Content Strong</figcaption>
-                      <div class="swatch" tabindex="0" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                  </div>
-                  <div class="row ui-swatches">
-                    <figure class="color-swatch">
-                      <figcaption>Neutral Non-Content Soft</figcaption>
-                      <div class="swatch" tabindex="0" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                    <figure class="color-swatch">
-                      <figcaption>Neutral Non-Content Subdued</figcaption>
-                      <div class="swatch" tabindex="0" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                    <figure class="color-swatch">
-                      <figcaption>Neutral Non-Content Strong</figcaption>
-                      <div class="swatch" tabindex="0" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                  </div>
-                </div>
-                <div class="col palette-content">
-                  <figure class="color-swatch">
-                    <figcaption>Accent Content Baseline</figcaption>
-                    <div class="swatch" tabindex="0" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                  </figure>
-                  <div class="row ui-swatches">
-                    <figure class="color-swatch">
-                      <figcaption>Accent Content Subdued</figcaption>
-                      <div class="swatch" tabindex="0" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                    <figure class="color-swatch">
-                      <figcaption>Accent Content Strong</figcaption>
-                      <div class="swatch" tabindex="0" id="accentContentStrong" data-swatch-id="accentContentStrong">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                  </div>
-                  <div class="row ui-swatches">
-                    <figure class="color-swatch">
-                      <figcaption>Neutral Content Subdued</figcaption>
-                      <div class="swatch" tabindex="0" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                    <figure class="color-swatch">
-                      <figcaption>Neutral Content Strong</figcaption>
-                      <div class="swatch" tabindex="0" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
-  <span class="value">N/A</span>
-  <span class="color"></span>
-</div>
-                    </figure>
-                  </div>
-                </div>
-              </div>
-                </article>
-              </div>
-            </div>
-          </div>
-        </section>
-
+          </div><!-- close palette-panels -->
+        </section><!-- close #palette -->
         <section id="demo">
           <h2>Demo</h2>
           <p class="section-hint">The Demo uses identical UI markup for light and dark modes.</br>
           Visual differences exist only because the palette values change. This makes it easier to see how tokens behave in real components, including focus and non-text elements.</p>
           <div class="demo-panels">
-            <div class="split" id="demoSplit">
-              <div class="split-left" id="demoLeft">
                 <!-- Light demo shares markup with dark demo but inherits light CSS tokens -->
                 <article id="demo-light" class="demo-panel" data-theme-mode="light" data-theme="light" aria-labelledby="demo-light-title">
               <header class="panel-heading">
@@ -740,11 +609,140 @@
 </div>
               </div>
             </article>
+          </div><!-- close demo-panels -->
+        </section><!-- close #demo -->
+          </div><!-- end lightPanel -->
+          <div class="splitter" id="mainSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize light and dark mode panels">
+            <span class="grip" aria-hidden="true"></span>
+          </div>
+          <div class="split-right" id="darkPanel">
+            <section class="palette" aria-label="Dark mode palette">
+              <div class="palette-panels">
+                <!-- Dark palette reuses identical IDs but inherits from the dark theme container -->
+                <article id="palette-dark" class="palette-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="palette-dark-title">
+              <header class="panel-heading">
+                <h3 id="palette-dark-title">Dark palette values</h3>
+                <p class="panel-note">This mirrored column uses the dark theme parent.</p>
+              </header>
+              <div class="row ui-swatches palette-backgrounds">
+                <figure class="color-swatch">
+                  <figcaption>Canvas</figcaption>
+                  <div class="swatch" tabindex="0" id="canvas" data-swatch-id="canvas">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
+                <figure class="color-swatch">
+                  <figcaption>Card</figcaption>
+                  <div class="swatch" tabindex="0" id="card" data-swatch-id="card">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                </figure>
               </div>
-              <div class="splitter" id="demoSplitter" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="10" aria-valuemax="90" aria-valuenow="50" aria-label="Resize demos">
-                <span class="grip" aria-hidden="true"></span>
+              <div class="row">
+                <div class="col palette-non-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Non-Content Baseline</figcaption>
+                    <div class="swatch" tabindex="0" id="accentNonContentBaseline" data-swatch-id="accentNonContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Soft</figcaption>
+                      <div class="swatch" tabindex="0" id="accentNonContentSoft" data-swatch-id="accentNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Subdued</figcaption>
+                      <div class="swatch" tabindex="0" id="accentNonContentSubdued" data-swatch-id="accentNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Non-Content Strong</figcaption>
+                      <div class="swatch" tabindex="0" id="accentNonContentStrong" data-swatch-id="accentNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Soft</figcaption>
+                      <div class="swatch" tabindex="0" id="neutralNonContentSoft" data-swatch-id="neutralNonContentSoft">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Subdued</figcaption>
+                      <div class="swatch" tabindex="0" id="neutralNonContentSubdued" data-swatch-id="neutralNonContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Non-Content Strong</figcaption>
+                      <div class="swatch" tabindex="0" id="neutralNonContentStrong" data-swatch-id="neutralNonContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
+                <div class="col palette-content">
+                  <figure class="color-swatch">
+                    <figcaption>Accent Content Baseline</figcaption>
+                    <div class="swatch" tabindex="0" id="accentContentBaseline" data-swatch-id="accentContentBaseline">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                  </figure>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Subdued</figcaption>
+                      <div class="swatch" tabindex="0" id="accentContentSubdued" data-swatch-id="accentContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Accent Content Strong</figcaption>
+                      <div class="swatch" tabindex="0" id="accentContentStrong" data-swatch-id="accentContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                  <div class="row ui-swatches">
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Subdued</figcaption>
+                      <div class="swatch" tabindex="0" id="neutralContentSubdued" data-swatch-id="neutralContentSubdued">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                    <figure class="color-swatch">
+                      <figcaption>Neutral Content Strong</figcaption>
+                      <div class="swatch" tabindex="0" id="neutralContentStrong" data-swatch-id="neutralContentStrong">
+  <span class="value">N/A</span>
+  <span class="color"></span>
+</div>
+                    </figure>
+                  </div>
+                </div>
               </div>
-              <div class="split-right" id="demoRight">
+                </article>
+              </div><!-- close palette-panels dark -->
+            </section><!-- close .palette dark -->
+            <section class="demo" aria-label="Dark mode demo">
+              <div class="demo-panels">
                 <!-- Dark demo reuses identical markup under a dark theme parent -->
                 <article id="demo-dark" class="demo-panel" data-theme-mode="dark" data-theme="dark" aria-labelledby="demo-dark-title">
               <header class="panel-heading">
@@ -1022,10 +1020,10 @@
 </div>
               </div>
                 </article>
-              </div>
-            </div>
-          </div>
-        </section>
+              </div><!-- close demo-panels dark -->
+            </section><!-- close .demo dark -->
+          </div><!-- end darkPanel -->
+        </div><!-- end mainSplit -->
 
         <section id="palette-transfer">
           <div class="heading">
